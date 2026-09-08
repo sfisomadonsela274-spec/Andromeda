@@ -179,6 +179,11 @@
     <!-- MAIN CHAT WORKSPACE AREA -->
     <!-- ============================================================== -->
     <div class="flex-1 flex flex-col h-full bg-zinc-950 relative overflow-hidden">
+      <!-- AMBIENT NEBULA LIGHTING UNDERGLOW -->
+      <div class="pointer-events-none fixed inset-0 overflow-hidden z-0">
+        <div id="nebula-orb-top" class="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-purple-600/10 via-blue-600/5 to-transparent blur-[100px] rounded-full transition-all duration-700"></div>
+        <div id="nebula-orb-bottom" class="absolute bottom-0 right-12 w-[450px] h-[250px] bg-gradient-to-t from-pink-600/5 via-indigo-600/5 to-transparent blur-[90px] rounded-full transition-all duration-700"></div>
+      </div>
       
       <!-- TOP NAVIGATION BAR -->
       <header class="h-14 border-b border-zinc-800/70 px-4 flex items-center justify-between shrink-0 bg-zinc-950/80 backdrop-blur-md z-20">
@@ -197,6 +202,39 @@
             <button onclick="promptBackendSwitch()" id="backend-connection-badge" class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono border border-emerald-500/30 bg-emerald-950/40 text-emerald-300 hover:border-emerald-400 transition-colors" title="Click to view or switch backend endpoint">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" id="backend-pulse-dot"></span>
               <span id="backend-status-text">Core 24/7</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- CENTER: DYNAMIC ISLAND HUD -->
+        <div class="flex-1 max-w-xs md:max-w-sm mx-2 hidden sm:flex items-center justify-center">
+          <div 
+            id="dynamic-island-pill" 
+            onclick="toggleDynamicIslandDropdown()" 
+            class="group cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800/80 border border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl transition-all duration-300 select-none"
+            title="Click to toggle Media Control Center"
+          >
+            <!-- Equalizer Wave Bars -->
+            <div class="flex items-center gap-0.5 h-3.5 px-0.5">
+              <span id="island-wave-1" class="w-0.5 h-2 rounded-full bg-purple-400/80 transition-all duration-300"></span>
+              <span id="island-wave-2" class="w-0.5 h-3.5 rounded-full bg-pink-400/90 transition-all duration-300"></span>
+              <span id="island-wave-3" class="w-0.5 h-1.5 rounded-full bg-indigo-400/80 transition-all duration-300"></span>
+            </div>
+
+            <!-- Track / State text -->
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span id="island-title" class="text-xs font-medium text-zinc-200 truncate max-w-[110px] md:max-w-[150px]">No Track Active</span>
+              <span id="island-badge" class="px-1.5 py-0.2 text-[9px] font-mono uppercase tracking-wider rounded-full bg-purple-950/70 border border-purple-500/30 text-purple-300">Idle</span>
+            </div>
+
+            <!-- Mini Play/Pause Button in Island -->
+            <button 
+              onclick="event.stopPropagation(); mediaDeckAction('play_pause')" 
+              class="w-5 h-5 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors ml-0.5 active:scale-95" 
+              title="Play / Pause"
+            >
+              <svg id="island-play-icon" class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <svg id="island-pause-icon" class="w-2.5 h-2.5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
             </button>
           </div>
         </div>
@@ -255,113 +293,77 @@
         </div>
       </header>
 
-      <!-- ANDROMEDA COSMIC HUD: COMPACT DYNAMIC ISLAND DECK -->
-      <section id="andromeda-hud-deck" class="w-full max-w-4xl mx-auto px-3 sm:px-6 pt-2 pb-1 shrink-0 transition-all duration-300">
-        <div class="rounded-2xl p-2 sm:px-3 sm:py-2 border border-purple-500/25 bg-zinc-950/80 backdrop-blur-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] flex flex-col gap-2 transition-all">
-          
-          <!-- COMPACT TOP STRIP -->
-          <div class="flex items-center justify-between gap-2 sm:gap-4">
-            
-            <!-- LEFT: WORKSPACE AVATAR & AGENT BADGE -->
-            <div class="flex items-center gap-2.5 shrink-0 cursor-pointer group" onclick="toggleHudExpand()" title="Click to expand/collapse HUD details">
-              <div class="relative w-10 h-10 rounded-xl bg-purple-950/40 border border-purple-500/30 flex items-center justify-center overflow-hidden shadow-inner group-hover:border-purple-400/50 transition-colors">
-                <canvas id="workspace-avatar-canvas" width="48" height="48" class="pointer-events-none drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]"></canvas>
+      <!-- FLOATING DYNAMIC ISLAND CONTROL CENTER DROPDOWN -->
+      <div id="dynamic-island-dropdown" class="hidden absolute top-16 left-1/2 -translate-x-1/2 w-[94%] max-w-lg z-40 p-4 rounded-3xl bg-zinc-950/95 border border-purple-500/30 shadow-[0_25px_70px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl transition-all duration-300 space-y-3">
+        <!-- Top Avatar + Player row -->
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="relative w-11 h-11 rounded-2xl bg-purple-950/40 border border-purple-500/30 flex items-center justify-center overflow-hidden shadow-inner">
+              <canvas id="workspace-avatar-canvas" width="48" height="48" class="pointer-events-none drop-shadow-[0_0_12px_rgba(168,85,247,0.6)]"></canvas>
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-semibold text-zinc-100">Andromeda Cosmic Core</span>
+                <span id="avatar-state-pill" class="px-2 py-0.2 text-[9px] font-mono uppercase tracking-wider rounded-full bg-purple-950/80 border border-purple-500/30 text-purple-300">idle</span>
               </div>
-              <div class="flex flex-col">
-                <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-semibold text-zinc-100 tracking-tight">Andromeda</span>
-                  <span id="avatar-state-pill" class="px-1.5 py-0.2 text-[9px] font-mono uppercase tracking-wider rounded-full bg-purple-950/80 border border-purple-500/30 text-purple-300">
-                    idle
-                  </span>
-                </div>
-                <div class="flex items-center gap-1 text-[10px] text-zinc-400 font-mono">
-                  <span id="mediadeck-dot" class="w-1.5 h-1.5 rounded-full bg-zinc-600 transition-colors"></span>
-                  <span id="mediadeck-player-label" class="truncate max-w-[90px] sm:max-w-[130px]">MPRIS Idle</span>
-                </div>
+              <div class="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono mt-0.5">
+                <span id="mediadeck-dot" class="w-1.5 h-1.5 rounded-full bg-zinc-600 transition-colors"></span>
+                <span id="mediadeck-player-label">MPRIS Desktop Bridge</span>
               </div>
             </div>
+          </div>
 
-            <!-- CENTER: NOW PLAYING TRACK INFO -->
-            <div class="flex-1 min-w-0 px-2 flex items-center justify-center sm:justify-start">
-              <div class="min-w-0 text-center sm:text-left">
-                <div id="mediadeck-track-title" class="text-xs font-medium text-zinc-200 truncate max-w-[120px] sm:max-w-[220px] md:max-w-[320px]">
-                  No Track Active
-                </div>
-                <div id="mediadeck-track-artist" class="text-[10px] text-zinc-400 truncate max-w-[120px] sm:max-w-[200px]">
-                  Desktop Media Idle
-                </div>
-              </div>
+          <!-- Close Dropdown Button -->
+          <button onclick="toggleDynamicIslandDropdown()" class="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Track info & Transport controls -->
+        <div class="p-3 bg-zinc-900/80 rounded-2xl border border-white/5 space-y-2.5 shadow-inner">
+          <div class="flex items-center justify-between">
+            <div class="min-w-0 flex-1">
+              <div id="mediadeck-track-title" class="text-xs font-medium text-white truncate">No Track Active</div>
+              <div id="mediadeck-track-artist" class="text-[10px] text-zinc-400 truncate">Desktop Media Idle</div>
             </div>
 
-            <!-- RIGHT: PLAYBACK CONTROLS & EXPAND BUTTON -->
-            <div class="flex items-center gap-1 shrink-0">
-              <!-- Previous Track -->
-              <button id="btn-mediadeck-prev" onclick="mediaDeckAction('previous')" class="hidden sm:inline-flex p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800/60 transition-colors" title="Previous Track">
+            <!-- Transport buttons -->
+            <div class="flex items-center gap-1">
+              <button id="btn-mediadeck-prev" onclick="mediaDeckAction('previous')" class="p-1.5 text-zinc-400 hover:text-white rounded-xl hover:bg-white/10 transition-colors" title="Previous Track">
                 <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
               </button>
-
-              <!-- Play/Pause Toggle -->
-              <button id="btn-mediadeck-playpause" onclick="mediaDeckAction('play_pause')" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 text-white flex items-center justify-center shadow-md shadow-purple-500/25 active:scale-95 transition-transform" title="Play / Pause">
+              <button id="btn-mediadeck-playpause" onclick="mediaDeckAction('play_pause')" class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 active:scale-95 transition-transform" title="Play / Pause">
                 <svg id="mediadeck-play-icon" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 <svg id="mediadeck-pause-icon" class="w-3.5 h-3.5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
               </button>
-
-              <!-- Next Track -->
-              <button id="btn-mediadeck-next" onclick="mediaDeckAction('next')" class="hidden sm:inline-flex p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800/60 transition-colors" title="Next Track">
+              <button id="btn-mediadeck-next" onclick="mediaDeckAction('next')" class="p-1.5 text-zinc-400 hover:text-white rounded-xl hover:bg-white/10 transition-colors" title="Next Track">
                 <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
               </button>
-
-              <!-- Desktop Volume Slider -->
-              <div class="hidden sm:flex items-center gap-1.5 pl-2 border-l border-zinc-800">
-                <svg class="w-3 h-3 text-zinc-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
-                </svg>
-                <input id="mediadeck-volume-slider" type="range" min="0" max="1" step="0.01" value="0.7" oninput="mediaDeckVolumeChange(this.value)" class="w-16 sm:w-20 h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-purple-500"/>
-              </div>
-
-              <!-- Expand / Collapse Drawer Button -->
-              <button id="btn-hud-expand" onclick="toggleHudExpand()" class="p-1.5 text-zinc-400 hover:text-zinc-200 rounded-lg hover:bg-zinc-800/60 transition-colors ml-0.5" title="Expand / Collapse Media View">
-                <i data-lucide="chevron-down" id="icon-hud-chevron" class="w-4 h-4 transition-transform duration-200"></i>
-              </button>
-            </div>
-
-          </div>
-
-          <!-- EXPANDABLE DRAWER (YouTube Embed & Diagnostics) -->
-          <div id="hud-expanded-drawer" class="hidden border-t border-zinc-800/80 pt-2.5 space-y-2">
-            <!-- Mobile Playback Bar (Visible only on mobile) -->
-            <div class="flex sm:hidden items-center justify-between px-2 py-1 bg-zinc-900/70 rounded-xl border border-zinc-800/60 text-xs">
-              <div class="flex items-center gap-2">
-                <button onclick="mediaDeckAction('previous')" class="p-1.5 text-zinc-400 hover:text-white rounded-lg" title="Previous Track">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-                </button>
-                <button onclick="mediaDeckAction('next')" class="p-1.5 text-zinc-400 hover:text-white rounded-lg" title="Next Track">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-                </button>
-              </div>
-              <div class="flex items-center gap-2">
-                <svg class="w-3.5 h-3.5 text-zinc-400" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
-                </svg>
-                <input id="mediadeck-volume-slider-mobile" type="range" min="0" max="1" step="0.01" value="0.7" oninput="mediaDeckVolumeChange(this.value)" class="w-24 h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-purple-500"/>
-              </div>
-            </div>
-
-            <!-- Embedded In-Stream Player (if active) -->
-            <div id="mediadeck-embed-wrapper" class="hidden overflow-hidden rounded-xl aspect-video border border-white/10 shadow-inner bg-black">
-              <iframe id="mediadeck-embed-iframe" class="w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-            </div>
-
-            <div class="flex items-center justify-between text-[11px] text-zinc-400 font-mono px-1">
-              <span id="mediadeck-bus-info">MPRIS D-Bus Bridge: /run/user/1000/bus</span>
-              <button id="mediadeck-embed-toggle" onclick="toggleMediaDeckEmbed()" class="hidden text-[10px] px-2 py-0.5 rounded bg-purple-950/60 border border-purple-500/40 text-purple-300 hover:bg-purple-900/60 transition-colors">
-                Hide In-Stream
-              </button>
             </div>
           </div>
 
+          <!-- Volume Slider Row -->
+          <div class="flex items-center gap-2 pt-1 border-t border-white/5">
+            <svg class="w-3 h-3 text-zinc-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+            </svg>
+            <input id="mediadeck-volume-slider" type="range" min="0" max="1" step="0.01" value="0.7" oninput="mediaDeckVolumeChange(this.value)" class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-purple-500"/>
+          </div>
         </div>
-      </section>
+
+        <!-- Embedded YouTube Video Wrapper (if active) -->
+        <div id="mediadeck-embed-wrapper" class="hidden overflow-hidden rounded-2xl aspect-video border border-white/10 shadow-2xl bg-black">
+          <iframe id="mediadeck-embed-iframe" class="w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+
+        <!-- Footer status -->
+        <div class="flex items-center justify-between text-[10px] text-zinc-500 font-mono px-1">
+          <span id="mediadeck-bus-info">MPRIS D-Bus / PulseAudio</span>
+          <button id="mediadeck-embed-toggle" onclick="toggleMediaDeckEmbed()" class="hidden text-[10px] px-2.5 py-0.5 rounded-full bg-purple-950/60 border border-purple-500/40 text-purple-300 hover:bg-purple-900/60 transition-colors">
+            Toggle Video
+          </button>
+        </div>
+      </div>
 
       <!-- SCROLLABLE CONVERSATION FEED -->
       <main id="conversation-container" class="flex-1 overflow-y-auto px-4 py-4 md:px-8 space-y-6 max-w-4xl w-full mx-auto">
@@ -448,8 +450,46 @@
       <footer class="p-3 md:p-5 shrink-0 bg-zinc-950/90 backdrop-blur-md">
         <div class="max-w-4xl mx-auto space-y-2">
           
-          <!-- INPUT WRAPPER -->
-          <div class="relative flex items-center bg-zinc-900/90 border border-zinc-800 rounded-2xl p-1.5 focus-within:border-zinc-600 focus-within:ring-1 focus-within:ring-zinc-600 transition-all shadow-subtle">
+          <!-- SLASH COMMAND AUTOCOMPLETE MENU -->
+          <div id="slash-command-palette" class="hidden absolute bottom-full mb-3 left-0 right-0 p-2.5 rounded-2xl bg-zinc-950/95 border border-purple-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-2xl z-30 space-y-1">
+            <div class="text-[10px] font-mono text-zinc-400 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
+              <span>Quick Command Palette</span>
+              <span class="text-purple-400">ESC to close</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1">
+              <button onclick="insertSlashCommand('/music ')" class="w-full flex items-center justify-between p-2 rounded-xl hover:bg-white/5 text-xs text-left text-zinc-300 hover:text-white transition-colors group">
+                <span class="flex items-center gap-2.5">
+                  <span class="p-1 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20 group-hover:bg-pink-500/20"><i data-lucide="music" class="w-3.5 h-3.5"></i></span>
+                  <span class="font-medium">/music &lt;query&gt;</span>
+                </span>
+                <span class="text-[10px] text-zinc-400 font-mono">Stream Audio</span>
+              </button>
+              <button onclick="insertSlashCommand('/email ')" class="w-full flex items-center justify-between p-2 rounded-xl hover:bg-white/5 text-xs text-left text-zinc-300 hover:text-white transition-colors group">
+                <span class="flex items-center gap-2.5">
+                  <span class="p-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 group-hover:bg-blue-500/20"><i data-lucide="mail" class="w-3.5 h-3.5"></i></span>
+                  <span class="font-medium">/email &lt;who&gt;</span>
+                </span>
+                <span class="text-[10px] text-zinc-400 font-mono">Stage Draft</span>
+              </button>
+              <button onclick="insertSlashCommand('/install ')" class="w-full flex items-center justify-between p-2 rounded-xl hover:bg-white/5 text-xs text-left text-zinc-300 hover:text-white transition-colors group">
+                <span class="flex items-center gap-2.5">
+                  <span class="p-1 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20 group-hover:bg-purple-500/20"><i data-lucide="download" class="w-3.5 h-3.5"></i></span>
+                  <span class="font-medium">/install &lt;app&gt;</span>
+                </span>
+                <span class="text-[10px] text-zinc-400 font-mono">Flathub</span>
+              </button>
+              <button onclick="insertSlashCommand('/status')" class="w-full flex items-center justify-between p-2 rounded-xl hover:bg-white/5 text-xs text-left text-zinc-300 hover:text-white transition-colors group">
+                <span class="flex items-center gap-2.5">
+                  <span class="p-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:bg-emerald-500/20"><i data-lucide="activity" class="w-3.5 h-3.5"></i></span>
+                  <span class="font-medium">/status</span>
+                </span>
+                <span class="text-[10px] text-zinc-400 font-mono">Telemetry</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- INPUT WRAPPER (ELEVATED GLASSMORPHISM) -->
+          <div class="relative flex items-center bg-zinc-900/80 border border-white/10 rounded-2xl p-1.5 focus-within:border-purple-500/50 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl">
             
             <!-- MULTIMODAL ATTACH MENU TRIGGER -->
             <button 
@@ -465,10 +505,11 @@
             <input 
               type="text" 
               id="prompt-field" 
-              placeholder="Ask Andromeda or trigger an automated action..." 
+              placeholder="Ask Andromeda or type / for commands..." 
               autocomplete="off"
               class="w-full bg-transparent text-sm text-zinc-100 placeholder:text-zinc-400 px-2.5 py-1.5 focus:outline-none tracking-normal"
-              onkeydown="if(event.key === 'Enter') handleSendPrompt()"
+              oninput="handlePromptInput(this.value)"
+              onkeydown="if(event.key === 'Enter') handleSendPrompt(); if(event.key === 'Escape') document.getElementById('slash-command-palette')?.classList.add('hidden');"
             />
 
             <!-- MIC VOICE BUTTON -->
@@ -1241,17 +1282,47 @@
         const actionPayload = JSON.parse(rawMessage);
         if (actionPayload.action === "mailto") {
           notify("Drafting email...", "info");
+          const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(actionPayload.recipient || "")}&su=${encodeURIComponent(actionPayload.subject || "")}&body=${encodeURIComponent(actionPayload.body || "")}`;
+          const mailtoUrl = `mailto:${encodeURIComponent(actionPayload.recipient || "")}?subject=${encodeURIComponent(actionPayload.subject || "")}&body=${encodeURIComponent(actionPayload.body || "")}`;
           content = `
-            <div class="space-y-2">
-              <p>${escapeHtml(actionPayload.message || 'Prepared draft for native email intent:')}</p>
-              <div class="p-3 bg-zinc-900 rounded-xl border border-zinc-800 text-xs font-mono space-y-1">
-                <div><span class="text-zinc-400">Recipient:</span> ${escapeHtml(actionPayload.recipient || '')}</div>
-                <div><span class="text-zinc-400">Subject:</span> ${escapeHtml(actionPayload.subject || '')}</div>
-                <div><span class="text-zinc-400">Body:</span> ${escapeHtml(actionPayload.body || '')}</div>
+            <div class="space-y-3">
+              <p>${escapeHtml(actionPayload.message || "Prepared draft for native email intent:")}</p>
+              <div class="p-4 rounded-2xl bg-gradient-to-br from-blue-950/40 via-zinc-900/90 to-zinc-900 border border-blue-500/30 text-xs space-y-3 shadow-2xl backdrop-blur-xl">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-300">
+                      <i data-lucide="mail" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                      <span class="text-xs font-semibold text-white block">Email Dispatch Staged</span>
+                      <span class="text-[10px] text-zinc-400 font-mono">${escapeHtml(actionPayload.recipient || "")}</span>
+                    </div>
+                  </div>
+                  <span class="px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-mono uppercase tracking-wider">
+                    Ready to Send
+                  </span>
+                </div>
+
+                <div class="p-3 bg-black/50 rounded-xl border border-white/5 space-y-1.5 text-zinc-300">
+                  <div class="font-medium text-white flex items-center gap-1.5">
+                    <span class="text-zinc-500">Subject:</span> ${escapeHtml(actionPayload.subject || "Project Inquiry")}
+                  </div>
+                  <div class="text-xs text-zinc-300 pt-1 leading-relaxed border-t border-white/5">
+                    ${escapeHtml(actionPayload.body || "")}
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 pt-1">
+                  <a href="${gmailUrl}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-medium transition-all shadow-md shadow-blue-600/25 flex items-center gap-1.5 active:scale-95">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                    <span>Proceed via Gmail Web</span>
+                  </a>
+                  <a href="${mailtoUrl}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 text-xs font-medium transition-colors flex items-center gap-1.5">
+                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                    <span>Open Mail Client</span>
+                  </a>
+                </div>
               </div>
-              <button onclick="window.open('mailto:${encodeURIComponent(actionPayload.recipient || '')}?subject=${encodeURIComponent(actionPayload.subject || '')}&body=${encodeURIComponent(actionPayload.body || '')}')" class="px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-950 font-medium text-xs hover:bg-white transition-colors flex items-center gap-1.5">
-                <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Open Mail Client
-              </button>
             </div>
           `;
         } else if (actionPayload.action === "youtube") {
@@ -1969,16 +2040,94 @@
       }
     }
 
+    function toggleDynamicIslandDropdown() {
+      playAcousticChime('click');
+      const dropdown = document.getElementById('dynamic-island-dropdown');
+      if (dropdown) {
+        dropdown.classList.toggle('hidden');
+        if (!dropdown.classList.contains('hidden')) {
+          initWorkspaceAvatarCanvas();
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+    }
+
+    function handlePromptInput(val) {
+      const palette = document.getElementById('slash-command-palette');
+      if (!palette) return;
+      if (val.startsWith('/') && !val.includes(' ')) {
+        palette.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+      } else {
+        palette.classList.add('hidden');
+      }
+    }
+
+    function insertSlashCommand(cmd) {
+      const field = document.getElementById('prompt-field');
+      const palette = document.getElementById('slash-command-palette');
+      if (field) {
+        field.value = cmd;
+        field.focus();
+      }
+      if (palette) palette.classList.add('hidden');
+    }
+
     function updateMediaDeckUI(status) {
       const dot = document.getElementById('mediadeck-dot');
+      const islandTitle = document.getElementById('island-title');
+      const islandBadge = document.getElementById('island-badge');
+      const islandPlay = document.getElementById('island-play-icon');
+      const islandPause = document.getElementById('island-pause-icon');
+      const islandPill = document.getElementById('dynamic-island-pill');
+      const w1 = document.getElementById('island-wave-1');
+      const w2 = document.getElementById('island-wave-2');
+      const w3 = document.getElementById('island-wave-3');
+
+      const isPlaying = status.playback_status === 'Playing';
+
+      if (islandTitle) {
+        islandTitle.innerText = status.track_title && status.track_title !== "No Track Active" ? status.track_title : (isPlaying ? "Playing Audio" : "No Track Active");
+      }
+      if (islandBadge) {
+        islandBadge.innerText = isPlaying ? (status.player || "Playing") : "Idle";
+        islandBadge.className = isPlaying
+          ? "px-1.5 py-0.2 text-[9px] font-mono uppercase tracking-wider rounded-full bg-pink-950/70 border border-pink-500/30 text-pink-300 animate-pulse"
+          : "px-1.5 py-0.2 text-[9px] font-mono uppercase tracking-wider rounded-full bg-purple-950/70 border border-purple-500/30 text-purple-300";
+      }
+      if (islandPlay && islandPause) {
+        if (isPlaying) {
+          islandPlay.classList.add('hidden');
+          islandPause.classList.remove('hidden');
+        } else {
+          islandPlay.classList.remove('hidden');
+          islandPause.classList.add('hidden');
+        }
+      }
+      if (islandPill) {
+        if (isPlaying) {
+          islandPill.classList.add('border-purple-500/50', 'shadow-[0_0_16px_rgba(168,85,247,0.3)]');
+        } else {
+          islandPill.classList.remove('border-purple-500/50', 'shadow-[0_0_16px_rgba(168,85,247,0.3)]');
+        }
+      }
+      if (w1 && w2 && w3) {
+        if (isPlaying) {
+          w1.className = "w-0.5 h-3 rounded-full bg-pink-400 animate-bounce transition-all";
+          w2.className = "w-0.5 h-4 rounded-full bg-purple-400 animate-bounce transition-all delay-75";
+          w3.className = "w-0.5 h-2.5 rounded-full bg-indigo-400 animate-bounce transition-all delay-150";
+        } else {
+          w1.className = "w-0.5 h-2 rounded-full bg-purple-400/60 transition-all";
+          w2.className = "w-0.5 h-3.5 rounded-full bg-pink-400/60 transition-all";
+          w3.className = "w-0.5 h-1.5 rounded-full bg-indigo-400/60 transition-all";
+        }
+      }
       const label = document.getElementById('mediadeck-player-label');
       const title = document.getElementById('mediadeck-track-title');
       const artist = document.getElementById('mediadeck-track-artist');
       const playIcon = document.getElementById('mediadeck-play-icon');
       const pauseIcon = document.getElementById('mediadeck-pause-icon');
       const volSlider = document.getElementById('mediadeck-volume-slider');
-
-      const isPlaying = status.playback_status === 'Playing';
 
       if (dot) {
         if (status.active) {
@@ -2089,6 +2238,8 @@
       activeMediaYoutubeQuery = query;
       isMediaEmbedVisible = true;
       isHudExpanded = true;
+      const dropdown = document.getElementById('dynamic-island-dropdown');
+      if (dropdown) dropdown.classList.remove('hidden');
       const drawer = document.getElementById('hud-expanded-drawer');
       const toggleBtn = document.getElementById('mediadeck-embed-toggle');
       const wrapper = document.getElementById('mediadeck-embed-wrapper');
