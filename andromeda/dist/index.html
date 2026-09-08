@@ -588,7 +588,12 @@
 
         <!-- SESSION HISTORY -->
         <div class="space-y-1">
-          <div class="px-2 py-1 text-[11px] font-medium text-[#8892a0] uppercase tracking-wider">Recent Conversations</div>
+          <div class="flex items-center justify-between px-2 py-1 text-[11px] font-medium text-[#8892a0] uppercase tracking-wider">
+            <span>Recent Conversations</span>
+            <button onclick="clearAllChats()" class="neu-btn p-1 rounded-lg text-[#8892a0] hover:text-[#a65b5b] transition-colors" title="Purge all conversation history">
+              <i data-lucide="trash" class="w-3 h-3"></i>
+            </button>
+          </div>
           
           <div id="session-list" class="space-y-1.5">
             <div class="group/item flex items-center justify-between p-1.5 rounded-xl neu-inset-sm bg-[#181a1f] text-[#dde2ea] text-xs transition-all">
@@ -1767,6 +1772,14 @@
 
             if (data.type === "sessions_list") {
               renderSessionsList(data.sessions || []);
+            } else if (data.type === "session_deleted") {
+              if (data.session_id === activeSessionId) {
+                createNewSession();
+              }
+              refreshSessionsViaRest();
+            } else if (data.type === "all_sessions_cleared") {
+              createNewSession();
+              renderSessionsList([]);
             } else if (data.type === "history") {
               renderHistory(data.messages || []);
             } else if (data.type === "status") {
@@ -2203,16 +2216,20 @@
 
     function createNewSession() {
       playAcousticChime('click');
+      localStorage.removeItem('andromeda_session_id');
       activeSessionId = "session_" + Math.random().toString(36).substring(2, 9);
       localStorage.setItem('andromeda_session_id', activeSessionId);
-      document.getElementById('chat-messages').innerHTML = '';
+      const container = document.getElementById('chat-messages');
+      if (container) container.innerHTML = '';
       document.getElementById('welcome-card')?.classList.remove('hidden');
-      document.getElementById('active-chat-title').innerText = "New Chat Session";
+      const titleEl = document.getElementById('active-chat-title');
+      if (titleEl) titleEl.innerText = "New Chat Session";
 
       if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
         coreSocket.send(JSON.stringify({ type: "init", session_id: activeSessionId }));
         coreSocket.send(JSON.stringify({ type: "get_sessions" }));
       }
+      refreshSessionsViaRest();
       notify("New workspace initialized", "info");
     }
 
@@ -2220,9 +2237,11 @@
       playAcousticChime('click');
       activeSessionId = id;
       localStorage.setItem('andromeda_session_id', activeSessionId);
-      document.getElementById('chat-messages').innerHTML = '';
+      const container = document.getElementById('chat-messages');
+      if (container) container.innerHTML = '';
       document.getElementById('welcome-card')?.classList.add('hidden');
-      document.getElementById('active-chat-title').innerText = "Conversation";
+      const titleEl = document.getElementById('active-chat-title');
+      if (titleEl) titleEl.innerText = "Conversation";
 
       if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
         coreSocket.send(JSON.stringify({ type: "init", session_id: activeSessionId }));
@@ -2237,33 +2256,110 @@
       const targetId = id || activeSessionId;
       if (!targetId) return;
 
-      // 1. Send WebSocket deletion
+      const isCurrentSession = (targetId === activeSessionId);
+
+      // 1. If deleting active session, reset activeSessionId immediately
+      if (isCurrentSession) {
+        localStorage.removeItem('andromeda_session_id');
+        activeSessionId = "session_" + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem('andromeda_session_id', activeSessionId);
+        const container = document.getElementById('chat-messages');
+        if (container) container.innerHTML = '';
+        document.getElementById('welcome-card')?.classList.remove('hidden');
+        const titleEl = document.getElementById('active-chat-title');
+        if (titleEl) titleEl.innerText = "New Chat Session";
+      }
+
+      // 2. Send WebSocket deletion
       if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
         coreSocket.send(JSON.stringify({ type: "delete_session", session_id: targetId }));
       }
 
-      // 2. Send REST fallback DELETE
+      // 3. Send REST DELETE with Bearer auth token
       try {
-        await fetch(`${getBackendHttpUrl()}/api/sessions/${encodeURIComponent(targetId)}`, {
-          method: 'DELETE'
+        const token = localStorage.getItem('andromeda_auth_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch(`${getBackendHttpUrl()}/api/sessions/${encodeURIComponent(targetId)}`, {
+          method: 'DELETE',
+          headers: headers
         });
+        if (!res.ok) {
+          console.warn("REST delete session returned status:", res.status);
+        }
       } catch (err) {
         console.warn("REST delete session notice:", err);
       }
 
-      notify("Conversation removed", "info");
+      notify("Conversation permanently deleted", "info");
 
-      // 3. Reset or refresh
-      if (targetId === activeSessionId) {
-        createNewSession();
+      // 4. Refresh session state
+      if (isCurrentSession) {
+        if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+          coreSocket.send(JSON.stringify({ type: "init", session_id: activeSessionId }));
+          coreSocket.send(JSON.stringify({ type: "get_sessions" }));
+        }
       } else if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
         coreSocket.send(JSON.stringify({ type: "get_sessions" }));
       }
+      refreshSessionsViaRest();
     }
 
     function deleteCurrentChat() {
-      if (confirm("Delete this conversation and clear all messages?")) {
+      if (confirm("Permanently delete this conversation and all its messages? This action cannot be undone.")) {
         deleteSession(null, activeSessionId);
+      }
+    }
+
+    async function clearAllChats() {
+      if (!confirm("Are you sure you want to permanently delete ALL conversation history? This cannot be undone.")) {
+        return;
+      }
+      playAcousticChime('click');
+
+      localStorage.removeItem('andromeda_session_id');
+      activeSessionId = "session_" + Math.random().toString(36).substring(2, 9);
+      localStorage.setItem('andromeda_session_id', activeSessionId);
+      const container = document.getElementById('chat-messages');
+      if (container) container.innerHTML = '';
+      document.getElementById('welcome-card')?.classList.remove('hidden');
+      const titleEl = document.getElementById('active-chat-title');
+      if (titleEl) titleEl.innerText = "New Chat Session";
+
+      // 1. Send WebSocket clear
+      if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+        coreSocket.send(JSON.stringify({ type: "clear_all_sessions" }));
+        coreSocket.send(JSON.stringify({ type: "init", session_id: activeSessionId }));
+      }
+
+      // 2. Send REST DELETE all
+      try {
+        const token = localStorage.getItem('andromeda_auth_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        await fetch(`${getBackendHttpUrl()}/api/sessions`, {
+          method: 'DELETE',
+          headers: headers
+        });
+      } catch (err) {
+        console.warn("REST clear all sessions notice:", err);
+      }
+
+      renderSessionsList([]);
+      notify("All conversations permanently wiped", "success");
+    }
+
+    async function refreshSessionsViaRest() {
+      try {
+        const token = localStorage.getItem('andromeda_auth_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch(`${getBackendHttpUrl()}/api/sessions`, { headers: headers });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.sessions)) {
+            renderSessionsList(data.sessions);
+          }
+        }
+      } catch (err) {
+        // Fallback gracefully
       }
     }
 
@@ -2932,6 +3028,7 @@
       if (!coreSocket || coreSocket.readyState === WebSocket.CLOSED) {
         initCoreSocket();
       }
+      refreshSessionsViaRest();
       if (window.lucide) lucide.createIcons();
     }
 

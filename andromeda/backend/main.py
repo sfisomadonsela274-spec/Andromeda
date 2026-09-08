@@ -8,7 +8,7 @@ from .lobes import memory
 from .lobes import vision
 from .engine import run_agent_step
 from . import engine
-from .db import save_message, get_session_history, get_all_sessions, delete_session, get_user_by_token
+from .db import save_message, get_session_history, get_all_sessions, delete_session, delete_all_sessions, get_user_by_token
 from .auth import router as auth_router, get_current_user_optional
 
 app = FastAPI(title="Andromeda Spatial OS Backend")
@@ -113,6 +113,12 @@ async def delete_session_endpoint(session_id: str, user: dict | None = Depends(g
     success = delete_session(session_id, user_id=user_id)
     return {"status": "ok", "deleted": success, "session_id": session_id}
 
+@sessions_router.delete("")
+async def delete_all_sessions_endpoint(user: dict | None = Depends(get_current_user_optional)):
+    user_id = user["id"] if user else "guest"
+    deleted_count = delete_all_sessions(user_id=user_id)
+    return {"status": "ok", "deleted_count": deleted_count}
+
 app.include_router(sessions_router)
 
 @app.get("/")
@@ -177,8 +183,14 @@ async def core_endpoint(websocket: WebSocket):
                     if target_id:
                         delete_session(target_id, user_id=active_user_id)
                         sessions = get_all_sessions(user_id=active_user_id)
-                        await websocket.send_json({"type": "sessions_list", "sessions": sessions})
+                        await websocket.send_json({"type": "sessions_list", "sessions": sessions, "user_id": active_user_id})
                         await websocket.send_json({"type": "session_deleted", "session_id": target_id})
+                    continue
+
+                if payload_type == "clear_all_sessions":
+                    delete_all_sessions(user_id=active_user_id)
+                    await websocket.send_json({"type": "sessions_list", "sessions": [], "user_id": active_user_id})
+                    await websocket.send_json({"type": "all_sessions_cleared"})
                     continue
                 
                 if payload_type == "prompt":

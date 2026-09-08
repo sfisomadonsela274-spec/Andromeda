@@ -116,11 +116,20 @@ def init_db():
             VALUES ('guest', 'guest', 'guest@andromeda.local', ?, ?, 'Guest Explorer', 'llama3.2:latest')
         ''', (guest_pwd_hash, guest_salt))
 
-    # Migration from legacy sessions.db if present and andromeda.db has no messages
-    cursor.execute('SELECT COUNT(*) as cnt FROM messages')
-    if cursor.fetchone()['cnt'] == 0:
+    # 6. Schema Migrations Tracking Table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS schema_migrations (
+            migration_name TEXT PRIMARY KEY,
+            applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # Migration from legacy sessions.db - executes AT MOST ONCE ever
+    cursor.execute("SELECT migration_name FROM schema_migrations WHERE migration_name = 'legacy_sessions_migrated'")
+    if not cursor.fetchone():
         legacy_db = os.path.join(DATA_DIR, 'sessions.db')
-        if os.path.exists(legacy_db):
+        cursor.execute('SELECT COUNT(*) as cnt FROM messages')
+        if cursor.fetchone()['cnt'] == 0 and os.path.exists(legacy_db):
             try:
                 legacy_conn = sqlite3.connect(legacy_db)
                 legacy_cur = legacy_conn.cursor()
@@ -143,6 +152,14 @@ def init_db():
                     ''', (s_id, role, content, tstamp))
             except Exception as e:
                 print(f"[DB Migration Warning] Could not migrate legacy sessions.db: {e}")
+
+        # Record migration completed so it NEVER executes again even if messages are 0
+        cursor.execute("INSERT OR IGNORE INTO schema_migrations (migration_name) VALUES ('legacy_sessions_migrated')")
+        if os.path.exists(legacy_db):
+            try:
+                os.rename(legacy_db, legacy_db + ".migrated")
+            except Exception:
+                pass
 
     conn.commit()
     conn.close()
@@ -302,14 +319,23 @@ def save_message(session_id: str, role: str, content: str, user_id: str = "guest
     conn.close()
 
 def get_session_history(session_id: str, user_id: str = "guest") -> List[Dict[str, str]]:
-    """Fetches ordered messages for a given session and user."""
+    """Fetches ordered messages for a given session and user, ensuring session exists."""
     conn = get_db_connection()
     cursor = conn.cursor()
+    # Verify session exists in sessions table
+    cursor.execute('''
+        SELECT session_id FROM sessions 
+        WHERE session_id = ? AND (user_id = ? OR user_id = 'guest' OR ? = 'guest')
+    ''', (session_id, user_id, user_id))
+    if not cursor.fetchone():
+        conn.close()
+        return []
+
     cursor.execute('''
         SELECT role, content FROM messages
-        WHERE session_id = ? AND (user_id = ? OR user_id = 'guest')
+        WHERE session_id = ?
         ORDER BY timestamp ASC, id ASC
-    ''', (session_id, user_id))
+    ''', (session_id,))
     rows = cursor.fetchall()
     conn.close()
 
@@ -326,10 +352,10 @@ def get_all_sessions(user_id: str = "guest") -> List[Dict[str, Any]]:
         SELECT s.session_id, s.last_active, s.title,
                (SELECT content FROM messages m WHERE m.session_id = s.session_id AND m.role = 'user' ORDER BY timestamp ASC, id ASC LIMIT 1) as first_user_msg
         FROM sessions s
-        WHERE s.user_id = ? OR s.user_id = 'guest'
+        WHERE s.user_id = ? OR s.user_id = 'guest' OR ? = 'guest'
         GROUP BY s.session_id
         ORDER BY s.last_active DESC
-    ''', (user_id,))
+    ''', (user_id, user_id))
     rows = cursor.fetchall()
     conn.close()
 
@@ -350,14 +376,35 @@ def get_all_sessions(user_id: str = "guest") -> List[Dict[str, Any]]:
     return sessions
 
 def delete_session(session_id: str, user_id: str = "guest") -> bool:
-    """Deletes a session and associated messages for a given user."""
+    """Permanently deletes a session and all its messages across all tables."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM sessions WHERE session_id = ? AND (user_id = ? OR user_id = "guest")', (session_id, user_id))
+    # 1. Explicitly purge messages
+    cursor.execute('DELETE FROM messages WHERE session_id = ?', (session_id,))
+    # 2. Explicitly purge session metadata
+    cursor.execute('''
+        DELETE FROM sessions 
+        WHERE session_id = ? AND (user_id = ? OR user_id = 'guest' OR ? = 'guest')
+    ''', (session_id, user_id, user_id))
     deleted = cursor.rowcount
     conn.commit()
     conn.close()
-    return deleted > 0
+    return True
+
+def delete_all_sessions(user_id: str = "guest") -> int:
+    """Permanently deletes all sessions and messages for the user or all if guest."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if user_id and user_id != "guest":
+        cursor.execute('DELETE FROM messages WHERE user_id = ?', (user_id,))
+        cursor.execute('DELETE FROM sessions WHERE user_id = ?', (user_id,))
+    else:
+        cursor.execute('DELETE FROM messages')
+        cursor.execute('DELETE FROM sessions')
+    deleted = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return deleted
 
 # ==========================================
 # USER PREFERENCES

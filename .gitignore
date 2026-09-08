@@ -8,5 +8,6 @@ __pycache__/
 *.log
 *.db-shm
 *.db-wal
+*.migrated
 data/tunnel/
 .DS_Store
