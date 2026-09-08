@@ -1,0 +1,10 @@
+# Environments & dependencies
+jimmy_env/
+node_modules/
+__pycache__/
+*.pyc
+
+# Local data & logs
+*.log
+data/tunnel/
+.DS_Store

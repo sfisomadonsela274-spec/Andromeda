@@ -1,0 +1,105 @@
+services:
+  # 1. Ollama LLM & Vision Service (NVIDIA GPU Acceleration)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+    volumes:
+      - /home/sfiso/ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # 2. Arize Phoenix (Observability, Evaluation & Telemetry for Jimmy and Andromeda)
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    container_name: phoenix
+    restart: unless-stopped
+    ports:
+      - "6006:6006"   # Web UI
+      - "4317:4317"   # gRPC OTLP collector
+      - "4318:4318"   # HTTP OTLP collector
+    volumes:
+      - phoenix_data:/root/.phoenix
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:6006/')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # 3. Andromeda Core Backend (FastAPI, WebSockets, Memory & Engine)
+  andromeda-backend:
+    build:
+      context: .
+      dockerfile: andromeda/Dockerfile.backend
+    container_name: andromeda-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - ANDROMEDA_MODEL=llama3.2:latest
+      - DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+    volumes:
+      - ./andromeda/backend:/app/andromeda/backend
+      - ./andromeda/data:/app/andromeda/data
+      - ./media_controller.py:/app/media_controller.py
+      - ./app_controller.py:/app/app_controller.py
+      - ./app_registry.py:/app/app_registry.py
+      - /run/user/1000/bus:/run/user/1000/bus
+    depends_on:
+      ollama:
+        condition: service_healthy
+      phoenix:
+        condition: service_healthy
+
+  # 4. Andromeda Frontend (Nginx Reverse Proxy & High Performance SPA)
+  andromeda-frontend:
+    build:
+      context: .
+      dockerfile: andromeda/Dockerfile.frontend
+    container_name: andromeda-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    depends_on:
+      andromeda-backend:
+        condition: service_healthy
+
+  # 5. Caddy Production Ingress & Reverse Proxy (SSL, WebSockets & Mesh Routing)
+  caddy-ingress:
+    image: caddy:2.8-alpine
+    container_name: caddy-ingress
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      andromeda-frontend:
+        condition: service_healthy
+      andromeda-backend:
+        condition: service_healthy
+      phoenix:
+        condition: service_healthy
+
+volumes:
+  phoenix_data:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,8 @@
+{
+  "appId": "com.andromeda.app",
+  "appName": "Andromeda",
+  "webDir": "dist",
+  "server": {
+    "cleartext": true
+  }
+}

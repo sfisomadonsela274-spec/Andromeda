@@ -1,0 +1,34 @@
+{
+    # Global options
+    auto_https off
+    admin off
+}
+
+# 1. Local Network / LAN & Localhost
+:80, localhost, optiplex-9010.local {
+    encode gzip zstd
+
+    # WebSocket connections for Andromeda Core & Live Audio
+    @websockets {
+        header Connection *Upgrade*
+        header Upgrade    websocket
+    }
+    handle /ws/* {
+        reverse_proxy andromeda-backend:8000
+    }
+
+    # REST Endpoints for Andromeda Core API
+    handle /api/* {
+        reverse_proxy andromeda-backend:8000
+    }
+
+    # Arize Phoenix Dashboard & Tracing UI
+    handle_path /phoenix/* {
+        reverse_proxy phoenix:6006
+    }
+
+    # Vite / React Static Frontend SPA
+    handle {
+        reverse_proxy andromeda-frontend:5173
+    }
+}
