@@ -227,13 +227,16 @@
         <div class="space-y-1">
           <div class="px-2 py-1 text-[11px] font-medium text-[#8892a0] uppercase tracking-wider">Recent Conversations</div>
           
-          <div id="session-list" class="space-y-0.5">
-            <button class="w-full flex items-center justify-between p-2 rounded-lg bg-zinc-800/50 text-zinc-200 text-xs font-medium border border-zinc-700/40 text-left">
-              <span class="truncate flex-1 flex items-center gap-2">
-                <i data-lucide="message-square" class="w-3.5 h-3.5 text-zinc-400 shrink-0"></i>
-                <span class="truncate">Kernel optimization & SQR memory</span>
-              </span>
-            </button>
+          <div id="session-list" class="space-y-1.5">
+            <div class="group/item flex items-center justify-between p-1.5 rounded-xl neu-inset-sm bg-[#181a1f] text-[#dde2ea] text-xs transition-all">
+              <button onclick="loadSession(activeSessionId)" class="truncate flex-1 flex items-center gap-2 text-left py-0.5 px-1 focus:outline-none">
+                <i data-lucide="message-square" class="w-3.5 h-3.5 text-[#5072a7] shrink-0"></i>
+                <span class="truncate">Current Session</span>
+              </button>
+              <button onclick="deleteSession(event, activeSessionId)" class="neu-btn p-1 rounded-lg text-[#8892a0] hover:text-[#a65b5b] transition-all opacity-70 group-hover/item:opacity-100 shrink-0 ml-1" title="Delete conversation">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -288,9 +291,12 @@
           </button>
           
           <div class="flex items-center gap-2">
-            <span id="active-chat-title" class="text-xs md:text-sm font-medium text-zinc-200 truncate max-w-[180px] sm:max-w-[280px]">
+            <span id="active-chat-title" class="text-xs md:text-sm font-medium text-[#dde2ea] truncate max-w-[150px] sm:max-w-[240px]">
               Kernel optimization & SQR memory
             </span>
+            <button onclick="deleteCurrentChat()" class="neu-btn p-1.5 rounded-xl text-[#8892a0] hover:text-[#a65b5b] transition-colors" title="Delete current conversation">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
             <span class="w-1.5 h-1.5 rounded-full bg-[#5e937d]" id="status-pulse-dot"></span>
             <button onclick="promptBackendSwitch()" id="backend-connection-badge" class="neu-pill flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono text-[#5e937d] hover:text-[#72b598] transition-colors" title="Click to view or switch backend endpoint">
               <span class="w-1.5 h-1.5 rounded-full bg-[#5e937d]" id="backend-pulse-dot"></span>
@@ -1288,12 +1294,15 @@
 
       if (sessions.length === 0) {
         listEl.innerHTML = `
-          <button onclick="loadSession('${activeSessionId}')" class="w-full flex items-center justify-between p-2 rounded-lg bg-zinc-800/50 text-zinc-200 text-xs font-medium border border-zinc-700/40 text-left">
-            <span class="truncate flex-1 flex items-center gap-2">
-              <i data-lucide="message-square" class="w-3.5 h-3.5 text-blue-400 shrink-0"></i>
+          <div class="group/item flex items-center justify-between p-1.5 rounded-xl neu-inset-sm bg-[#181a1f] text-[#dde2ea] text-xs transition-all">
+            <button onclick="loadSession('${activeSessionId}')" class="truncate flex-1 flex items-center gap-2 text-left py-0.5 px-1 focus:outline-none">
+              <i data-lucide="message-square" class="w-3.5 h-3.5 text-[#5072a7] shrink-0"></i>
               <span class="truncate">Current Session</span>
-            </span>
-          </button>
+            </button>
+            <button onclick="deleteSession(event, '${activeSessionId}')" class="neu-btn p-1 rounded-lg text-[#8892a0] hover:text-[#a65b5b] transition-all opacity-70 group-hover/item:opacity-100 shrink-0 ml-1" title="Delete conversation">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
         `;
         lucide.createIcons();
         return;
@@ -1305,12 +1314,15 @@
         const iconColor = isActive ? "text-[#5072a7]" : "text-[#646c7a]";
 
         listEl.innerHTML += `
-          <button onclick="loadSession('${sess.session_id}')" class="w-full flex items-center justify-between p-2 rounded-lg ${bgClass} text-xs font-medium text-left transition-colors">
-            <span class="truncate flex-1 flex items-center gap-2">
+          <div class="group/item flex items-center justify-between p-1.5 rounded-xl ${bgClass} text-xs transition-all">
+            <button onclick="loadSession('${sess.session_id}')" class="truncate flex-1 flex items-center gap-2 text-left py-0.5 px-1 focus:outline-none">
               <i data-lucide="message-square" class="w-3.5 h-3.5 ${iconColor} shrink-0"></i>
               <span class="truncate">${escapeHtml(sess.title || 'Conversation')}</span>
-            </span>
-          </button>
+            </button>
+            <button onclick="deleteSession(event, '${sess.session_id}')" class="neu-btn p-1 rounded-lg text-[#8892a0] hover:text-[#a65b5b] transition-all opacity-70 group-hover/item:opacity-100 shrink-0 ml-1" title="Delete conversation">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
         `;
       });
       lucide.createIcons();
@@ -1693,10 +1705,48 @@
       localStorage.setItem('andromeda_session_id', activeSessionId);
       document.getElementById('chat-messages').innerHTML = '';
       document.getElementById('welcome-card')?.classList.add('hidden');
+      document.getElementById('active-chat-title').innerText = "Conversation";
 
       if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
         coreSocket.send(JSON.stringify({ type: "init", session_id: activeSessionId }));
         coreSocket.send(JSON.stringify({ type: "get_sessions" }));
+      }
+    }
+
+    async function deleteSession(event, id) {
+      if (event) event.stopPropagation();
+      playAcousticChime('click');
+
+      const targetId = id || activeSessionId;
+      if (!targetId) return;
+
+      // 1. Send WebSocket deletion
+      if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+        coreSocket.send(JSON.stringify({ type: "delete_session", session_id: targetId }));
+      }
+
+      // 2. Send REST fallback DELETE
+      try {
+        await fetch(`${getBackendHttpUrl()}/api/sessions/${encodeURIComponent(targetId)}`, {
+          method: 'DELETE'
+        });
+      } catch (err) {
+        console.warn("REST delete session notice:", err);
+      }
+
+      notify("Conversation removed", "info");
+
+      // 3. Reset or refresh
+      if (targetId === activeSessionId) {
+        createNewSession();
+      } else if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+        coreSocket.send(JSON.stringify({ type: "get_sessions" }));
+      }
+    }
+
+    function deleteCurrentChat() {
+      if (confirm("Delete this conversation and clear all messages?")) {
+        deleteSession(null, activeSessionId);
       }
     }
 

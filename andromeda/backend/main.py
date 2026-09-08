@@ -8,7 +8,7 @@ from .lobes import memory
 from .lobes import vision
 from .engine import run_agent_step
 from . import engine
-from .db import save_message, get_session_history, get_all_sessions
+from .db import save_message, get_session_history, get_all_sessions, delete_session
 
 app = FastAPI(title="Andromeda Spatial OS Backend")
 
@@ -94,6 +94,19 @@ app.include_router(telephony.router, tags=["telephony"])
 app.include_router(memory.router, tags=["memory"])
 app.include_router(vision.router, tags=["vision"])
 
+sessions_router = APIRouter(prefix="/api/sessions", tags=["sessions"])
+
+@sessions_router.get("")
+async def list_sessions_endpoint():
+    return {"sessions": get_all_sessions()}
+
+@sessions_router.delete("/{session_id}")
+async def delete_session_endpoint(session_id: str):
+    success = delete_session(session_id)
+    return {"status": "ok", "deleted": success, "session_id": session_id}
+
+app.include_router(sessions_router)
+
 @app.get("/")
 def read_root():
     return {"status": "Andromeda Core Online"}
@@ -138,6 +151,15 @@ async def core_endpoint(websocket: WebSocket):
                 if payload_type == "get_sessions":
                     sessions = get_all_sessions()
                     await websocket.send_json({"type": "sessions_list", "sessions": sessions})
+                    continue
+
+                if payload_type == "delete_session":
+                    target_id = payload.get("session_id")
+                    if target_id:
+                        delete_session(target_id)
+                        sessions = get_all_sessions()
+                        await websocket.send_json({"type": "sessions_list", "sessions": sessions})
+                        await websocket.send_json({"type": "session_deleted", "session_id": target_id})
                     continue
                 
                 if payload_type == "prompt":

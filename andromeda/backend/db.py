@@ -75,3 +75,12 @@ def get_all_sessions():
             "title": title
         })
     return sessions
+
+def delete_session(session_id: str) -> bool:
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM messages WHERE session_id = ?', (session_id,))
+    deleted_count = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return deleted_count > 0
