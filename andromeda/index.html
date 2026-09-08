@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-zinc-950 text-zinc-100 antialiased selection:bg-zinc-700 selection:text-zinc-50">
+<html lang="en" class="h-full bg-[#1e2126] text-[#dde2ea] antialiased selection:bg-[#282d36] selection:text-white">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
@@ -24,23 +24,18 @@
             mono: ['"JetBrains Mono"', 'monospace'],
           },
           colors: {
-            surface: {
-              DEFAULT: '#121215',
-              subtle: '#18181c',
-              elevated: '#202026',
-              border: '#272730',
-              hover: '#2a2a34'
-            },
-            accent: {
-              DEFAULT: '#3b82f6', // Clean neutral indigo-blue
-              hover: '#2563eb',
-              subtle: 'rgba(59, 130, 246, 0.1)'
+            neu: {
+              base: '#1e2126',
+              raised: '#21252b',
+              sunken: '#1a1c21',
+              dark: '#141619',
+              light: '#282c34',
+              accent: '#5072a7',
+              accentHover: '#5d82bc',
+              sage: '#5e937d',
+              ochre: '#b88a44',
+              coral: '#a65b5b'
             }
-          },
-          boxShadow: {
-            'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.35)',
-            'elevated': '0 8px 30px -4px rgba(0, 0, 0, 0.55), 0 2px 6px -1px rgba(0, 0, 0, 0.4)',
-            'modal': '0 20px 45px -10px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08)'
           }
         }
       }
@@ -48,39 +43,141 @@
   </script>
 
   <style>
-    /* Custom clean scrollbars */
+    /* ========================================================= */
+    /* NEUMORPHIC SOFT UI SYSTEM (ASTIGMATISM-OPTIMIZED)         */
+    /* ========================================================= */
+    :root {
+      --neu-base: #1e2126;
+      --neu-raised: #21252b;
+      --neu-sunken: #1a1c21;
+      --neu-shadow-dark: #131518;
+      --neu-shadow-light: #282c34;
+      --neu-text-primary: #dde2ea;
+      --neu-text-secondary: #8892a0;
+      --neu-text-muted: #646c7a;
+      --neu-accent: #5072a7;
+    }
+
+    /* Custom soft scrollbars */
     ::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
+      width: 6px;
+      height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: transparent;
+      background: #1a1c21;
     }
     ::-webkit-scrollbar-thumb {
-      background: #2f2f38;
+      background: #282c34;
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #3f3f4d;
+      background: #323742;
     }
 
-    /* Subtle smooth transitions */
     * {
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Glass backdrop token */
-    .glass-panel {
-      background: rgba(18, 18, 22, 0.88);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.07);
+    /* Raised Surfaces (extruded gently from slate) */
+    .neu-raised-sm {
+      background: #1e2126;
+      box-shadow: 3px 3px 7px #131518, -3px -3px 7px #282c34;
+    }
+    .neu-raised {
+      background: #1e2126;
+      box-shadow: 5px 5px 12px #121417, -5px -5px 12px #292d35;
+    }
+    .neu-raised-lg {
+      background: #202329;
+      box-shadow: 8px 8px 22px #101215, -8px -8px 22px #2b3038;
     }
 
-    /* Soft pulse for audio & thought indicator */
+    /* Recessed / Debossed Surfaces (grooves, inputs, active states) */
+    .neu-inset-sm {
+      background: #1b1e23;
+      box-shadow: inset 2px 2px 5px #131518, inset -2px -2px 5px #272b33;
+    }
+    .neu-inset {
+      background: #1a1d22;
+      box-shadow: inset 3px 3px 7px #121417, inset -3px -3px 7px #262a31;
+    }
+    .neu-inset-deep {
+      background: #181a1f;
+      box-shadow: inset 4px 4px 9px #101215, inset -4px -4px 9px #252830;
+    }
+
+    /* Tactile Buttons */
+    .neu-btn {
+      background: #1e2126;
+      box-shadow: 3px 3px 7px #131518, -3px -3px 7px #282c34;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #dde2ea;
+    }
+    .neu-btn:hover {
+      background: #22262d;
+      box-shadow: 4px 4px 9px #121417, -4px -4px 9px #2a2f38;
+      color: #ffffff;
+    }
+    .neu-btn:active, .neu-btn.active {
+      background: #191c20;
+      box-shadow: inset 2px 2px 5px #111316, inset -2px -2px 5px #262930;
+      transform: translateY(1px);
+    }
+
+    /* Tactile Pills */
+    .neu-pill {
+      background: #1e2126;
+      box-shadow: 3px 3px 7px #131518, -3px -3px 7px #282c34;
+      border-radius: 9999px;
+      transition: all 0.15s ease;
+      color: #dde2ea;
+    }
+    .neu-pill:hover {
+      background: #22262d;
+      box-shadow: 4px 4px 10px #121417, -4px -4px 10px #2a2f38;
+      color: #ffffff;
+    }
+    .neu-pill:active, .neu-pill.active {
+      background: #191c20;
+      box-shadow: inset 2px 2px 5px #111316, inset -2px -2px 5px #262930;
+    }
+
+    /* Neumorphic Range Slider */
+    input[type="range"] {
+      -webkit-appearance: none;
+      background: #181a1f;
+      box-shadow: inset 2px 2px 4px #111316, inset -2px -2px 4px #262a30;
+      border-radius: 9999px;
+      height: 6px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #22262c;
+      box-shadow: 2px 2px 5px #111316, -2px -2px 5px #2b3038;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+      background: #262a32;
+    }
+    input[type="range"]::-webkit-slider-thumb:active {
+      box-shadow: inset 1px 1px 3px #111316, inset -1px -1px 3px #2b3038;
+    }
+
+    /* Elevated Dialogue Slab */
+    .glass-panel {
+      background: #202329;
+      box-shadow: 8px 8px 24px #101215, -8px -8px 24px #2b3038;
+    }
+
     @keyframes subtle-pulse {
-      0%, 100% { opacity: 0.4; }
-      50% { opacity: 1; }
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 0.9; }
     }
     .pulse-subtle {
       animation: subtle-pulse 2.2s infinite ease-in-out;
@@ -88,7 +185,7 @@
   </style>
 </head>
 
-<body class="h-full bg-zinc-950 text-zinc-200 flex flex-col font-sans overflow-hidden">
+<body class="h-full bg-[#1e2126] text-[#dde2ea] flex flex-col font-sans overflow-hidden">
   
   <!-- Hidden Native File Input Wrapper for Document Uploading -->
   <input type="file" id="native-file-picker" class="hidden" onchange="handleFileSelection(event)" accept=".pdf,.doc,.docx,.txt,.json,.js,.py,.rs">
@@ -99,12 +196,12 @@
     <!-- ============================================================== -->
     <!-- LEFT SIDEBAR: SESSIONS & SYSTEM TOOLS (COLLAPSIBLE) -->
     <!-- ============================================================== -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-zinc-900/95 border-r border-zinc-800/80 flex flex-col justify-between transition-transform duration-300 ease-in-out -translate-x-full md:relative md:translate-x-0 backdrop-blur-xl">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-[#1b1e23] flex flex-col justify-between transition-transform duration-300 ease-in-out -translate-x-full md:relative md:translate-x-0 shadow-[4px_0_16px_#121417]">
       
       <!-- SIDEBAR HEADER -->
-      <div class="p-4 border-b border-zinc-800/60 flex items-center justify-between">
+      <div class="p-4 border-b border-[#242830] flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-zinc-700 to-zinc-800 border border-zinc-600/50 flex items-center justify-center text-zinc-100 shadow-sm">
+          <div class="w-7 h-7 rounded-lg neu-raised-sm flex items-center justify-center text-[#8892a0]">
             <i data-lucide="sparkles" class="w-4 h-4 text-blue-400"></i>
           </div>
           <div>
@@ -113,7 +210,7 @@
           </div>
         </div>
 
-        <button onclick="toggleSidebar()" class="md:hidden text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-zinc-800 transition-colors">
+        <button onclick="toggleSidebar()" class="neu-btn md:hidden text-[#8892a0] hover:text-[#dde2ea] p-1.5 rounded-lg transition-colors">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
@@ -121,14 +218,14 @@
       <!-- CHAT SESSIONS & CONTEXTS -->
       <div class="flex-1 overflow-y-auto p-3 space-y-4">
         
-        <button onclick="createNewSession()" class="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700/60 transition-all text-xs font-medium shadow-subtle group">
+        <button onclick="createNewSession()" class="neu-btn w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-medium">
           <i data-lucide="plus" class="w-4 h-4 text-zinc-400 group-hover:text-zinc-200 transition-colors"></i>
           <span>New Chat</span>
         </button>
 
         <!-- SESSION HISTORY -->
         <div class="space-y-1">
-          <div class="px-2 py-1 text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Recent Conversations</div>
+          <div class="px-2 py-1 text-[11px] font-medium text-[#8892a0] uppercase tracking-wider">Recent Conversations</div>
           
           <div id="session-list" class="space-y-0.5">
             <button class="w-full flex items-center justify-between p-2 rounded-lg bg-zinc-800/50 text-zinc-200 text-xs font-medium border border-zinc-700/40 text-left">
@@ -141,7 +238,7 @@
         </div>
 
         <!-- ACTIVE SYSTEM METRICS MINI-CARD -->
-        <div class="p-3 rounded-xl bg-zinc-900/90 border border-zinc-800 text-[11px] space-y-2">
+        <div class="p-3.5 rounded-xl neu-inset-sm text-[11px] space-y-2">
           <div class="flex items-center justify-between text-zinc-400 font-medium">
             <span class="flex items-center gap-1.5"><i data-lucide="cpu" class="w-3.5 h-3.5 text-zinc-400"></i>Engine State</span>
             <span id="sidebar-node-status" class="text-emerald-400 font-mono text-[10px]">LOCAL (1.5B)</span>
@@ -155,16 +252,16 @@
       </div>
 
       <!-- SIDEBAR FOOTER & SYSTEM PREFERENCES -->
-      <div class="p-3 border-t border-zinc-800/60 space-y-1">
-        <button onclick="toggleModal('modal-telemetry')" class="w-full flex items-center gap-2.5 p-2 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 text-xs font-medium transition-colors">
+      <div class="p-3 border-t border-[#242830] space-y-1.5">
+        <button onclick="toggleModal('modal-telemetry')" class="neu-btn w-full flex items-center gap-2.5 p-2 rounded-lg text-[#8892a0] hover:text-[#dde2ea] text-xs font-medium transition-colors">
           <i data-lucide="activity" class="w-4 h-4 text-zinc-400"></i>
           <span>Telemetry & KV Monitor</span>
         </button>
-        <button onclick="toggleModal('modal-media')" class="w-full flex items-center gap-2.5 p-2 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 text-xs font-medium transition-colors">
+        <button onclick="toggleModal('modal-media')" class="neu-btn w-full flex items-center gap-2.5 p-2 rounded-lg text-[#8892a0] hover:text-[#dde2ea] text-xs font-medium transition-colors">
           <i data-lucide="music" class="w-4 h-4 text-zinc-400"></i>
           <span>Background Audio Stream</span>
         </button>
-        <button onclick="toggleModal('modal-settings')" class="w-full flex items-center gap-2.5 p-2 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 text-xs font-medium transition-colors">
+        <button onclick="toggleModal('modal-settings')" class="neu-btn w-full flex items-center gap-2.5 p-2 rounded-lg text-[#8892a0] hover:text-[#dde2ea] text-xs font-medium transition-colors">
           <i data-lucide="settings" class="w-4 h-4 text-zinc-400"></i>
           <span>System Settings</span>
         </button>
@@ -178,19 +275,15 @@
     <!-- ============================================================== -->
     <!-- MAIN CHAT WORKSPACE AREA -->
     <!-- ============================================================== -->
-    <div class="flex-1 flex flex-col h-full bg-zinc-950 relative overflow-hidden">
-      <!-- AMBIENT NEBULA LIGHTING UNDERGLOW -->
-      <div class="pointer-events-none fixed inset-0 overflow-hidden z-0">
-        <div id="nebula-orb-top" class="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-purple-600/10 via-blue-600/5 to-transparent blur-[100px] rounded-full transition-all duration-700"></div>
-        <div id="nebula-orb-bottom" class="absolute bottom-0 right-12 w-[450px] h-[250px] bg-gradient-to-t from-pink-600/5 via-indigo-600/5 to-transparent blur-[90px] rounded-full transition-all duration-700"></div>
-      </div>
+    <div class="flex-1 flex flex-col h-full bg-[#1e2126] relative overflow-hidden">
+      <!-- Soft Neumorphic Atmosphere -->
       
       <!-- TOP NAVIGATION BAR -->
-      <header class="h-14 border-b border-zinc-800/70 px-4 flex items-center justify-between shrink-0 bg-zinc-950/80 backdrop-blur-md z-20">
+      <header class="h-14 px-4 flex items-center justify-between shrink-0 bg-[#1e2126] shadow-[0_3px_10px_#131518] z-20">
         
         <!-- LEFT: SIDEBAR TOGGLE & CONVERSATION TITLE -->
         <div class="flex items-center gap-3">
-          <button onclick="toggleSidebar()" class="text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-zinc-800/60 transition-colors">
+          <button onclick="toggleSidebar()" class="neu-btn text-[#8892a0] hover:text-[#dde2ea] p-2 rounded-xl transition-colors">
             <i data-lucide="panel-left" class="w-4 h-4"></i>
           </button>
           
@@ -198,9 +291,9 @@
             <span id="active-chat-title" class="text-xs md:text-sm font-medium text-zinc-200 truncate max-w-[180px] sm:max-w-[280px]">
               Kernel optimization & SQR memory
             </span>
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" id="status-pulse-dot"></span>
-            <button onclick="promptBackendSwitch()" id="backend-connection-badge" class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono border border-emerald-500/30 bg-emerald-950/40 text-emerald-300 hover:border-emerald-400 transition-colors" title="Click to view or switch backend endpoint">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" id="backend-pulse-dot"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#5e937d]" id="status-pulse-dot"></span>
+            <button onclick="promptBackendSwitch()" id="backend-connection-badge" class="neu-pill flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono text-[#5e937d] hover:text-[#72b598] transition-colors" title="Click to view or switch backend endpoint">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#5e937d]" id="backend-pulse-dot"></span>
               <span id="backend-status-text">Core 24/7</span>
             </button>
           </div>
@@ -208,29 +301,24 @@
 
         <!-- CENTER: DYNAMIC ISLAND HUD -->
         <div class="flex-1 max-w-xs md:max-w-sm mx-2 hidden sm:flex items-center justify-center">
-          <div 
-            id="dynamic-island-pill" 
-            onclick="toggleDynamicIslandDropdown()" 
-            class="group cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800/80 border border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl transition-all duration-300 select-none"
+          <div id="dynamic-island-pill" onclick="toggleDynamicIslandDropdown()" class="neu-pill group cursor-pointer flex items-center gap-2 px-3.5 py-1.5 transition-all select-none"
             title="Click to toggle Media Control Center"
           >
             <!-- Equalizer Wave Bars -->
             <div class="flex items-center gap-0.5 h-3.5 px-0.5">
-              <span id="island-wave-1" class="w-0.5 h-2 rounded-full bg-purple-400/80 transition-all duration-300"></span>
-              <span id="island-wave-2" class="w-0.5 h-3.5 rounded-full bg-pink-400/90 transition-all duration-300"></span>
-              <span id="island-wave-3" class="w-0.5 h-1.5 rounded-full bg-indigo-400/80 transition-all duration-300"></span>
+              <span id="island-wave-1" class="w-0.5 h-2 rounded-full bg-[#5072a7] transition-all duration-300"></span>
+              <span id="island-wave-2" class="w-0.5 h-3.5 rounded-full bg-[#6d8cb8] transition-all duration-300"></span>
+              <span id="island-wave-3" class="w-0.5 h-1.5 rounded-full bg-[#8ba4c7] transition-all duration-300"></span>
             </div>
 
             <!-- Track / State text -->
             <div class="flex items-center gap-1.5 min-w-0">
               <span id="island-title" class="text-xs font-medium text-zinc-200 truncate max-w-[110px] md:max-w-[150px]">No Track Active</span>
-              <span id="island-badge" class="px-1.5 py-0.2 text-[9px] font-mono uppercase tracking-wider rounded-full bg-purple-950/70 border border-purple-500/30 text-purple-300">Idle</span>
+              <span id="island-badge" class="neu-inset-sm px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded-full text-[#8892a0]">Idle</span>
             </div>
 
             <!-- Mini Play/Pause Button in Island -->
-            <button 
-              onclick="event.stopPropagation(); mediaDeckAction('play_pause')" 
-              class="w-5 h-5 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors ml-0.5 active:scale-95" 
+            <button onclick="event.stopPropagation(); mediaDeckAction('play_pause')" class="neu-btn w-5 h-5 rounded-full flex items-center justify-center ml-0.5 text-[#dde2ea]" 
               title="Play / Pause"
             >
               <svg id="island-play-icon" class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -243,10 +331,7 @@
         <div class="flex items-center gap-2">
           
           <!-- TURBO / ENHANCE TOGGLE -->
-          <button 
-            id="btn-turbo-enhance" 
-            onclick="toggleEnhanceTurbo()" 
-            class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-500 hover:text-white transition-all shadow-subtle"
+          <button id="btn-turbo-enhance" onclick="toggleEnhanceTurbo()" class="neu-pill flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-[#8892a0] hover:text-[#dde2ea] transition-all"
             title="Toggle high-throughput 7B model"
           >
             <i data-lucide="zap" id="turbo-icon" class="w-3.5 h-3.5 text-zinc-400"></i>
@@ -254,37 +339,28 @@
           </button>
 
           <!-- UPLOAD DOCUMENT TRIGGER -->
-          <button 
-            onclick="triggerDocumentUpload()" 
-            class="p-1.5 text-zinc-400 hover:text-zinc-200 rounded-lg hover:bg-zinc-800/60 transition-colors" 
+          <button onclick="triggerDocumentUpload()" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors" 
             title="Upload Document"
           >
             <i data-lucide="paperclip" class="w-4 h-4"></i>
           </button>
 
           <!-- EYES-FREE VOICE HUD QUICK TRIGGER -->
-          <button 
-            onclick="toggleEyesFreeMode()" 
-            class="p-1.5 text-zinc-400 hover:text-zinc-200 rounded-lg hover:bg-zinc-800/60 transition-colors" 
+          <button onclick="toggleEyesFreeMode()" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors" 
             title="Eyes-Free Mode"
           >
             <i data-lucide="mic" class="w-4 h-4"></i>
           </button>
 
           <!-- RECLAIM RAM SWEEP BUTTON -->
-          <button 
-            onclick="executeCleanRamPurge()" 
-            class="p-1.5 text-zinc-400 hover:text-zinc-200 rounded-lg hover:bg-zinc-800/60 transition-colors" 
+          <button onclick="executeCleanRamPurge()" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors" 
             title="Purge Memory Leaks"
           >
             <i data-lucide="trash-2" class="w-4 h-4"></i>
           </button>
 
           <!-- TOGGLE HUD VISIBILITY BUTTON -->
-          <button 
-            id="btn-hud-visibility"
-            onclick="toggleHudVisibility()" 
-            class="p-1.5 text-purple-400 hover:text-purple-200 rounded-lg hover:bg-zinc-800/60 transition-colors" 
+          <button id="btn-hud-visibility" onclick="toggleHudVisibility()" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors" 
             title="Toggle Cosmic HUD"
           >
             <i data-lucide="orbit" class="w-4 h-4"></i>
@@ -294,17 +370,17 @@
       </header>
 
       <!-- FLOATING DYNAMIC ISLAND CONTROL CENTER DROPDOWN -->
-      <div id="dynamic-island-dropdown" class="hidden absolute top-16 left-1/2 -translate-x-1/2 w-[94%] max-w-lg z-40 p-4 rounded-3xl bg-zinc-950/95 border border-purple-500/30 shadow-[0_25px_70px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl transition-all duration-300 space-y-3">
+      <div id="dynamic-island-dropdown" class="hidden absolute top-16 left-1/2 -translate-x-1/2 w-[94%] max-w-lg z-40 p-5 rounded-3xl neu-raised-lg space-y-4">
         <!-- Top Avatar + Player row -->
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-3">
-            <div class="relative w-11 h-11 rounded-2xl bg-purple-950/40 border border-purple-500/30 flex items-center justify-center overflow-hidden shadow-inner">
-              <canvas id="workspace-avatar-canvas" width="48" height="48" class="pointer-events-none drop-shadow-[0_0_12px_rgba(168,85,247,0.6)]"></canvas>
+            <div class="relative w-12 h-12 rounded-2xl neu-inset-deep flex items-center justify-center overflow-hidden">
+              <canvas id="workspace-avatar-canvas" width="48" height="48" class="pointer-events-none "></canvas>
             </div>
             <div>
               <div class="flex items-center gap-1.5">
                 <span class="text-xs font-semibold text-zinc-100">Andromeda Cosmic Core</span>
-                <span id="avatar-state-pill" class="px-2 py-0.2 text-[9px] font-mono uppercase tracking-wider rounded-full bg-purple-950/80 border border-purple-500/30 text-purple-300">idle</span>
+                <span id="avatar-state-pill" class="neu-inset-sm px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded-full text-[#8892a0]">idle</span>
               </div>
               <div class="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono mt-0.5">
                 <span id="mediadeck-dot" class="w-1.5 h-1.5 rounded-full bg-zinc-600 transition-colors"></span>
@@ -314,13 +390,13 @@
           </div>
 
           <!-- Close Dropdown Button -->
-          <button onclick="toggleDynamicIslandDropdown()" class="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+          <button onclick="toggleDynamicIslandDropdown()" class="neu-btn p-1.5 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors">
             <i data-lucide="x" class="w-4 h-4"></i>
           </button>
         </div>
 
         <!-- Track info & Transport controls -->
-        <div class="p-3 bg-zinc-900/80 rounded-2xl border border-white/5 space-y-2.5 shadow-inner">
+        <div class="p-4 neu-inset rounded-2xl space-y-3">
           <div class="flex items-center justify-between">
             <div class="min-w-0 flex-1">
               <div id="mediadeck-track-title" class="text-xs font-medium text-white truncate">No Track Active</div>
@@ -329,14 +405,14 @@
 
             <!-- Transport buttons -->
             <div class="flex items-center gap-1">
-              <button id="btn-mediadeck-prev" onclick="mediaDeckAction('previous')" class="p-1.5 text-zinc-400 hover:text-white rounded-xl hover:bg-white/10 transition-colors" title="Previous Track">
+              <button id="btn-mediadeck-prev" onclick="mediaDeckAction('previous')" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors" title="Previous Track">
                 <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
               </button>
-              <button id="btn-mediadeck-playpause" onclick="mediaDeckAction('play_pause')" class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 active:scale-95 transition-transform" title="Play / Pause">
+              <button id="btn-mediadeck-playpause" onclick="mediaDeckAction('play_pause')" class="w-9 h-9 rounded-full bg-[#5072a7] hover:bg-[#5d82bc] text-white flex items-center justify-center shadow-[2px_2px_6px_#111316,-2px_-2px_6px_#2b3038] active:shadow-[inset_2px_2px_4px_#111316] transition-all" title="Play / Pause">
                 <svg id="mediadeck-play-icon" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 <svg id="mediadeck-pause-icon" class="w-3.5 h-3.5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
               </button>
-              <button id="btn-mediadeck-next" onclick="mediaDeckAction('next')" class="p-1.5 text-zinc-400 hover:text-white rounded-xl hover:bg-white/10 transition-colors" title="Next Track">
+              <button id="btn-mediadeck-next" onclick="mediaDeckAction('next')" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors" title="Next Track">
                 <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
               </button>
             </div>
@@ -347,7 +423,7 @@
             <svg class="w-3 h-3 text-zinc-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
               <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
             </svg>
-            <input id="mediadeck-volume-slider" type="range" min="0" max="1" step="0.01" value="0.7" oninput="mediaDeckVolumeChange(this.value)" class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-purple-500"/>
+            <input id="mediadeck-volume-slider" type="range" min="0" max="1" step="0.01" value="0.7" oninput="mediaDeckVolumeChange(this.value)" class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#5072a7]"/>
           </div>
         </div>
 
@@ -359,7 +435,7 @@
         <!-- Footer status -->
         <div class="flex items-center justify-between text-[10px] text-zinc-500 font-mono px-1">
           <span id="mediadeck-bus-info">MPRIS D-Bus / PulseAudio</span>
-          <button id="mediadeck-embed-toggle" onclick="toggleMediaDeckEmbed()" class="hidden text-[10px] px-2.5 py-0.5 rounded-full bg-purple-950/60 border border-purple-500/40 text-purple-300 hover:bg-purple-900/60 transition-colors">
+          <button id="mediadeck-embed-toggle" onclick="toggleMediaDeckEmbed()" class="hidden text-[10px] px-3 py-1 rounded-full neu-pill text-[#8892a0] hover:text-[#dde2ea] transition-colors">
             Toggle Video
           </button>
         </div>
@@ -372,18 +448,18 @@
         <div id="welcome-card" class="space-y-4">
           <div class="flex items-start gap-3.5">
             <!-- AVATAR ICON -->
-            <div class="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700/80 flex items-center justify-center shrink-0 text-zinc-300 mt-0.5">
+            <div class="w-8 h-8 rounded-xl neu-inset-sm flex items-center justify-center shrink-0 text-[#8892a0] mt-0.5">
               <i data-lucide="bot" class="w-4 h-4"></i>
             </div>
 
             <!-- MESSAGE BODY -->
             <div class="flex-1 space-y-3">
-              <div class="text-xs font-semibold text-zinc-400 tracking-tight flex items-center gap-2">
+              <div class="text-xs font-semibold text-[#8892a0] tracking-tight flex items-center gap-2">
                 <span>Andromeda</span>
-                <span class="text-[10px] font-mono font-normal text-zinc-400 bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded">Qwen 1.5B // SQR FP8</span>
+                <span class="neu-inset-sm text-[10px] font-mono font-normal text-[#8892a0] px-2 py-0.5 rounded">Qwen 1.5B // SQR FP8</span>
               </div>
 
-              <div class="text-sm leading-relaxed text-zinc-200 space-y-2.5">
+              <div class="text-sm leading-relaxed text-[#dde2ea] neu-raised-sm p-4 rounded-2xl space-y-2.5">
                 <p>
                   Welcome to the clean workspace. I am ready to handle code scaffolding, memory audits, email deep-links, or background music synthesis with zero unnecessary bloat.
                 </p>
@@ -394,15 +470,15 @@
 
               <!-- QUICK ACTION STARTERS (Clean flat buttons) -->
               <div class="flex flex-wrap gap-2 pt-1">
-                <button onclick="quickPrompt('Optimize mobile RAM cache and check leaks')" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800/80 border border-zinc-800 text-xs text-zinc-300 hover:text-white transition-colors flex items-center gap-1.5">
+                <button onclick="quickPrompt('Optimize mobile RAM cache and check leaks')" class="neu-pill px-3.5 py-1.5 text-xs text-[#8892a0] hover:text-[#dde2ea] flex items-center gap-1.5">
                   <i data-lucide="shield-check" class="w-3.5 h-3.5 text-zinc-400"></i>
                   <span>RAM Health Check</span>
                 </button>
-                <button onclick="quickPrompt('Draft a concise project status email for the client')" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800/80 border border-zinc-800 text-xs text-zinc-300 hover:text-white transition-colors flex items-center gap-1.5">
+                <button onclick="quickPrompt('Draft a concise project status email for the client')" class="neu-pill px-3.5 py-1.5 text-xs text-[#8892a0] hover:text-[#dde2ea] flex items-center gap-1.5">
                   <i data-lucide="mail" class="w-3.5 h-3.5 text-zinc-400"></i>
                   <span>Draft Client Email</span>
                 </button>
-                <button onclick="quickPrompt('Play background focus stream')" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800/80 border border-zinc-800 text-xs text-zinc-300 hover:text-white transition-colors flex items-center gap-1.5">
+                <button onclick="quickPrompt('Play background focus stream')" class="neu-pill px-3.5 py-1.5 text-xs text-[#8892a0] hover:text-[#dde2ea] flex items-center gap-1.5">
                   <i data-lucide="disc" class="w-3.5 h-3.5 text-zinc-400"></i>
                   <span>Focus Audio</span>
                 </button>
@@ -443,92 +519,76 @@
           </span>
           <span class="font-mono text-[11px] text-zinc-400">44.1 kHz Whisper</span>
         </div>
-        <canvas id="voice-canvas" class="w-full h-8 bg-zinc-950 rounded-lg border border-zinc-800/60"></canvas>
+        <canvas id="voice-canvas" class="w-full h-8 neu-inset-deep rounded-lg"></canvas>
       </div>
 
       <!-- BOTTOM PROMPT DOCK (CLEAN & CENTERED) -->
-      <footer class="p-3 md:p-5 shrink-0 bg-zinc-950/90 backdrop-blur-md">
+      <footer class="p-3 md:p-5 shrink-0 bg-[#1e2126] shadow-[0_-3px_12px_#131518]">
         <div class="max-w-4xl mx-auto space-y-2">
           
           <!-- SLASH COMMAND AUTOCOMPLETE MENU -->
-          <div id="slash-command-palette" class="hidden absolute bottom-full mb-3 left-0 right-0 p-2.5 rounded-2xl bg-zinc-950/95 border border-purple-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-2xl z-30 space-y-1">
+          <div id="slash-command-palette" class="hidden absolute bottom-full mb-3 left-0 right-0 p-3 rounded-2xl neu-raised-lg z-30 space-y-1.5">
             <div class="text-[10px] font-mono text-zinc-400 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
               <span>Quick Command Palette</span>
-              <span class="text-purple-400">ESC to close</span>
+              <span class="text-[#8892a0]">ESC to close</span>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1">
-              <button onclick="insertSlashCommand('/music ')" class="w-full flex items-center justify-between p-2 rounded-xl hover:bg-white/5 text-xs text-left text-zinc-300 hover:text-white transition-colors group">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button onclick="insertSlashCommand('/music ')" class="neu-inset-sm w-full flex items-center justify-between p-2.5 rounded-xl text-xs text-left text-[#dde2ea] hover:bg-[#22252c] transition-colors group">
                 <span class="flex items-center gap-2.5">
-                  <span class="p-1 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20 group-hover:bg-pink-500/20"><i data-lucide="music" class="w-3.5 h-3.5"></i></span>
+                  <span class="p-1.5 rounded-lg neu-inset-sm text-[#8892a0] group-hover:text-[#5072a7] transition-colors"><i data-lucide="music" class="w-3.5 h-3.5"></i></span>
                   <span class="font-medium">/music &lt;query&gt;</span>
                 </span>
-                <span class="text-[10px] text-zinc-400 font-mono">Stream Audio</span>
+                <span class="text-[10px] text-[#8892a0] font-mono">Audio</span>
               </button>
-              <button onclick="insertSlashCommand('/email ')" class="w-full flex items-center justify-between p-2 rounded-xl hover:bg-white/5 text-xs text-left text-zinc-300 hover:text-white transition-colors group">
+              <button onclick="insertSlashCommand('/email ')" class="neu-inset-sm w-full flex items-center justify-between p-2.5 rounded-xl text-xs text-left text-[#dde2ea] hover:bg-[#22252c] transition-colors group">
                 <span class="flex items-center gap-2.5">
-                  <span class="p-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 group-hover:bg-blue-500/20"><i data-lucide="mail" class="w-3.5 h-3.5"></i></span>
+                  <span class="p-1.5 rounded-lg neu-inset-sm text-[#8892a0] group-hover:text-[#5072a7] transition-colors"><i data-lucide="mail" class="w-3.5 h-3.5"></i></span>
                   <span class="font-medium">/email &lt;who&gt;</span>
                 </span>
-                <span class="text-[10px] text-zinc-400 font-mono">Stage Draft</span>
+                <span class="text-[10px] text-[#8892a0] font-mono">Draft</span>
               </button>
-              <button onclick="insertSlashCommand('/install ')" class="w-full flex items-center justify-between p-2 rounded-xl hover:bg-white/5 text-xs text-left text-zinc-300 hover:text-white transition-colors group">
+              <button onclick="insertSlashCommand('/install ')" class="neu-inset-sm w-full flex items-center justify-between p-2.5 rounded-xl text-xs text-left text-[#dde2ea] hover:bg-[#22252c] transition-colors group">
                 <span class="flex items-center gap-2.5">
-                  <span class="p-1 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20 group-hover:bg-purple-500/20"><i data-lucide="download" class="w-3.5 h-3.5"></i></span>
+                  <span class="p-1.5 rounded-lg neu-inset-sm text-[#8892a0] group-hover:text-[#5072a7] transition-colors"><i data-lucide="download" class="w-3.5 h-3.5"></i></span>
                   <span class="font-medium">/install &lt;app&gt;</span>
                 </span>
-                <span class="text-[10px] text-zinc-400 font-mono">Flathub</span>
+                <span class="text-[10px] text-[#8892a0] font-mono">App</span>
               </button>
-              <button onclick="insertSlashCommand('/status')" class="w-full flex items-center justify-between p-2 rounded-xl hover:bg-white/5 text-xs text-left text-zinc-300 hover:text-white transition-colors group">
+              <button onclick="insertSlashCommand('/status')" class="neu-inset-sm w-full flex items-center justify-between p-2.5 rounded-xl text-xs text-left text-[#dde2ea] hover:bg-[#22252c] transition-colors group">
                 <span class="flex items-center gap-2.5">
-                  <span class="p-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:bg-emerald-500/20"><i data-lucide="activity" class="w-3.5 h-3.5"></i></span>
+                  <span class="p-1.5 rounded-lg neu-inset-sm text-[#8892a0] group-hover:text-[#5072a7] transition-colors"><i data-lucide="activity" class="w-3.5 h-3.5"></i></span>
                   <span class="font-medium">/status</span>
                 </span>
-                <span class="text-[10px] text-zinc-400 font-mono">Telemetry</span>
+                <span class="text-[10px] text-[#8892a0] font-mono">Metrics</span>
               </button>
             </div>
           </div>
 
           <!-- INPUT WRAPPER (ELEVATED GLASSMORPHISM) -->
-          <div class="relative flex items-center bg-zinc-900/80 border border-white/10 rounded-2xl p-1.5 focus-within:border-purple-500/50 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl">
+          <div class="relative flex items-center neu-inset-deep rounded-2xl p-1.5">
             
             <!-- MULTIMODAL ATTACH MENU TRIGGER -->
-            <button 
-              type="button" 
-              onclick="toggleModal('modal-action-tools')" 
-              class="p-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-xl transition-colors shrink-0" 
+            <button type="button" onclick="toggleModal('modal-action-tools')" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors shrink-0" 
               title="Add attachment or trigger tool"
             >
               <i data-lucide="plus" class="w-4 h-4"></i>
             </button>
 
             <!-- CHAT INPUT FIELD -->
-            <input 
-              type="text" 
-              id="prompt-field" 
-              placeholder="Ask Andromeda or type / for commands..." 
-              autocomplete="off"
-              class="w-full bg-transparent text-sm text-zinc-100 placeholder:text-zinc-400 px-2.5 py-1.5 focus:outline-none tracking-normal"
+            <input type="text" id="prompt-field" placeholder="Ask Andromeda or type / for commands..." autocomplete="off" class="w-full bg-transparent text-sm text-[#dde2ea] placeholder:text-[#646c7a] px-3 py-1.5 focus:outline-none tracking-normal"
               oninput="handlePromptInput(this.value)"
               onkeydown="if(event.key === 'Enter') handleSendPrompt(); if(event.key === 'Escape') document.getElementById('slash-command-palette')?.classList.add('hidden');"
             />
 
             <!-- MIC VOICE BUTTON -->
-            <button 
-              type="button" 
-              onclick="toggleVoiceCapture()" 
-              id="btn-voice-mic" 
-              class="p-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-xl transition-colors shrink-0"
+            <button type="button" onclick="toggleVoiceCapture()" id="btn-voice-mic" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors shrink-0"
               title="Voice Input"
             >
               <i data-lucide="mic" class="w-4 h-4"></i>
             </button>
 
             <!-- SEND SUBMIT BUTTON -->
-            <button 
-              type="button" 
-              onclick="handleSendPrompt()" 
-              id="btn-submit-prompt" 
-              class="p-2 bg-zinc-100 text-zinc-950 hover:bg-white rounded-xl transition-all font-medium shrink-0 ml-1 shadow-sm active:scale-95"
+            <button type="button" onclick="handleSendPrompt()" id="btn-submit-prompt" class="w-8 h-8 rounded-xl bg-[#5072a7] hover:bg-[#5d82bc] text-white flex items-center justify-center shadow-[2px_2px_5px_#111316,-2px_-2px_5px_#292e36] active:shadow-[inset_2px_2px_4px_#111316] transition-all font-medium shrink-0 ml-1"
               title="Send Message"
             >
               <i data-lucide="arrow-up" class="w-4 h-4"></i>
@@ -552,7 +612,7 @@
   <!-- ============================================================== -->
   <!-- MODAL 1: MULTIMODAL ACTION HUB -->
   <!-- ============================================================== -->
-  <div id="modal-action-tools" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+  <div id="modal-action-tools" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="w-full max-w-sm glass-panel p-5 rounded-2xl shadow-modal space-y-4">
       
       <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
@@ -565,41 +625,41 @@
         </button>
       </div>
 
-      <div class="grid grid-cols-2 gap-2 text-xs">
-        <button onclick="toggleModal('modal-action-tools'); toggleModal('modal-ocr')" class="p-3 bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl text-left transition-colors space-y-1">
-          <i data-lucide="camera" class="w-4 h-4 text-blue-400"></i>
-          <span class="block font-medium text-zinc-200">Optics OCR</span>
-          <span class="text-[10px] text-zinc-400 block">Extract screen text</span>
+      <div class="grid grid-cols-2 gap-2.5 text-xs">
+        <button onclick="toggleModal('modal-action-tools'); toggleModal('modal-ocr')" class="neu-raised-sm hover:neu-raised p-3.5 rounded-xl text-left transition-all space-y-1 text-[#dde2ea]">
+          <i data-lucide="camera" class="w-4 h-4 text-[#5072a7]"></i>
+          <span class="block font-medium">Optics OCR</span>
+          <span class="text-[10px] text-[#8892a0] block">Extract text</span>
         </button>
 
-        <button onclick="toggleModal('modal-action-tools'); triggerPhotoUpscale()" class="p-3 bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl text-left transition-colors space-y-1">
-          <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
-          <span class="block font-medium text-zinc-200">Pixel Remaster</span>
-          <span class="text-[10px] text-zinc-400 block">Upscale via NPU</span>
+        <button onclick="toggleModal('modal-action-tools'); triggerPhotoUpscale()" class="neu-raised-sm hover:neu-raised p-3.5 rounded-xl text-left transition-all space-y-1 text-[#dde2ea]">
+          <i data-lucide="sparkles" class="w-4 h-4 text-[#b88a44]"></i>
+          <span class="block font-medium">Pixel Remaster</span>
+          <span class="text-[10px] text-[#8892a0] block">Upscale image</span>
         </button>
 
-        <button onclick="toggleModal('modal-action-tools'); executeCleanRamPurge()" class="p-3 bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl text-left transition-colors space-y-1">
-          <i data-lucide="trash-2" class="w-4 h-4 text-emerald-400"></i>
-          <span class="block font-medium text-zinc-200">Purge Memory</span>
-          <span class="text-[10px] text-zinc-400 block">Reclaim mobile RAM</span>
+        <button onclick="toggleModal('modal-action-tools'); executeCleanRamPurge()" class="neu-raised-sm hover:neu-raised p-3.5 rounded-xl text-left transition-all space-y-1 text-[#dde2ea]">
+          <i data-lucide="trash-2" class="w-4 h-4 text-[#5e937d]"></i>
+          <span class="block font-medium">Purge Memory</span>
+          <span class="text-[10px] text-[#8892a0] block">Sweep RAM</span>
         </button>
 
-        <button onclick="toggleModal('modal-action-tools'); triggerDocumentUpload()" class="p-3 bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl text-left transition-colors space-y-1">
-          <i data-lucide="file-text" class="w-4 h-4 text-indigo-400"></i>
-          <span class="block font-medium text-zinc-200">Upload Document</span>
-          <span class="text-[10px] text-zinc-400 block">PDF, Code, Text</span>
+        <button onclick="toggleModal('modal-action-tools'); triggerDocumentUpload()" class="neu-raised-sm hover:neu-raised p-3.5 rounded-xl text-left transition-all space-y-1 text-[#dde2ea]">
+          <i data-lucide="file-text" class="w-4 h-4 text-[#5072a7]"></i>
+          <span class="block font-medium">Upload Document</span>
+          <span class="text-[10px] text-[#8892a0] block">PDF, Code, Text</span>
         </button>
 
-        <button onclick="toggleModal('modal-action-tools'); toggleGeminiBrainNode()" id="btn-modal-gemini" class="p-3 bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl text-left transition-colors space-y-1">
-          <i data-lucide="box" class="w-4 h-4 text-purple-400"></i>
-          <span class="block font-medium text-zinc-200">Gemini Node</span>
-          <span id="gemini-label-modal" class="text-[10px] text-zinc-400 block">API Fallback</span>
+        <button onclick="toggleModal('modal-action-tools'); toggleGeminiBrainNode()" id="btn-modal-gemini" class="neu-raised-sm hover:neu-raised p-3.5 rounded-xl text-left transition-all space-y-1 text-[#dde2ea]">
+          <i data-lucide="box" class="w-4 h-4 text-[#8892a0]"></i>
+          <span class="block font-medium">Gemini Node</span>
+          <span id="gemini-label-modal" class="text-[10px] text-[#8892a0] block">API Fallback</span>
         </button>
 
-        <button onclick="toggleModal('modal-action-tools'); toggleChildSafetyMode()" id="btn-modal-shield" class="p-3 bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl text-left transition-colors space-y-1">
-          <i data-lucide="shield" class="w-4 h-4 text-zinc-400"></i>
-          <span class="block font-medium text-zinc-200">Child Shield</span>
-          <span id="shield-label-modal" class="text-[10px] text-zinc-400 block">Inactive</span>
+        <button onclick="toggleModal('modal-action-tools'); toggleChildSafetyMode()" id="btn-modal-shield" class="neu-raised-sm hover:neu-raised p-3.5 rounded-xl text-left transition-all space-y-1 text-[#dde2ea]">
+          <i data-lucide="shield" class="w-4 h-4 text-[#8892a0]"></i>
+          <span class="block font-medium">Child Shield</span>
+          <span id="shield-label-modal" class="text-[10px] text-[#8892a0] block">Inactive</span>
         </button>
       </div>
 
@@ -609,7 +669,7 @@
   <!-- ============================================================== -->
   <!-- MODAL 2: OPTICS OCR VIEWFINDER -->
   <!-- ============================================================== -->
-  <div id="modal-ocr" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+  <div id="modal-ocr" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="w-full max-w-md glass-panel p-5 rounded-2xl shadow-modal space-y-4">
       
       <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
@@ -623,19 +683,19 @@
       </div>
 
       <!-- SIMULATED CAMERA VIEW -->
-      <div class="relative w-full h-48 bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 flex items-center justify-center">
+      <div class="relative w-full h-48 neu-inset-deep rounded-xl overflow-hidden flex items-center justify-center">
         <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop" alt="Target View" class="w-full h-full object-cover opacity-50" />
         <div class="absolute inset-4 border border-dashed border-zinc-400/50 rounded-lg pointer-events-none"></div>
-        <div class="absolute bottom-2 left-2 bg-zinc-950/80 px-2.5 py-1 rounded text-[10px] font-mono text-zinc-300 border border-zinc-800">
+        <div class="absolute bottom-2 left-2 neu-inset-sm px-2.5 py-1 rounded-lg text-[10px] font-mono text-[#8892a0]">
           Sensor: 1080p // moondream2 OCR
         </div>
       </div>
 
       <div class="flex gap-2">
-        <button onclick="captureOcrText()" class="flex-1 py-2 rounded-xl bg-zinc-100 text-zinc-950 hover:bg-white text-xs font-semibold transition-colors">
+        <button onclick="captureOcrText()" class="neu-btn flex-1 py-2.5 rounded-xl bg-[#5072a7] hover:bg-[#5d82bc] text-white text-xs font-semibold transition-colors">
           Capture & Ingest
         </button>
-        <button onclick="toggleModal('modal-ocr')" class="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-medium hover:bg-zinc-800 transition-colors">
+        <button onclick="toggleModal('modal-ocr')" class="neu-btn px-4 py-2.5 rounded-xl text-[#8892a0] hover:text-[#dde2ea] text-xs font-medium transition-colors">
           Cancel
         </button>
       </div>
@@ -646,7 +706,7 @@
   <!-- ============================================================== -->
   <!-- MODAL 3: TURBOQUANT & TELEMETRY MONITOR -->
   <!-- ============================================================== -->
-  <div id="modal-telemetry" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+  <div id="modal-telemetry" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="w-full max-w-md glass-panel p-5 rounded-2xl shadow-modal space-y-4">
       
       <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
@@ -660,13 +720,13 @@
       </div>
 
       <div class="space-y-3 text-xs">
-        <div class="p-3.5 bg-zinc-900/90 rounded-xl border border-zinc-800 space-y-2">
+        <div class="p-4 neu-inset-sm rounded-xl space-y-2.5">
           <div class="flex justify-between text-zinc-400 font-medium">
             <span>KV-Cache Compression (SQR 2-Bit)</span>
             <span class="text-emerald-400 font-mono" id="telemetry-compress-ratio">5.8x Reduction</span>
           </div>
-          <div class="w-full h-2 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800">
-            <div class="h-full bg-emerald-500 w-[18%] rounded-full" id="telemetry-bar"></div>
+          <div class="w-full h-2 rounded-full neu-inset-deep overflow-hidden">
+            <div class="h-full bg-[#5e937d] w-[18%] rounded-full" id="telemetry-bar"></div>
           </div>
           <div class="flex justify-between text-[10px] text-zinc-400 font-mono">
             <span>Active Footprint: 412 MB</span>
@@ -675,18 +735,18 @@
         </div>
 
         <div class="grid grid-cols-2 gap-2 font-mono text-[11px]">
-          <div class="p-3 bg-zinc-900/80 rounded-xl border border-zinc-800">
+          <div class="p-3.5 neu-raised-sm rounded-xl">
             <span class="text-zinc-400 block text-[10px]">INFERENCE LATENCY</span>
             <strong class="text-sm text-zinc-100 mt-1 block">4.8 ms</strong>
           </div>
-          <div class="p-3 bg-zinc-900/80 rounded-xl border border-zinc-800">
+          <div class="p-3.5 neu-raised-sm rounded-xl">
             <span class="text-zinc-400 block text-[10px]">SYSTEM MEMORY</span>
             <strong id="telemetry-ram-text" class="text-sm text-zinc-100 mt-1 block">72 MB</strong>
           </div>
         </div>
       </div>
 
-      <button onclick="toggleModal('modal-telemetry')" class="w-full py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 rounded-xl text-xs font-medium transition-colors">
+      <button onclick="toggleModal('modal-telemetry')" class="neu-btn w-full py-2.5 rounded-xl text-xs font-medium text-[#dde2ea]">
         Close Diagnostics
       </button>
 
@@ -696,7 +756,7 @@
   <!-- ============================================================== -->
   <!-- MODAL 4: BACKGROUND MEDIA STREAM -->
   <!-- ============================================================== -->
-  <div id="modal-media" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+  <div id="modal-media" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="w-full max-w-sm glass-panel p-5 rounded-2xl shadow-modal space-y-4 text-center">
       
       <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
@@ -710,7 +770,7 @@
       </div>
 
       <div class="space-y-3">
-        <div class="w-24 h-24 mx-auto rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 shadow-subtle">
+        <div class="w-24 h-24 mx-auto rounded-2xl neu-inset-deep flex items-center justify-center text-[#8892a0]">
           <i data-lucide="disc" id="audio-disc-icon" class="w-10 h-10 animate-spin" style="animation-duration: 8s;"></i>
         </div>
         <div>
@@ -724,8 +784,8 @@
         <button onclick="playAcousticChime('click')" class="p-2 text-zinc-400 hover:text-zinc-200">
           <i data-lucide="skip-back" class="w-4 h-4"></i>
         </button>
-        <button onclick="toggleAudioPlayback()" id="btn-audio-player-toggle" class="w-10 h-10 rounded-full bg-zinc-100 text-zinc-950 flex items-center justify-center hover:bg-white transition-colors">
-          <i data-lucide="play" id="icon-audio-play" class="w-4 h-4 fill-zinc-950"></i>
+        <button onclick="toggleAudioPlayback()" id="btn-audio-player-toggle" class="neu-btn w-12 h-12 rounded-full bg-[#5072a7] hover:bg-[#5d82bc] text-white flex items-center justify-center transition-colors">
+          <i data-lucide="play" id="icon-audio-play" class="w-4 h-4 fill-white"></i>
         </button>
         <button onclick="playAcousticChime('click')" class="p-2 text-zinc-400 hover:text-zinc-200">
           <i data-lucide="skip-forward" class="w-4 h-4"></i>
@@ -738,7 +798,7 @@
   <!-- ============================================================== -->
   <!-- MODAL 5: SYSTEM CONFIGURATION -->
   <!-- ============================================================== -->
-  <div id="modal-settings" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+  <div id="modal-settings" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="w-full max-w-md glass-panel p-5 rounded-2xl shadow-modal space-y-4 text-xs">
       
       <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
@@ -754,7 +814,7 @@
       <div class="space-y-3">
         <div>
           <label class="text-zinc-400 block mb-1">INFERENCE ROUTING NODE</label>
-          <select id="model-node-select" onchange="updateInferenceNode(this.value)" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-zinc-200 focus:outline-none focus:border-zinc-600">
+          <select id="model-node-select" onchange="updateInferenceNode(this.value)" class="w-full neu-inset-deep rounded-xl p-2.5 text-[#dde2ea] font-medium outline-none">
             <option value="local-1.5b">Edge SLM (Qwen-2.5 1.5B / SQR FP8)</option>
             <option value="optiplex-7b">OptiPlex Bridge (Qwen-7B LAN Node)</option>
             <option value="gemini-node">Gemini Cloud Fallback Node</option>
@@ -763,10 +823,10 @@
 
         <div>
           <label class="text-zinc-400 block mb-1">CLOUD MUSCLE NODE URL</label>
-          <input type="text" id="cloud-node-url" placeholder="https://....trycloudflare.com" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-zinc-200 focus:outline-none focus:border-zinc-600 font-mono text-[11px]" onchange="saveCloudNodeUrl()">
+          <input type="text" id="cloud-node-url" placeholder="https://....trycloudflare.com" class="w-full neu-inset-deep rounded-xl p-2.5 text-[#dde2ea] font-mono text-[11px] outline-none" onchange="saveCloudNodeUrl()">
         </div>
 
-        <div class="flex items-center justify-between p-2.5 bg-zinc-900/80 rounded-xl border border-zinc-800">
+        <div class="flex items-center justify-between p-3 neu-inset-sm rounded-xl">
           <div>
             <span class="text-zinc-200 font-medium block">Acoustic Audio Feedback</span>
             <span class="text-[10px] text-zinc-400">Subtle Web Audio synthesizer beeps</span>
@@ -774,7 +834,7 @@
           <input type="checkbox" id="toggle-sfx" checked class="accent-zinc-300 w-4 h-4" />
         </div>
 
-        <div class="flex items-center justify-between p-2.5 bg-zinc-900/80 rounded-xl border border-zinc-800">
+        <div class="flex items-center justify-between p-3 neu-inset-sm rounded-xl">
           <div>
             <span class="text-zinc-200 font-medium block">Guardian Safe Intent Filter</span>
             <span class="text-[10px] text-zinc-400">Sanitizes code & blocks shell execution</span>
@@ -783,7 +843,7 @@
         </div>
       </div>
 
-      <button onclick="toggleModal('modal-settings')" class="w-full py-2.5 bg-zinc-100 text-zinc-950 hover:bg-white rounded-xl text-xs font-semibold transition-colors">
+      <button onclick="toggleModal('modal-settings')" class="neu-btn w-full py-2.5 bg-[#5072a7] hover:bg-[#5d82bc] text-white rounded-xl text-xs font-semibold transition-colors">
         Save & Apply
       </button>
 
@@ -1007,16 +1067,16 @@
 
       if (isGeminiNodeActive) {
         if (labelModal) labelModal.innerText = "Active (Remote)";
-        if (btnModal) btnModal.classList.add('bg-purple-900/40', 'border-purple-600/50');
+        if (btnModal) btnModal.classList.add('neu-inset-sm', 'text-[#5072a7]');
         if (nodeBadge) {
           nodeBadge.innerText = "GEMINI NODE";
-          nodeBadge.className = "text-purple-400 font-mono text-[10px]";
+          nodeBadge.className = "text-[#5072a7] font-mono text-[10px]";
         }
         notify("Connected to Gemini Cluster", "success");
         appendSystemMessage("🌌 Gemini Fallback Node: Remote inference pipeline active.");
       } else {
         if (labelModal) labelModal.innerText = "API Fallback";
-        if (btnModal) btnModal.classList.remove('bg-purple-900/40', 'border-purple-600/50');
+        if (btnModal) btnModal.classList.remove('neu-inset-sm', 'text-[#5072a7]');
         if (nodeBadge) {
           nodeBadge.innerText = isTurbo ? "OPTIPLEX (7B)" : "LOCAL (1.5B)";
           nodeBadge.className = isTurbo ? "text-amber-400 font-mono text-[10px]" : "text-emerald-400 font-mono text-[10px]";
@@ -1241,8 +1301,8 @@
 
       sessions.forEach(sess => {
         const isActive = sess.session_id === activeSessionId;
-        const bgClass = isActive ? "bg-zinc-800/80 text-zinc-100 border border-zinc-700/60" : "hover:bg-zinc-800/40 text-zinc-400 hover:text-zinc-200";
-        const iconColor = isActive ? "text-blue-400" : "text-zinc-500";
+        const bgClass = isActive ? "neu-inset-sm bg-[#181a1f] text-[#dde2ea] font-medium" : "hover:bg-[#20242a]/60 text-[#8892a0] hover:text-[#dde2ea]";
+        const iconColor = isActive ? "text-[#5072a7]" : "text-[#646c7a]";
 
         listEl.innerHTML += `
           <button onclick="loadSession('${sess.session_id}')" class="w-full flex items-center justify-between p-2 rounded-lg ${bgClass} text-xs font-medium text-left transition-colors">
@@ -1286,38 +1346,38 @@
           const mailtoUrl = `mailto:${encodeURIComponent(actionPayload.recipient || "")}?subject=${encodeURIComponent(actionPayload.subject || "")}&body=${encodeURIComponent(actionPayload.body || "")}`;
           content = `
             <div class="space-y-3">
-              <p>${escapeHtml(actionPayload.message || "Prepared draft for native email intent:")}</p>
-              <div class="p-4 rounded-2xl bg-gradient-to-br from-blue-950/40 via-zinc-900/90 to-zinc-900 border border-blue-500/30 text-xs space-y-3 shadow-2xl backdrop-blur-xl">
+              <p class="text-[#dde2ea]">${escapeHtml(actionPayload.message || "Prepared draft for native email intent:")}</p>
+              <div class="p-5 rounded-2xl neu-raised-lg text-xs space-y-3.5">
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-300">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl neu-inset-sm flex items-center justify-center text-[#5072a7]">
                       <i data-lucide="mail" class="w-4 h-4"></i>
                     </div>
                     <div>
-                      <span class="text-xs font-semibold text-white block">Email Dispatch Staged</span>
-                      <span class="text-[10px] text-zinc-400 font-mono">${escapeHtml(actionPayload.recipient || "")}</span>
+                      <span class="text-xs font-semibold text-[#dde2ea] block">Email Dispatch Staged</span>
+                      <span class="text-[10px] text-[#8892a0] font-mono">${escapeHtml(actionPayload.recipient || "")}</span>
                     </div>
                   </div>
-                  <span class="px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-mono uppercase tracking-wider">
+                  <span class="neu-inset-sm px-2.5 py-0.5 rounded-full text-[#5072a7] text-[10px] font-mono uppercase tracking-wider">
                     Ready to Send
                   </span>
                 </div>
 
-                <div class="p-3 bg-black/50 rounded-xl border border-white/5 space-y-1.5 text-zinc-300">
-                  <div class="font-medium text-white flex items-center gap-1.5">
-                    <span class="text-zinc-500">Subject:</span> ${escapeHtml(actionPayload.subject || "Project Inquiry")}
+                <div class="p-3.5 neu-inset-deep rounded-xl space-y-2 text-[#dde2ea]">
+                  <div class="font-medium flex items-center gap-1.5">
+                    <span class="text-[#8892a0]">Subject:</span> ${escapeHtml(actionPayload.subject || "Project Inquiry")}
                   </div>
-                  <div class="text-xs text-zinc-300 pt-1 leading-relaxed border-t border-white/5">
+                  <div class="text-xs text-[#8892a0] pt-1.5 leading-relaxed border-t border-[#252830]">
                     ${escapeHtml(actionPayload.body || "")}
                   </div>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-2 pt-1">
-                  <a href="${gmailUrl}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-medium transition-all shadow-md shadow-blue-600/25 flex items-center gap-1.5 active:scale-95">
-                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                <div class="flex flex-wrap items-center gap-2.5 pt-1">
+                  <a href="${gmailUrl}" target="_blank" rel="noopener noreferrer" class="neu-btn px-4 py-2 rounded-xl text-[#dde2ea] hover:text-white text-xs font-medium transition-all flex items-center gap-2">
+                    <i data-lucide="send" class="w-3.5 h-3.5 text-[#5072a7]"></i>
                     <span>Proceed via Gmail Web</span>
                   </a>
-                  <a href="${mailtoUrl}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 text-xs font-medium transition-colors flex items-center gap-1.5">
+                  <a href="${mailtoUrl}" target="_blank" rel="noopener noreferrer" class="neu-btn px-4 py-2 rounded-xl text-[#8892a0] hover:text-[#dde2ea] text-xs font-medium transition-colors flex items-center gap-2">
                     <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
                     <span>Open Mail Client</span>
                   </a>
@@ -1353,9 +1413,9 @@
 
           content = `
             <div class="space-y-3">
-              <p>${escapeHtml(actionPayload.message || `Playing "${trackTitle}" on YouTube`)}</p>
-              <div class="rounded-2xl overflow-hidden border border-red-500/30 bg-zinc-950/90 shadow-2xl">
-                <div class="aspect-video w-full relative bg-black">
+              <p class="text-[#dde2ea]">${escapeHtml(actionPayload.message || `Playing "${trackTitle}" on YouTube`)}</p>
+              <div class="rounded-2xl overflow-hidden neu-raised-lg">
+                <div class="aspect-video w-full relative bg-[#181a1f]">
                   <iframe 
                     id="chat-yt-${Date.now()}"
                     src="${embedSrc}" 
@@ -1365,12 +1425,12 @@
                     allowfullscreen>
                   </iframe>
                 </div>
-                <div class="p-3 flex items-center justify-between text-xs bg-zinc-900/95 border-t border-zinc-800">
-                  <div class="flex items-center gap-2 text-red-400 font-medium truncate">
+                <div class="p-3.5 flex items-center justify-between text-xs bg-[#202329]">
+                  <div class="flex items-center gap-2 text-[#a65b5b] font-medium truncate">
                     <i data-lucide="play-circle" class="w-4 h-4 shrink-0"></i>
                     <span class="truncate">Now Playing: "${escapeHtml(trackTitle)}"</span>
                   </div>
-                  <a href="${directWatchUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600/20 border border-red-500/40 text-red-200 text-xs font-medium hover:bg-red-600/30 transition-colors shrink-0">
+                  <a href="${directWatchUrl}" target="_blank" rel="noopener noreferrer" class="neu-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[#8892a0] hover:text-[#dde2ea] text-xs font-medium transition-colors shrink-0">
                     <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Watch on YouTube
                   </a>
                 </div>
@@ -1386,15 +1446,15 @@
           window.open(targetUrl, '_blank');
           content = `
             <div class="space-y-2.5">
-              <p>${escapeHtml(actionPayload.message || `Opening ${targetUrl} in browser`)}</p>
-              <div class="p-3 bg-zinc-900/90 rounded-xl border border-blue-500/30 text-xs space-y-2 shadow-subtle">
-                <div class="flex items-center gap-2 text-blue-400 font-medium">
+              <p class="text-[#dde2ea]">${escapeHtml(actionPayload.message || `Opening ${targetUrl} in browser`)}</p>
+              <div class="p-4 neu-raised-lg rounded-2xl text-xs space-y-2.5">
+                <div class="flex items-center gap-2 text-[#5072a7] font-medium">
                   <i data-lucide="globe" class="w-4 h-4"></i>
                   <span>Web Browser</span>
                 </div>
-                <div class="text-zinc-400 text-xs font-mono truncate">${escapeHtml(targetUrl)}</div>
-                <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/20 border border-blue-500/40 text-blue-200 text-xs font-medium hover:bg-blue-600/30 transition-colors">
-                  <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Open Link
+                <div class="neu-inset-deep p-2.5 rounded-xl text-[#8892a0] text-xs font-mono truncate">${escapeHtml(targetUrl)}</div>
+                <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="neu-btn inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[#dde2ea] hover:text-white text-xs font-medium transition-colors">
+                  <i data-lucide="external-link" class="w-3.5 h-3.5 text-[#5072a7]"></i> Open Link
                 </a>
               </div>
             </div>
@@ -1420,36 +1480,36 @@
 
           content = `
             <div class="space-y-3">
-              <p>${escapeHtml(actionPayload.message || `Ready to install ${appName} via Flatpak`)}</p>
-              <div class="p-4 rounded-2xl bg-gradient-to-br from-purple-950/40 via-zinc-900/90 to-zinc-900 border border-purple-500/30 text-xs space-y-3 shadow-xl backdrop-blur-md">
+              <p class="text-[#dde2ea]">${escapeHtml(actionPayload.message || `Ready to install ${appName} via Flatpak`)}</p>
+              <div class="p-5 rounded-2xl neu-raised-lg text-xs space-y-3.5">
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-xl bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-purple-300">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl neu-inset-sm flex items-center justify-center text-[#5072a7]">
                       <i data-lucide="download" class="w-4 h-4"></i>
                     </div>
                     <div>
-                      <span class="text-sm font-semibold text-white block capitalize">${escapeHtml(appName)}</span>
-                      <span class="text-[10px] text-zinc-400 font-mono">${escapeHtml(pkgId)}</span>
+                      <span class="text-sm font-semibold text-[#dde2ea] block capitalize">${escapeHtml(appName)}</span>
+                      <span class="text-[10px] text-[#8892a0] font-mono">${escapeHtml(pkgId)}</span>
                     </div>
                   </div>
-                  <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono uppercase tracking-wider">
+                  <span class="neu-inset-sm px-2.5 py-0.5 rounded-full text-[#5e937d] text-[10px] font-mono uppercase tracking-wider">
                     Flathub Sandbox
                   </span>
                 </div>
 
-                <div class="p-2.5 bg-black/60 rounded-xl border border-white/5 font-mono text-[11px] text-zinc-300 flex items-center justify-between">
-                  <code class="truncate">${escapeHtml(command)}</code>
-                  <button onclick="navigator.clipboard.writeText('${command}'); notify('Command copied to clipboard!', 'success');" class="p-1 text-zinc-400 hover:text-white shrink-0 ml-2" title="Copy Command">
+                <div class="p-3 neu-inset-deep rounded-xl font-mono text-[11px] text-[#dde2ea] flex items-center justify-between">
+                  <code class="truncate text-[#8ba4c7]">${escapeHtml(command)}</code>
+                  <button onclick="navigator.clipboard.writeText('${command}'); notify('Command copied to clipboard!', 'success');" class="neu-btn p-1.5 rounded-lg text-[#8892a0] hover:text-[#dde2ea] shrink-0 ml-2" title="Copy Command">
                     <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                   </button>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-2 pt-1">
-                  <button onclick="executeAppInstall('${escapeHtml(appName)}', '${escapeHtml(pkgId)}')" id="btn-install-${escapeHtml(appName)}" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-medium transition-all shadow-md shadow-purple-600/25 flex items-center gap-1.5">
-                    <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+                <div class="flex flex-wrap items-center gap-2.5 pt-1">
+                  <button onclick="executeAppInstall('${escapeHtml(appName)}', '${escapeHtml(pkgId)}')" id="btn-install-${escapeHtml(appName)}" class="neu-btn px-4 py-2 rounded-xl text-[#dde2ea] hover:text-white text-xs font-medium transition-all flex items-center gap-2">
+                    <i data-lucide="terminal" class="w-3.5 h-3.5 text-[#5072a7]"></i>
                     <span>Execute Flatpak Install</span>
                   </button>
-                  <a href="${webUrl}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 text-xs font-medium transition-colors flex items-center gap-1.5">
+                  <a href="${webUrl}" target="_blank" rel="noopener noreferrer" class="neu-btn px-4 py-2 rounded-xl text-[#8892a0] hover:text-[#dde2ea] text-xs font-medium transition-colors flex items-center gap-2">
                     <i data-lucide="globe" class="w-3.5 h-3.5"></i>
                     <span>Open Web App</span>
                   </a>
@@ -1485,35 +1545,25 @@
             window.open(targetUrl, '_blank');
           }
 
-          const catColors = {
-            SOCIAL: "from-blue-500/20 to-cyan-500/20 border-blue-500/40 text-blue-300",
-            STREAMING: "from-red-500/20 to-pink-500/20 border-red-500/40 text-red-300",
-            IDE: "from-emerald-500/20 to-teal-500/20 border-emerald-500/40 text-emerald-300",
-            CAD: "from-amber-500/20 to-orange-500/20 border-amber-500/40 text-amber-300",
-            GRAPHICS: "from-purple-500/20 to-violet-500/20 border-purple-500/40 text-purple-300",
-            MUSIC: "from-green-500/20 to-emerald-500/20 border-green-500/40 text-green-300"
-          };
-          const badgeStyle = catColors[category] || "from-zinc-800 to-zinc-900 border-zinc-700 text-zinc-300";
-
           content = `
             <div class="space-y-2.5">
-              <p>${escapeHtml(actionPayload.message || `Executing ${subAction} on ${appName}`)}</p>
-              <div class="p-3.5 bg-gradient-to-br ${badgeStyle} rounded-2xl border text-xs space-y-2.5 shadow-lg backdrop-blur-md">
+              <p class="text-[#dde2ea]">${escapeHtml(actionPayload.message || `Executing ${subAction} on ${appName}`)}</p>
+              <div class="p-4 neu-raised-lg rounded-2xl text-xs space-y-2.5">
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2 font-semibold tracking-wide">
-                    <i data-lucide="layers" class="w-4 h-4"></i>
+                  <div class="flex items-center gap-2.5 font-semibold text-[#dde2ea] tracking-wide">
+                    <i data-lucide="layers" class="w-4 h-4 text-[#5072a7]"></i>
                     <span>${escapeHtml(appName)}</span>
                   </div>
-                  <span class="px-2 py-0.5 rounded-full bg-black/40 text-[10px] font-mono border border-white/10 uppercase">${escapeHtml(category)}</span>
+                  <span class="neu-inset-sm px-2.5 py-0.5 rounded-full text-[10px] font-mono text-[#8892a0] uppercase">${escapeHtml(category)}</span>
                 </div>
-                ${actionPayload.query ? `<div class="text-zinc-300 text-xs font-mono">Query: "${escapeHtml(actionPayload.query)}"</div>` : ''}
-                <div class="pt-1 flex items-center gap-2">
+                ${actionPayload.query ? `<div class="neu-inset-deep p-2.5 rounded-xl text-[#8892a0] text-xs font-mono">Query: "${escapeHtml(actionPayload.query)}"</div>` : ''}
+                <div class="pt-1 flex items-center gap-2.5">
                   ${targetUrl ? `
-                    <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium transition-all shadow-sm">
-                      <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Open ${escapeHtml(appName)}
+                    <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="neu-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[#dde2ea] hover:text-white text-xs font-medium transition-all">
+                      <i data-lucide="external-link" class="w-3.5 h-3.5 text-[#5072a7]"></i> Open ${escapeHtml(appName)}
                     </a>
                   ` : ''}
-                  <span class="text-[11px] text-zinc-400 font-mono">Action: ${escapeHtml(subAction)}</span>
+                  <span class="text-[11px] text-[#8892a0] font-mono">Action: ${escapeHtml(subAction)}</span>
                 </div>
               </div>
             </div>
@@ -1523,13 +1573,13 @@
           window.location.href = `spotify:search:${encodeURIComponent(actionPayload.query || '')}`;
           content = `
             <div class="space-y-2">
-              <p>${escapeHtml(actionPayload.message || `Searching Spotify for "${actionPayload.query || ''}"`)}</p>
-              <div class="p-3 bg-zinc-900 rounded-xl border border-green-500/20 text-xs space-y-1.5">
-                <div class="flex items-center gap-2 text-green-400 font-medium">
+              <p class="text-[#dde2ea]">${escapeHtml(actionPayload.message || `Searching Spotify for "${actionPayload.query || ''}"`)}</p>
+              <div class="p-4 neu-raised-lg rounded-2xl text-xs space-y-2">
+                <div class="flex items-center gap-2 text-[#5e937d] font-medium">
                   <i data-lucide="music" class="w-4 h-4"></i>
                   <span>Spotify Search</span>
                 </div>
-                <div class="text-zinc-400 text-xs font-mono truncate">Query: "${escapeHtml(actionPayload.query || '')}"</div>
+                <div class="neu-inset-deep p-2.5 rounded-xl text-[#8892a0] text-xs font-mono truncate">Query: "${escapeHtml(actionPayload.query || '')}"</div>
               </div>
             </div>
           `;
@@ -1539,10 +1589,10 @@
           fetchMediaStatus();
           content = `
             <div class="space-y-2">
-              <p>${escapeHtml(actionPayload.message || `Executed desktop media action: ${actionPayload.sub_action || 'update'}`)}</p>
-              <div class="p-3 bg-purple-950/40 border border-purple-500/30 rounded-xl text-xs font-mono text-purple-300 flex items-center justify-between">
+              <p class="text-[#dde2ea]">${escapeHtml(actionPayload.message || `Executed desktop media action: ${actionPayload.sub_action || 'update'}`)}</p>
+              <div class="p-3.5 neu-inset-sm rounded-xl text-xs font-mono text-[#8892a0] flex items-center justify-between">
                 <span>Action: ${escapeHtml(actionPayload.sub_action || 'play_pause')}</span>
-                <span class="text-zinc-400">Host MPRIS D-Bus</span>
+                <span class="text-[#646c7a]">Host MPRIS D-Bus</span>
               </div>
             </div>
           `;
@@ -1577,7 +1627,7 @@
           <i data-lucide="bot" class="w-4 h-4 animate-pulse"></i>
         </div>
         <div class="flex-1 space-y-1.5 max-w-[90%]">
-          <div class="text-xs font-semibold text-zinc-400 tracking-tight flex items-center gap-2">
+          <div class="text-xs font-semibold text-[#8892a0] tracking-tight flex items-center gap-2">
             <span>Andromeda</span>
             <span class="inline-flex items-center gap-1.5 text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 font-mono">
               <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping"></span>
@@ -1733,7 +1783,7 @@
       const bubble = document.createElement('div');
       bubble.className = "flex justify-end";
       bubble.innerHTML = `
-        <div class="max-w-[85%] rounded-2xl px-4 py-2.5 bg-zinc-800/90 border border-zinc-700/60 text-zinc-100 text-sm leading-relaxed shadow-subtle">
+        <div class="max-w-[85%] rounded-2xl px-4 py-2.5 neu-raised-sm bg-[#22252b] text-[#dde2ea] text-sm leading-relaxed">
           ${escapeHtml(text)}
         </div>
       `;
@@ -1746,7 +1796,7 @@
       const bubble = document.createElement('div');
       bubble.className = "flex items-start gap-3.5";
       bubble.innerHTML = `
-        <div class="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700/80 flex items-center justify-center shrink-0 text-zinc-300 mt-0.5">
+        <div class="w-8 h-8 rounded-xl neu-inset-sm flex items-center justify-center shrink-0 text-[#8892a0] mt-0.5">
           <i data-lucide="bot" class="w-4 h-4"></i>
         </div>
         <div class="flex-1 space-y-1.5 max-w-[90%]">
@@ -1910,7 +1960,7 @@
         hud.classList.toggle('hidden', !isHudVisible);
       }
       if (btn) {
-        btn.classList.toggle('text-purple-400', isHudVisible);
+        btn.classList.toggle('text-[#5072a7]', isHudVisible);
         btn.classList.toggle('text-zinc-500', !isHudVisible);
       }
       notify(isHudVisible ? "Cosmic HUD visible" : "Cosmic HUD minimized", "info");
@@ -1956,18 +2006,18 @@
         avatarAngle += 0.025;
         const t = avatarAngle;
 
-        let coreColor = 'rgba(139, 44, 255, '; // Violet (Idle)
-        let glowColor = 'rgba(255, 42, 141, '; // Hot Pink
+        let coreColor = 'rgba(215, 222, 235, '; // Pearl Silver (Idle)
+        let glowColor = 'rgba(120, 145, 185, '; // Celestial Slate
 
         if (avatarState === 'listening') {
-          coreColor = 'rgba(0, 240, 255, '; // Electric Cyan
-          glowColor = 'rgba(0, 255, 102, '; // Matrix Green
+          coreColor = 'rgba(140, 190, 170, '; // Soft Sage
+          glowColor = 'rgba(94, 147, 125, ';
         } else if (avatarState === 'thinking') {
-          coreColor = 'rgba(168, 85, 247, '; // Cosmic Lavender
-          glowColor = 'rgba(99, 102, 241, '; // Deep Indigo
+          coreColor = 'rgba(130, 160, 210, '; // Slate-Cobalt
+          glowColor = 'rgba(80, 114, 167, ';
         } else if (avatarState === 'alert') {
-          coreColor = 'rgba(245, 158, 11, '; // Amber Alert
-          glowColor = 'rgba(239, 68, 68, '; // Crimson Flare
+          coreColor = 'rgba(217, 155, 67, '; // Muted Warm Ochre
+          glowColor = 'rgba(184, 120, 50, ';
         }
 
         // 1. Outer Glow Aura
@@ -1978,10 +2028,10 @@
             ? 10 + Math.sin(t * 4) * 2
             : 9.5 + Math.sin(t * 1.5) * 1.5;
 
-        const radial = ctx.createRadialGradient(center, center, 2, center, center, dynamicRadius * 1.7);
-        radial.addColorStop(0, `${coreColor}0.95)`);
-        radial.addColorStop(0.5, `${glowColor}0.35)`);
-        radial.addColorStop(1, 'rgba(10, 7, 20, 0)');
+        const radial = ctx.createRadialGradient(center, center, 2, center, center, dynamicRadius * 1.5);
+        radial.addColorStop(0, `${coreColor}0.45)`);
+        radial.addColorStop(0.5, `${glowColor}0.18)`);
+        radial.addColorStop(1, 'rgba(30, 33, 38, 0)');
         ctx.fillStyle = radial;
         ctx.beginPath();
         ctx.arc(center, center, dynamicRadius * 1.7, 0, Math.PI * 2);
@@ -2092,8 +2142,8 @@
       if (islandBadge) {
         islandBadge.innerText = isPlaying ? (status.player || "Playing") : "Idle";
         islandBadge.className = isPlaying
-          ? "px-1.5 py-0.2 text-[9px] font-mono uppercase tracking-wider rounded-full bg-pink-950/70 border border-pink-500/30 text-pink-300 animate-pulse"
-          : "px-1.5 py-0.2 text-[9px] font-mono uppercase tracking-wider rounded-full bg-purple-950/70 border border-purple-500/30 text-purple-300";
+          ? "neu-inset-sm px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded-full text-[#5e937d]"
+          : "neu-inset-sm px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded-full text-[#8892a0]";
       }
       if (islandPlay && islandPause) {
         if (isPlaying) {
@@ -2106,20 +2156,22 @@
       }
       if (islandPill) {
         if (isPlaying) {
-          islandPill.classList.add('border-purple-500/50', 'shadow-[0_0_16px_rgba(168,85,247,0.3)]');
+          islandPill.classList.add('neu-inset-sm');
+          islandPill.classList.remove('neu-pill');
         } else {
-          islandPill.classList.remove('border-purple-500/50', 'shadow-[0_0_16px_rgba(168,85,247,0.3)]');
+          islandPill.classList.remove('neu-inset-sm');
+          islandPill.classList.add('neu-pill');
         }
       }
       if (w1 && w2 && w3) {
         if (isPlaying) {
-          w1.className = "w-0.5 h-3 rounded-full bg-pink-400 animate-bounce transition-all";
-          w2.className = "w-0.5 h-4 rounded-full bg-purple-400 animate-bounce transition-all delay-75";
-          w3.className = "w-0.5 h-2.5 rounded-full bg-indigo-400 animate-bounce transition-all delay-150";
+          w1.className = "w-0.5 h-3 rounded-full bg-[#5072a7] animate-pulse transition-all";
+          w2.className = "w-0.5 h-4 rounded-full bg-[#6d8cb8] animate-pulse transition-all delay-75";
+          w3.className = "w-0.5 h-2.5 rounded-full bg-[#8ba4c7] animate-pulse transition-all delay-150";
         } else {
-          w1.className = "w-0.5 h-2 rounded-full bg-purple-400/60 transition-all";
-          w2.className = "w-0.5 h-3.5 rounded-full bg-pink-400/60 transition-all";
-          w3.className = "w-0.5 h-1.5 rounded-full bg-indigo-400/60 transition-all";
+          w1.className = "w-0.5 h-2 rounded-full bg-[#646c7a] transition-all";
+          w2.className = "w-0.5 h-3.5 rounded-full bg-[#646c7a] transition-all";
+          w3.className = "w-0.5 h-1.5 rounded-full bg-[#646c7a] transition-all";
         }
       }
       const label = document.getElementById('mediadeck-player-label');
