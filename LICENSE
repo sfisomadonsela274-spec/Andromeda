@@ -1,0 +1,64 @@
+# ANDROMEDA SOURCE-AVAILABLE NON-COMMERCIAL & ANTI-EXPLOITATION LICENSE
+
+**Version 1.0 — Effective Date: September 2026**  
+**Copyright (c) 2026 Sfiso Madonsela ("Licensor"). All Rights Reserved.**
+
+---
+
+### PREAMBLE
+This License governs the use, copying, modification, and distribution of the software, source code, documentation, interfaces, models, and assets associated with the **Andromeda Intelligent Workspace** ("the Software"). By downloading, cloning, copying, accessing, executing, or modifying the Software, you irrevocably agree to be bound by the terms and conditions set forth herein.
+
+---
+
+### 1. GRANT OF PERMITTED RIGHTS (PERSONAL & EVALUATION ONLY)
+Subject to the strict restrictions outlined in Section 2, the Licensor hereby grants to any person obtaining a copy of the Software a non-exclusive, non-transferable, royalty-free, limited license to:
+1. **Clone, Inspect, and Study**: Clone the repository, inspect the architecture, and study the codebase.
+2. **Private Modification & Experimentation**: Modify, adapt, fork, and experiment with the code strictly within private, non-commercial, local development environments.
+3. **Educational & Academic Use**: Utilize the Software for personal learning, non-commercial academic research, and non-monetized demonstration purposes.
+
+---
+
+### 2. STRICT PROHIBITIONS ON COMMERCIAL USE & MONETIZATION
+**Commercial exploitation by any party other than Sfiso Madonsela is strictly and unequivocally forbidden.**
+
+Unless you have obtained an express, written, and signed **Commercial Licensing Agreement** directly from Sfiso Madonsela prior to use, you **SHALL NOT**:
+1. **Production Deployment**: Deploy, host, execute, or operate the Software (or any derivative work) in any production, public, enterprise, or revenue-generating environment.
+2. **Direct or Indirect Monetization**: Use the Software to generate revenue, accept payments, raise commercial capital, run advertising, charge subscriptions, or solicit fees of any kind.
+3. **SaaS & Cloud Exploitation**: Provide, host, or package the Software as a Software-as-a-Service (SaaS), Platform-as-a-Service (PaaS), hosted web interface, or managed API service to third parties, whether free or paid.
+4. **Commercial Redistribution or Bundling**: Sell, resell, sublicense, rent, lease, white-label, repackage, or distribute the Software or its derivatives as part of a commercial product, framework, or proprietary service.
+5. **Proprietary Enclosure**: Close-source derivative works or claim intellectual property ownership over the underlying architecture, Neumorphic design system, or agentic loop created by the Licensor.
+
+---
+
+### 3. UNAUTHORIZED COMMERCIAL USE AS THEFT & FRAUD
+The moment the Software, or any derivative work thereof, is deployed to production, incorporated into a revenue-generating workflow, or monetized by any individual or entity other than Sfiso Madonsela without an executed commercial agreement:
+
+1. **Immediate Revocation**: All permissions, licenses, and rights granted under Section 1 terminate automatically and instantaneously without notice.
+2. **Willful Infringement & Unjust Enrichment**: Continued use shall constitute deliberate, willful copyright infringement, breach of license agreement, intellectual property theft, and fraudulent commercial misappropriation under domestic and international law.
+3. **Demand for Compensation & Disgorgement of Profits**: The Licensor retains the full legal right to immediately demand and enforce:
+   - Retroactive commercial licensing fees at premium enterprise rates.
+   - Complete disgorgement and forfeiture of all gross revenues, income, funding, investments, and profits generated directly or indirectly through the use of the Software.
+   - Statutory, compensatory, and punitive damages for willful infringement.
+   - Full indemnification and reimbursement for all legal fees, attorney expenses, forensic audit fees, and debt recovery costs incurred in enforcing this License.
+
+---
+
+### 4. DERIVATIVE WORKS & ATTRIBUTION
+Any permitted public repository, fork, or non-commercial display of the Software must:
+1. Retain this entire `LICENSE` document in its original, unmodified form.
+2. Prominently display the following attribution in the repository's `README.md` and user-facing documentation:
+   > *"Based on Andromeda Intelligent Workspace. Copyright (c) 2026 Sfiso Madonsela. Commercial use and monetization are strictly prohibited without written license."*
+
+---
+
+### 5. COMMERCIAL LICENSING INQUIRIES
+If you or your organization wish to deploy Andromeda in production, utilize it for client work, integrate it into a business, or acquire commercial rights, you must contact the author in advance to negotiate a bespoke enterprise license:
+
+- **Licensor**: Sfiso Madonsela  
+- **Email**: `sfisomadonsela274@gmail.com`  
+- **Repository**: [https://github.com/sfisomadonsela274-spec/andromeda](https://github.com/sfisomadonsela274-spec/andromeda)
+
+---
+
+### 6. DISCLAIMER OF WARRANTY
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. IN NO EVENT SHALL SFISO MADONSELA BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

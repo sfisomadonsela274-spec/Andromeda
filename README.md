@@ -12,6 +12,7 @@ Seamlessly blending local SLM inference, desktop hardware bridges, and real-time
 [![Tunnel: Cloudflare](https://img.shields.io/badge/Tunnel-Cloudflare%20Zero%20Trust-b88a44?logo=cloudflare)](https://cloudflare.com)
 [![Observability: Arize Phoenix](https://img.shields.io/badge/Telemetry-Arize%20Phoenix-858e9c?logo=opentelemetry)](http://localhost:6006)
 [![Style: Neumorphism Soft UI](https://img.shields.io/badge/Design-Neumorphism%20Soft%20UI-1e2126)](https://sfisomadonsela274-spec.github.io/andromeda/)
+[![License: Non-Commercial](https://img.shields.io/badge/License-Source--Available%20Non--Commercial-a65b5b)](LICENSE)
 
 [Live Web Demo](https://sfisomadonsela274-spec.github.io/andromeda/) • [Architecture](#-system-architecture) • [Getting Started](#-getting-started) • [Deployment](#-247-production-deployment) • [API & Sockets](#-api--websocket-reference)
 
@@ -245,9 +246,16 @@ Andromeda's Neumorphic Soft UI solves this at the optical level:
 
 ---
 
-## 📜 License
+## 📜 License & Commercial Restrictions
 
-This project is distributed under the **MIT License**. Feel free to adapt, extend, and build spatial agents upon it.
+Copyright (c) 2026 **Sfiso Madonsela**. All Rights Reserved.
+
+This project is distributed under the **Andromeda Source-Available Non-Commercial & Anti-Exploitation License**:
+- **Permitted**: Free to clone, inspect, fork, modify, and run locally for personal, educational, research, and non-commercial evaluation purposes.
+- **Strictly Prohibited**: Any production deployment, hosting as a SaaS/PaaS, commercial bundling, or direct/indirect monetization by any entity other than Sfiso Madonsela without an executed commercial license is strictly forbidden and constitutes intellectual property theft and fraud.
+- **Enforcement & Licensing**: Commercial violators are subject to immediate license revocation, statutory damages, and mandatory disgorgement of all revenues and profits.
+
+Read the full legal terms in [LICENSE](LICENSE). For commercial licensing inquiries, contact [sfisomadonsela274@gmail.com](mailto:sfisomadonsela274@gmail.com).
 
 ---
 
