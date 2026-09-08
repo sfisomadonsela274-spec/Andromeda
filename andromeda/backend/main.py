@@ -8,7 +8,8 @@ from .lobes import memory
 from .lobes import vision
 from .engine import run_agent_step
 from . import engine
-from .db import save_message, get_session_history, get_all_sessions, delete_session
+from .db import save_message, get_session_history, get_all_sessions, delete_session, get_user_by_token
+from .auth import router as auth_router, get_current_user_optional
 
 app = FastAPI(title="Andromeda Spatial OS Backend")
 
@@ -89,20 +90,27 @@ async def app_install_endpoint(req: AppInstallPayload):
 
 app.include_router(apps_router)
 
+# Include Auth Router
+app.include_router(auth_router)
+
 # Include Lobe Routers
 app.include_router(telephony.router, tags=["telephony"])
 app.include_router(memory.router, tags=["memory"])
 app.include_router(vision.router, tags=["vision"])
 
+from fastapi import Depends
+
 sessions_router = APIRouter(prefix="/api/sessions", tags=["sessions"])
 
 @sessions_router.get("")
-async def list_sessions_endpoint():
-    return {"sessions": get_all_sessions()}
+async def list_sessions_endpoint(user: dict | None = Depends(get_current_user_optional)):
+    user_id = user["id"] if user else "guest"
+    return {"sessions": get_all_sessions(user_id=user_id)}
 
 @sessions_router.delete("/{session_id}")
-async def delete_session_endpoint(session_id: str):
-    success = delete_session(session_id)
+async def delete_session_endpoint(session_id: str, user: dict | None = Depends(get_current_user_optional)):
+    user_id = user["id"] if user else "guest"
+    success = delete_session(session_id, user_id=user_id)
     return {"status": "ok", "deleted": success, "session_id": session_id}
 
 app.include_router(sessions_router)
@@ -119,6 +127,11 @@ async def core_endpoint(websocket: WebSocket):
     session_id = None
     active_telemetry = None
     
+    # Resolve user from query param ?token=...
+    token = websocket.query_params.get("token")
+    user = get_user_by_token(token) if token else None
+    active_user_id = user["id"] if user else "guest"
+    
     try:
         while True:
             data = await websocket.receive_text()
@@ -131,6 +144,12 @@ async def core_endpoint(websocket: WebSocket):
                     session_id = payload.get("session_id")
                     cloud_url = payload.get("cloud_url")
                     requested_model = payload.get("model")
+                    init_token = payload.get("token")
+                    if init_token:
+                        init_user = get_user_by_token(init_token)
+                        if init_user:
+                            active_user_id = init_user["id"]
+
                     if cloud_url and isinstance(cloud_url, str) and cloud_url.strip():
                         engine.CLOUD_NODE_URL = cloud_url.strip()
                     else:
@@ -139,9 +158,9 @@ async def core_endpoint(websocket: WebSocket):
                         engine.scaffolding.model_name = requested_model
                         
                     if session_id:
-                        history = get_session_history(session_id)
+                        history = get_session_history(session_id, user_id=active_user_id)
                         conversation_history = history.copy()
-                        await websocket.send_json({"type": "history", "messages": history})
+                        await websocket.send_json({"type": "history", "messages": history, "user_id": active_user_id})
                     continue
                     
                 if payload_type == "telemetry":
@@ -149,15 +168,15 @@ async def core_endpoint(websocket: WebSocket):
                     continue
                     
                 if payload_type == "get_sessions":
-                    sessions = get_all_sessions()
-                    await websocket.send_json({"type": "sessions_list", "sessions": sessions})
+                    sessions = get_all_sessions(user_id=active_user_id)
+                    await websocket.send_json({"type": "sessions_list", "sessions": sessions, "user_id": active_user_id})
                     continue
 
                 if payload_type == "delete_session":
                     target_id = payload.get("session_id")
                     if target_id:
-                        delete_session(target_id)
-                        sessions = get_all_sessions()
+                        delete_session(target_id, user_id=active_user_id)
+                        sessions = get_all_sessions(user_id=active_user_id)
                         await websocket.send_json({"type": "sessions_list", "sessions": sessions})
                         await websocket.send_json({"type": "session_deleted", "session_id": target_id})
                     continue
@@ -171,7 +190,7 @@ async def core_endpoint(websocket: WebSocket):
                         session_id = "default_session"
                         
                     # Save user prompt
-                    save_message(session_id, "user", prompt)
+                    save_message(session_id, "user", prompt, user_id=active_user_id)
                     
                     # Append user prompt
                     conversation_history.append({"role": "user", "content": prompt})
@@ -198,7 +217,7 @@ async def core_endpoint(websocket: WebSocket):
                         # Append assistant response
                         if response_dict and response_dict.get("content"):
                             conversation_history.append(response_dict)
-                            save_message(session_id, "assistant", response_dict["content"])
+                            save_message(session_id, "assistant", response_dict["content"], user_id=active_user_id)
                             await websocket.send_json({"type": "response", "message": response_dict["content"]})
                         else:
                             fallback_msg = json.dumps({"action": "chat", "message": "Command executed successfully."})

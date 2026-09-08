@@ -6,5 +6,7 @@ __pycache__/
 
 # Local data & logs
 *.log
+*.db-shm
+*.db-wal
 data/tunnel/
 .DS_Store

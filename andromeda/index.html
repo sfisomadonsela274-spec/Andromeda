@@ -190,8 +190,353 @@
   <!-- Hidden Native File Input Wrapper for Document Uploading -->
   <input type="file" id="native-file-picker" class="hidden" onchange="handleFileSelection(event)" accept=".pdf,.doc,.docx,.txt,.json,.js,.py,.rs">
 
-  <!-- ROOT APP CONTAINER (Full screen on mobile, bounded on desktop) -->
-  <div class="flex h-full w-full max-w-[1440px] mx-auto overflow-hidden relative">
+  <!-- ============================================================== -->
+  <!-- 1. LANDING PAGE & ABILITIES OVERVIEW VIEW CONTAINER            -->
+  <!-- ============================================================== -->
+  <div id="app-landing-view" class="hidden min-h-screen w-full bg-[#1e2126] text-[#dde2ea] flex-col overflow-y-auto z-30">
+    <!-- Top Landing Header -->
+    <header class="sticky top-0 z-50 bg-[#1e2126]/90 backdrop-blur-md border-b border-[#242830]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl neu-raised flex items-center justify-center text-[#5072a7]">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-bold text-sm tracking-tight text-white flex items-center gap-2">
+              Andromeda
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded-full neu-inset-sm text-emerald-400 font-normal">v8.4</span>
+            </span>
+            <span class="text-[10px] text-[#8892a0] font-mono tracking-wider">INTELLIGENT WORKSPACE</span>
+          </div>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-6 text-xs font-medium text-[#8892a0]">
+          <a href="#lp-abilities" class="hover:text-white transition-colors">Abilities</a>
+          <a href="#lp-usages" class="hover:text-white transition-colors">Usages</a>
+          <a href="#lp-architecture" class="hover:text-white transition-colors">Architecture</a>
+          <a href="#lp-storage" class="hover:text-white transition-colors">SQLite Engine</a>
+        </nav>
+
+        <div class="flex items-center gap-2.5">
+          <div id="landing-nav-unauth" class="flex items-center gap-2">
+            <button onclick="openAuthModal('signin')" class="neu-btn text-xs font-medium px-3.5 py-2 rounded-xl text-zinc-300 hover:text-white flex items-center gap-1.5">
+              <i data-lucide="log-in" class="w-3.5 h-3.5 text-[#5072a7]"></i>
+              <span>Sign In</span>
+            </button>
+            <button onclick="openAuthModal('signup')" class="neu-btn text-xs font-medium px-4 py-2 rounded-xl bg-[#21252b] text-white hover:text-blue-200 border-l border-t border-[#313742] flex items-center gap-1.5 shadow-[3px_3px_8px_#131518]">
+              <i data-lucide="user-plus" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>Sign Up</span>
+            </button>
+          </div>
+          <div id="landing-nav-auth" class="hidden items-center gap-2.5">
+            <button onclick="navigateToWorkspace()" class="neu-btn text-xs font-medium px-4 py-2 rounded-xl text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+              <span>Launch Workspace</span>
+            </button>
+            <button onclick="logoutWorkspaceUser()" class="neu-btn text-xs p-2 rounded-xl text-zinc-400 hover:text-rose-400" title="Sign Out">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative pt-12 pb-20 overflow-hidden">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full neu-inset-sm text-xs text-[#8892a0]">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-slow"></span>
+          <span class="font-mono text-zinc-300">24/7 Containerized Runtime Online</span>
+          <span class="text-[#646c7a]">•</span>
+          <span class="text-[#5072a7] font-medium">SQLite3 Unified WAL Engine</span>
+        </div>
+
+        <div class="space-y-4 max-w-3xl mx-auto">
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+            Tactile Intelligence for <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#5072a7] via-[#5e937d] to-[#b88a44]">Edge Computing</span>.
+          </h1>
+          <p class="text-base sm:text-lg text-[#8892a0] leading-relaxed">
+            An Edge-Native, Spatial AI Agent and Neumorphic Operating Workspace. Seamlessly blending local SLM inference, desktop hardware bridges, and persistent user-scoped SQLite storage into a calm, astigmatism-ergonomic soft UI.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+          <button onclick="openAuthModal('signup')" class="neu-btn px-6 py-3.5 rounded-2xl text-sm font-semibold text-white flex items-center gap-2.5 hover:scale-[1.02] active:scale-[0.98]">
+            <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
+            <span>Get Started Free</span>
+          </button>
+          <button onclick="continueAsGuest()" class="neu-btn px-6 py-3.5 rounded-2xl text-sm font-semibold text-[#8892a0] hover:text-white flex items-center gap-2.5">
+            <i data-lucide="compass" class="w-4 h-4 text-[#5072a7]"></i>
+            <span>Instant Guest Demo</span>
+          </button>
+          <a href="#lp-abilities" class="neu-btn px-5 py-3.5 rounded-2xl text-sm font-medium text-[#8892a0] hover:text-white flex items-center gap-2">
+            <i data-lucide="arrow-down" class="w-4 h-4"></i>
+            <span>Abilities & Usages</span>
+          </a>
+        </div>
+
+        <!-- Dynamic Island Teaser -->
+        <div class="pt-8 max-w-4xl mx-auto">
+          <div class="neu-raised-lg p-6 rounded-3xl border border-[#262a32] relative space-y-5">
+            <div class="flex items-center justify-between border-b border-[#242830] pb-4">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-rose-500/60 inline-block"></span>
+                <span class="w-3 h-3 rounded-full bg-amber-500/60 inline-block"></span>
+                <span class="w-3 h-3 rounded-full bg-emerald-500/60 inline-block"></span>
+                <span class="ml-2 text-xs font-mono text-[#8892a0]">andromeda-core // container:andromeda-backend</span>
+              </div>
+              <div class="px-4 py-1.5 rounded-full neu-inset-sm flex items-center gap-3 text-xs">
+                <i data-lucide="radio" class="w-3.5 h-3.5 text-emerald-400 animate-pulse"></i>
+                <span class="text-zinc-300 font-mono text-[11px]">MPRIS • PulseAudio Synced</span>
+              </div>
+              <div class="text-xs font-mono text-[#5072a7] hidden sm:block">
+                SQLITE: WAL ACTIVE
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left font-mono text-xs">
+              <div class="neu-inset-sm p-4 rounded-2xl space-y-2 col-span-2">
+                <div class="flex items-center justify-between text-[#8892a0] text-[11px]">
+                  <span>AGENT REASONING STREAM</span>
+                  <span class="text-emerald-400">STATUS: 200 OK</span>
+                </div>
+                <div class="text-zinc-300 space-y-1 text-[11px]">
+                  <p class="text-blue-300">> /music lofi beats for coding</p>
+                  <p class="text-[#8892a0]">↳ MPRIS D-Bus Bridge: Handshake initialized with Spotify & VLC</p>
+                  <p class="text-[#8892a0]">↳ SQLite: Persisted session context to `andromeda.db` (User scoped)</p>
+                  <p class="text-emerald-400">✔ Playback stream mounted • Dynamic Island HUD updated</p>
+                </div>
+              </div>
+
+              <div class="neu-inset-sm p-4 rounded-2xl space-y-2.5">
+                <div class="text-[11px] font-medium text-[#8892a0]">EDGE METRICS</div>
+                <div class="space-y-1.5 text-[11px]">
+                  <div class="flex justify-between">
+                    <span class="text-[#8892a0]">Local SLM:</span>
+                    <span class="text-emerald-400">Qwen 1.5B (FP8)</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-[#8892a0]">KV-Cache:</span>
+                    <span class="text-zinc-300">2-bit SQR (72MB)</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-[#8892a0]">DB Latency:</span>
+                    <span class="text-zinc-300">0.84 ms (WAL)</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-[#8892a0]">Tracing:</span>
+                    <span class="text-[#5072a7]">Arize Phoenix</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Abilities Section -->
+    <section id="lp-abilities" class="py-20 border-t border-[#242830]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div class="text-center space-y-3 max-w-2xl mx-auto">
+          <span class="text-xs font-mono uppercase tracking-widest text-[#5072a7]">Capabilities</span>
+          <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">Engineered for Spatial & Tactile Work</h2>
+          <p class="text-sm sm:text-base text-[#8892a0]">Andromeda is not a standard web chatbot. It is an edge-native desktop operating layer built with tactile hardware controls.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="neu-raised p-6 rounded-3xl space-y-4 hover:-translate-y-1 transition-transform">
+            <div class="w-12 h-12 rounded-2xl neu-inset-sm flex items-center justify-center text-[#5072a7]">
+              <i data-lucide="sliders" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-white">Spatial Agent & Desktop Bridges</h3>
+            <p class="text-xs text-[#8892a0] leading-relaxed">Native Linux D-Bus MPRIS and PulseAudio integration. Andromeda controls desktop music (Spotify, VLC, browser), sets volumes, and coordinates host desktop processes.</p>
+            <div class="pt-2 flex flex-wrap gap-1.5 text-[11px] font-mono text-zinc-400">
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">MPRIS</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">PulseAudio</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">D-Bus</span>
+            </div>
+          </div>
+
+          <div class="neu-raised p-6 rounded-3xl space-y-4 hover:-translate-y-1 transition-transform">
+            <div class="w-12 h-12 rounded-2xl neu-inset-sm flex items-center justify-center text-[#5e937d]">
+              <i data-lucide="cpu" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-white">Multi-Tier Inference Grid</h3>
+            <p class="text-xs text-[#8892a0] leading-relaxed">Dynamic hot-switching between Local Qwen-2.5 1.5B (SQR FP8 edge execution), LAN Bridge 7B Turbo on OptiPlex, and Google Gemini Cloud fallback for complex reasoning.</p>
+            <div class="pt-2 flex flex-wrap gap-1.5 text-[11px] font-mono text-zinc-400">
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Ollama</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">1.5B Edge</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">7B Turbo LAN</span>
+            </div>
+          </div>
+
+          <div id="lp-storage" class="neu-raised p-6 rounded-3xl space-y-4 hover:-translate-y-1 transition-transform">
+            <div class="w-12 h-12 rounded-2xl neu-inset-sm flex items-center justify-center text-[#b88a44]">
+              <i data-lucide="database" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-white">Unified Containerized SQLite3</h3>
+            <p class="text-xs text-[#8892a0] leading-relaxed">All user records, passwords (PBKDF2-HMAC-SHA256 salted), session tokens, and conversations are stored in a single high-performance `andromeda.db` volume with Write-Ahead Logging.</p>
+            <div class="pt-2 flex flex-wrap gap-1.5 text-[11px] font-mono text-zinc-400">
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">SQLite3 WAL</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">PBKDF2 100k</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">User Scoped</span>
+            </div>
+          </div>
+
+          <div class="neu-raised p-6 rounded-3xl space-y-4 hover:-translate-y-1 transition-transform">
+            <div class="w-12 h-12 rounded-2xl neu-inset-sm flex items-center justify-center text-[#a65b5b]">
+              <i data-lucide="eye" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-white">Astigmatism-Ergonomic UI</h3>
+            <p class="text-xs text-[#8892a0] leading-relaxed">Calibrated dual-diffuse directional lighting on slate (`#1e2126`). Eliminates corneal light bleed, harsh 1px tacky borders, and high-contrast glare that cause severe eyestrain.</p>
+            <div class="pt-2 flex flex-wrap gap-1.5 text-[11px] font-mono text-zinc-400">
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Slate #1e2126</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Zero Halation</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Soft Shadows</span>
+            </div>
+          </div>
+
+          <div class="neu-raised p-6 rounded-3xl space-y-4 hover:-translate-y-1 transition-transform">
+            <div class="w-12 h-12 rounded-2xl neu-inset-sm flex items-center justify-center text-blue-400">
+              <i data-lucide="disc" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-white">Dynamic Island & Audio HUD</h3>
+            <p class="text-xs text-[#8892a0] leading-relaxed">Real-time audio visualizer waves, playback transport deck, and acoustic sound feedback synthesized with Web Audio API for tactile user interactions.</p>
+            <div class="pt-2 flex flex-wrap gap-1.5 text-[11px] font-mono text-zinc-400">
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Dynamic Island</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Web Audio Chimes</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Visualizer</span>
+            </div>
+          </div>
+
+          <div class="neu-raised p-6 rounded-3xl space-y-4 hover:-translate-y-1 transition-transform">
+            <div class="w-12 h-12 rounded-2xl neu-inset-sm flex items-center justify-center text-purple-400">
+              <i data-lucide="terminal" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-white">Slash Commands & Telemetry</h3>
+            <p class="text-xs text-[#8892a0] leading-relaxed">Execute instant terminal actions with `/music`, `/install <app>`, `/status`, `/model`. Monitored 24/7 with Arize Phoenix OpenTelemetry tracing on port 6006.</p>
+            <div class="pt-2 flex flex-wrap gap-1.5 text-[11px] font-mono text-zinc-400">
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Slash Macros</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Arize Phoenix</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Flathub</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Usages Section -->
+    <section id="lp-usages" class="py-20 bg-[#1b1e23] border-t border-[#242830]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div class="text-center space-y-3 max-w-2xl mx-auto">
+          <span class="text-xs font-mono uppercase tracking-widest text-emerald-400">Workflows</span>
+          <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">How Andromeda Powers Daily Computing</h2>
+          <p class="text-sm sm:text-base text-[#8892a0]">Discover how developers and power users employ Andromeda's tactile desktop capabilities.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="neu-raised p-8 rounded-3xl space-y-4 flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full neu-inset-sm text-xs font-mono text-[#5072a7]">
+                <span>01 // DEVELOPER ASSISTANT</span>
+              </div>
+              <h3 class="text-xl font-bold text-white">Zero-Latency Terminal & Coding Companion</h3>
+              <p class="text-xs sm:text-sm text-[#8892a0] leading-relaxed">Stage terminal commands, inspect system logs, verify Git repositories, and generate Flathub install pipelines (VSCode, Discord, Blender) directly from the prompt bar.</p>
+            </div>
+            <div class="neu-inset-deep p-4 rounded-2xl font-mono text-xs text-zinc-300 space-y-1">
+              <div class="text-[#8892a0]">// Staging Flatpak app installation:</div>
+              <div class="text-emerald-400">$ /install vscode</div>
+              <div class="text-[#8892a0]">✔ Staged: flatpak install --user -y flathub com.visualstudio.code</div>
+            </div>
+          </div>
+
+          <div class="neu-raised p-8 rounded-3xl space-y-4 flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full neu-inset-sm text-xs font-mono text-[#5e937d]">
+                <span>02 // AMBIENT MEDIA HUB</span>
+              </div>
+              <h3 class="text-xl font-bold text-white">Desktop Audio Master & Live In-Stream Deck</h3>
+              <p class="text-xs sm:text-sm text-[#8892a0] leading-relaxed">Use voice or text prompts to stream YouTube audio or trigger MPRIS playback. Andromeda's Dynamic Island floats above your workspace with animated waves.</p>
+            </div>
+            <div class="neu-inset-deep p-4 rounded-2xl font-mono text-xs text-zinc-300 space-y-1">
+              <div class="text-[#8892a0]">// Media transport invocation:</div>
+              <div class="text-blue-400">$ /music synthwave mix 2026</div>
+              <div class="text-[#8892a0]">✔ Resolved top stream • In-Stream player active on Header HUD</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="lp-architecture" class="py-20 border-t border-[#242830]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div class="text-center space-y-3 max-w-2xl mx-auto">
+          <span class="text-xs font-mono uppercase tracking-widest text-[#5072a7]">System Blueprint</span>
+          <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">Edge-to-Container Architecture</h2>
+          <p class="text-sm sm:text-base text-[#8892a0]">A robust microservice architecture designed for zero latency and rock-solid persistence.</p>
+        </div>
+
+        <div class="neu-raised-lg p-8 rounded-3xl space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+            <div class="neu-inset-sm p-5 rounded-2xl space-y-2">
+              <div class="w-8 h-8 mx-auto rounded-xl neu-raised flex items-center justify-center text-blue-400">
+                <i data-lucide="globe" class="w-4 h-4"></i>
+              </div>
+              <h4 class="text-sm font-semibold text-white">1. Edge Clients</h4>
+              <p class="text-[11px] text-[#8892a0]">GitHub Pages static SPA, Local Ingress (:80/:5173), Android Native Bridge</p>
+            </div>
+            <div class="neu-inset-sm p-5 rounded-2xl space-y-2">
+              <div class="w-8 h-8 mx-auto rounded-xl neu-raised flex items-center justify-center text-emerald-400">
+                <i data-lucide="shield" class="w-4 h-4"></i>
+              </div>
+              <h4 class="text-sm font-semibold text-white">2. Ingress & Tunnel</h4>
+              <p class="text-[11px] text-[#8892a0]">Caddy 2 & Cloudflare Zero Trust Tunnel routing WSS and REST endpoints</p>
+            </div>
+            <div class="neu-inset-sm p-5 rounded-2xl space-y-2">
+              <div class="w-8 h-8 mx-auto rounded-xl neu-raised flex items-center justify-center text-amber-400">
+                <i data-lucide="cpu" class="w-4 h-4"></i>
+              </div>
+              <h4 class="text-sm font-semibold text-white">3. FastAPI Core</h4>
+              <p class="text-[11px] text-[#8892a0]">Socrates Reasoning Loop, MPRIS Bridge, Arize Phoenix Tracing (:6006)</p>
+            </div>
+            <div class="neu-inset-sm p-5 rounded-2xl space-y-2">
+              <div class="w-8 h-8 mx-auto rounded-xl neu-raised flex items-center justify-center text-purple-400">
+                <i data-lucide="database" class="w-4 h-4"></i>
+              </div>
+              <h4 class="text-sm font-semibold text-white">4. Container SQLite3</h4>
+              <p class="text-[11px] text-[#8892a0]">`andromeda.db` WAL volume, PBKDF2 tokens, user-scoped sessions & memory</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-[#242830] bg-[#1a1c21] py-8 text-xs text-[#8892a0]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-7 h-7 rounded-lg neu-raised flex items-center justify-center text-[#5072a7]">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+          </div>
+          <span>Andromeda Intelligent Workspace • 2026</span>
+        </div>
+        <div class="flex items-center gap-4 text-zinc-400">
+          <span>SQLite WAL Persistent</span>
+          <span>•</span>
+          <span>Docker 24/7 Runtime</span>
+          <span>•</span>
+          <button onclick="navigateToWorkspace()" class="text-emerald-400 hover:text-emerald-300 font-medium">Launch Workspace &rarr;</button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- 2. ROOT APP WORKSPACE CONTAINER                                -->
+  <!-- ============================================================== -->
+  <div id="app-workspace-view" class="flex h-full w-full max-w-[1440px] mx-auto overflow-hidden relative">
 
     <!-- ============================================================== -->
     <!-- LEFT SIDEBAR: SESSIONS & SYSTEM TOOLS (COLLAPSIBLE) -->
@@ -213,6 +558,24 @@
         <button onclick="toggleSidebar()" class="neu-btn md:hidden text-[#8892a0] hover:text-[#dde2ea] p-1.5 rounded-lg transition-colors">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
+      </div>
+
+      <!-- SIDEBAR USER PROFILE BADGE -->
+      <div class="px-3 pt-3 pb-1 border-b border-[#242830]">
+        <div class="p-2.5 rounded-xl neu-inset-sm flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2 min-w-0">
+            <div class="w-6 h-6 rounded-lg neu-raised-sm flex items-center justify-center text-emerald-400 font-mono text-[10px] shrink-0 font-bold" id="sidebar-user-avatar">
+              U
+            </div>
+            <div class="min-w-0">
+              <div id="sidebar-username-display" class="font-medium text-zinc-200 truncate text-[11px]">Guest User</div>
+              <div class="text-[9px] text-zinc-500 font-mono">SQLite: andromeda.db</div>
+            </div>
+          </div>
+          <button onclick="navigateToLanding()" class="neu-btn p-1.5 rounded-lg text-[#8892a0] hover:text-white shrink-0" title="View Landing Page & Abilities">
+            <i data-lucide="compass" class="w-3.5 h-3.5 text-[#5072a7]"></i>
+          </button>
+        </div>
       </div>
 
       <!-- CHAT SESSIONS & CONTEXTS -->
@@ -371,6 +734,21 @@
           >
             <i data-lucide="orbit" class="w-4 h-4"></i>
           </button>
+
+          <!-- USER PROFILE PILL & LANDING SWITCHER -->
+          <div class="flex items-center gap-1.5 ml-1">
+            <button onclick="navigateToLanding()" class="neu-pill px-2.5 py-1 text-xs text-[#8892a0] hover:text-white flex items-center gap-1" title="View Abilities & Overview">
+              <i data-lucide="compass" class="w-3.5 h-3.5 text-[#5072a7]"></i>
+              <span class="hidden lg:inline text-[11px]">Abilities</span>
+            </button>
+            <div id="workspace-user-pill" class="neu-pill flex items-center gap-1.5 px-2.5 py-1 text-xs text-zinc-300">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span id="workspace-username-display" class="font-mono text-[11px]">@guest</span>
+              <button onclick="logoutWorkspaceUser()" class="hover:text-rose-400 ml-0.5 text-[#8892a0]" title="Sign Out">
+                <i data-lucide="log-out" class="w-3 h-3"></i>
+              </button>
+            </div>
+          </div>
 
         </div>
       </header>
@@ -857,6 +1235,140 @@
   </div>
 
   <!-- ============================================================== -->
+  <!-- MODAL: AUTHENTICATION (SIGN IN & SIGN UP)                     -->
+  <!-- ============================================================== -->
+  <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md hidden transition-opacity p-4">
+    <div class="w-full max-w-md neu-raised-lg rounded-3xl border border-[#262a32] overflow-hidden p-6 sm:p-8 space-y-6 relative shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+      
+      <!-- Close Button -->
+      <button onclick="closeAuthModal()" class="absolute top-5 right-5 neu-btn p-2 rounded-xl text-[#8892a0] hover:text-white" title="Close">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 rounded-2xl neu-raised mx-auto flex items-center justify-center text-[#5072a7]">
+          <i data-lucide="sparkles" class="w-6 h-6"></i>
+        </div>
+        <h3 id="auth-modal-title" class="text-2xl font-bold text-white tracking-tight">Sign In to Andromeda</h3>
+        <p id="auth-modal-subtitle" class="text-xs text-[#8892a0]">
+          Access your personal workspace and persistent SQLite sessions.
+        </p>
+      </div>
+
+      <!-- Auth Switcher Tabs -->
+      <div class="grid grid-cols-2 p-1 rounded-2xl neu-inset-deep text-xs font-medium">
+        <button id="tab-signin" onclick="switchAuthTab('signin')" class="py-2.5 rounded-xl transition-all text-white neu-raised-sm font-semibold">
+          Sign In
+        </button>
+        <button id="tab-signup" onclick="switchAuthTab('signup')" class="py-2.5 rounded-xl transition-all text-[#8892a0] hover:text-white">
+          Create Account
+        </button>
+      </div>
+
+      <!-- Live Error / Notification Banner -->
+      <div id="auth-alert" class="hidden neu-inset-sm p-3 rounded-xl text-xs flex items-center gap-2 text-rose-400">
+        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+        <span id="auth-alert-text">Invalid credentials.</span>
+      </div>
+
+      <!-- SIGN IN FORM -->
+      <form id="form-signin" onsubmit="handleSignIn(event)" class="space-y-4">
+        <div class="space-y-1.5 text-left">
+          <label class="text-xs font-medium text-[#8892a0] flex items-center gap-1.5">
+            <i data-lucide="user" class="w-3.5 h-3.5 text-[#5072a7]"></i>
+            <span>Username or Email</span>
+          </label>
+          <input type="text" id="signin-identifier" required placeholder="e.g. sfiso or user@example.com"
+            class="w-full px-4 py-2.5 rounded-xl neu-inset-deep text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#5072a7]">
+        </div>
+
+        <div class="space-y-1.5 text-left">
+          <label class="text-xs font-medium text-[#8892a0] flex items-center gap-1.5">
+            <i data-lucide="lock" class="w-3.5 h-3.5 text-[#5072a7]"></i>
+            <span>Password</span>
+          </label>
+          <div class="relative">
+            <input type="password" id="signin-password" required placeholder="••••••••"
+              class="w-full px-4 py-2.5 rounded-xl neu-inset-deep text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#5072a7] pr-10">
+            <button type="button" onclick="togglePasswordVisibility('signin-password', this)" class="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-300">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-signin-submit" class="w-full py-3 rounded-xl neu-btn font-semibold text-xs text-white flex items-center justify-center gap-2 hover:text-blue-300 transition-colors">
+          <i data-lucide="log-in" class="w-4 h-4 text-[#5072a7]"></i>
+          <span>Authenticate & Launch</span>
+        </button>
+      </form>
+
+      <!-- SIGN UP FORM -->
+      <form id="form-signup" onsubmit="handleSignUp(event)" class="space-y-3.5 hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-[#8892a0]">Username</label>
+            <input type="text" id="signup-username" required placeholder="username" minlength="3" maxlength="30"
+              class="w-full px-3.5 py-2.5 rounded-xl neu-inset-deep text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#5e937d]">
+          </div>
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-[#8892a0]">Display Name</label>
+            <input type="text" id="signup-displayname" placeholder="Optional Name"
+              class="w-full px-3.5 py-2.5 rounded-xl neu-inset-deep text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#5e937d]">
+          </div>
+        </div>
+
+        <div class="space-y-1 text-left">
+          <label class="text-xs font-medium text-[#8892a0]">Email Address</label>
+          <input type="email" id="signup-email" required placeholder="you@domain.com"
+            class="w-full px-4 py-2.5 rounded-xl neu-inset-deep text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#5e937d]">
+        </div>
+
+        <div class="space-y-1 text-left">
+          <label class="text-xs font-medium text-[#8892a0]">Password (Min 6 Characters)</label>
+          <div class="relative">
+            <input type="password" id="signup-password" required minlength="6" placeholder="••••••••"
+              class="w-full px-4 py-2.5 rounded-xl neu-inset-deep text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#5e937d] pr-10">
+            <button type="button" onclick="togglePasswordVisibility('signup-password', this)" class="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-300">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-1 text-left">
+          <label class="text-xs font-medium text-[#8892a0]">Confirm Password</label>
+          <input type="password" id="signup-confirm-password" required minlength="6" placeholder="••••••••"
+            class="w-full px-4 py-2.5 rounded-xl neu-inset-deep text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#5e937d]">
+        </div>
+
+        <div class="space-y-1 text-left">
+          <label class="text-[11px] font-medium text-[#8892a0]">Preferred Inference Tier</label>
+          <select id="signup-model" class="w-full px-3 py-2 rounded-xl neu-inset-deep text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#5e937d]">
+            <option value="llama3.2:latest">Llama 3.2 / Qwen 1.5B (Edge SQR FP8 - Local)</option>
+            <option value="qwen2.5:7b">Qwen 2.5 7B Turbo (LAN Bridge OptiPlex)</option>
+            <option value="gemini-1.5-pro">Gemini Cloud Muscle (Cloud Fallback)</option>
+          </select>
+        </div>
+
+        <button type="submit" id="btn-signup-submit" class="w-full py-3 rounded-xl neu-btn font-semibold text-xs text-white flex items-center justify-center gap-2 hover:text-emerald-300 transition-colors">
+          <i data-lucide="user-check" class="w-4 h-4 text-emerald-400"></i>
+          <span>Create Account & Provision DB</span>
+        </button>
+      </form>
+
+      <!-- Instant Guest Mode Bypass -->
+      <div class="pt-2 border-t border-[#242830] flex items-center justify-between text-xs text-[#8892a0]">
+        <span>Want to test first?</span>
+        <button onclick="continueAsGuest()" class="text-blue-400 hover:text-blue-300 font-medium underline flex items-center gap-1">
+          <span>Continue as Guest</span>
+          <i data-lucide="arrow-right" class="w-3 h-3"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
   <!-- FULLSCREEN EYES-FREE DRIVING HUD OVERLAY -->
   <!-- ============================================================== -->
   <div id="eyes-free-overlay" class="fixed inset-0 z-50 bg-black hidden flex flex-col items-center justify-between p-6 text-center">
@@ -1229,7 +1741,12 @@
     localStorage.setItem("andromeda_session_id", activeSessionId);
 
     function initCoreSocket() {
-      const wsUrl = getBackendWsUrl();
+      let wsUrl = getBackendWsUrl();
+      const token = localStorage.getItem("andromeda_auth_token") || "";
+      if (token) {
+        const sep = wsUrl.includes("?") ? "&" : "?";
+        wsUrl += `${sep}token=${encodeURIComponent(token)}`;
+      }
       updateBackendStatusIndicator("connecting", wsUrl);
 
       try {
@@ -1238,7 +1755,7 @@
         coreSocket.onopen = () => {
           updateBackendStatusIndicator("connected", wsUrl);
           const cloudUrl = localStorage.getItem("andromeda_cloud_url") || "";
-          coreSocket.send(JSON.stringify({ type: "init", session_id: activeSessionId, cloud_url: cloudUrl }));
+          coreSocket.send(JSON.stringify({ type: "init", session_id: activeSessionId, cloud_url: cloudUrl, token: token }));
           coreSocket.send(JSON.stringify({ type: "get_sessions" }));
           captureTelemetry();
           setInterval(captureTelemetry, 10000);
@@ -2387,9 +2904,288 @@
       }
     }
 
+    // ==========================================
+    // VIEW ROUTING & AUTHENTICATION CONTROLLER
+    // ==========================================
+
+    function navigateToLanding() {
+      const landingView = document.getElementById('app-landing-view');
+      const workspaceView = document.getElementById('app-workspace-view');
+      if (landingView) landingView.classList.remove('hidden');
+      if (workspaceView) workspaceView.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+      document.body.classList.add('overflow-y-auto');
+      window.location.hash = '#/landing';
+      checkLandingAuthNav();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function navigateToWorkspace() {
+      const landingView = document.getElementById('app-landing-view');
+      const workspaceView = document.getElementById('app-workspace-view');
+      if (landingView) landingView.classList.add('hidden');
+      if (workspaceView) workspaceView.classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+      document.body.classList.remove('overflow-y-auto');
+      window.location.hash = '#/workspace';
+      updateWorkspaceUserDisplay();
+      if (!coreSocket || coreSocket.readyState === WebSocket.CLOSED) {
+        initCoreSocket();
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function checkLandingAuthNav() {
+      const token = localStorage.getItem('andromeda_auth_token');
+      const unauth = document.getElementById('landing-nav-unauth');
+      const auth = document.getElementById('landing-nav-auth');
+      if (token) {
+        if (unauth) unauth.classList.add('hidden');
+        if (auth) auth.classList.remove('hidden');
+      } else {
+        if (unauth) unauth.classList.remove('hidden');
+        if (auth) auth.classList.add('hidden');
+      }
+    }
+
+    function updateWorkspaceUserDisplay() {
+      const profileStr = localStorage.getItem('andromeda_user_profile');
+      let username = 'guest';
+      let displayName = 'Guest User';
+      if (profileStr) {
+        try {
+          const profile = JSON.parse(profileStr);
+          username = profile.username || 'guest';
+          displayName = profile.display_name || username;
+        } catch {}
+      }
+      const topDisplay = document.getElementById('workspace-username-display');
+      if (topDisplay) topDisplay.innerText = `@${username}`;
+      const sideDisplay = document.getElementById('sidebar-username-display');
+      if (sideDisplay) sideDisplay.innerText = displayName;
+      const avatarEl = document.getElementById('sidebar-user-avatar');
+      if (avatarEl) avatarEl.innerText = username.charAt(0).toUpperCase();
+    }
+
+    function openAuthModal(mode) {
+      const modal = document.getElementById('auth-modal');
+      if (modal) modal.classList.remove('hidden');
+      switchAuthTab(mode || 'signin');
+      clearAuthAlert();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeAuthModal() {
+      const modal = document.getElementById('auth-modal');
+      if (modal) modal.classList.add('hidden');
+      clearAuthAlert();
+    }
+
+    function switchAuthTab(mode) {
+      const tabSignIn = document.getElementById('tab-signin');
+      const tabSignUp = document.getElementById('tab-signup');
+      const formSignIn = document.getElementById('form-signin');
+      const formSignUp = document.getElementById('form-signup');
+      const modalTitle = document.getElementById('auth-modal-title');
+      const modalSubtitle = document.getElementById('auth-modal-subtitle');
+      clearAuthAlert();
+
+      if (mode === 'signup') {
+        if (tabSignUp) tabSignUp.className = 'py-2.5 rounded-xl transition-all text-white neu-raised-sm font-semibold';
+        if (tabSignIn) tabSignIn.className = 'py-2.5 rounded-xl transition-all text-[#8892a0] hover:text-white';
+        if (formSignIn) formSignIn.classList.add('hidden');
+        if (formSignUp) formSignUp.classList.remove('hidden');
+        if (modalTitle) modalTitle.innerText = 'Create Andromeda Account';
+        if (modalSubtitle) modalSubtitle.innerText = 'Provision your isolated user records in the unified SQLite container.';
+      } else {
+        if (tabSignIn) tabSignIn.className = 'py-2.5 rounded-xl transition-all text-white neu-raised-sm font-semibold';
+        if (tabSignUp) tabSignUp.className = 'py-2.5 rounded-xl transition-all text-[#8892a0] hover:text-white';
+        if (formSignUp) formSignUp.classList.add('hidden');
+        if (formSignIn) formSignIn.classList.remove('hidden');
+        if (modalTitle) modalTitle.innerText = 'Sign In to Andromeda';
+        if (modalSubtitle) modalSubtitle.innerText = 'Access your personal workspace and persistent SQLite sessions.';
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function showAuthAlert(msg, isError = true) {
+      const alert = document.getElementById('auth-alert');
+      const alertText = document.getElementById('auth-alert-text');
+      if (alertText) alertText.innerText = msg;
+      if (alert) {
+        alert.classList.remove('hidden');
+        alert.className = isError 
+          ? 'neu-inset-sm p-3 rounded-xl text-xs flex items-center gap-2 text-rose-400'
+          : 'neu-inset-sm p-3 rounded-xl text-xs flex items-center gap-2 text-emerald-400';
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function clearAuthAlert() {
+      const alert = document.getElementById('auth-alert');
+      if (alert) alert.classList.add('hidden');
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i>';
+      } else {
+        input.type = 'password';
+        btn.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i>';
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    async function handleSignIn(e) {
+      e.preventDefault();
+      clearAuthAlert();
+      const identifier = document.getElementById('signin-identifier').value.trim();
+      const password = document.getElementById('signin-password').value;
+      const submitBtn = document.getElementById('btn-signin-submit');
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Authenticating...';
+
+      try {
+        const response = await fetch(`${getBackendHttpUrl()}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: identifier, password: password })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.detail || 'Failed to authenticate.');
+        }
+
+        localStorage.setItem('andromeda_auth_token', data.token);
+        localStorage.setItem('andromeda_user_profile', JSON.stringify(data.user));
+
+        showAuthAlert('Authentication successful! Launching workspace...', false);
+        setTimeout(() => {
+          closeAuthModal();
+          navigateToWorkspace();
+          notify(`Welcome back, ${data.user.display_name || data.user.username}!`, "success");
+        }, 600);
+
+      } catch (err) {
+        showAuthAlert(err.message, true);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="log-in" class="w-4 h-4 text-[#5072a7]"></i><span>Authenticate & Launch</span>';
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    async function handleSignUp(e) {
+      e.preventDefault();
+      clearAuthAlert();
+      const username = document.getElementById('signup-username').value.trim();
+      const displayName = document.getElementById('signup-displayname').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const confirmPassword = document.getElementById('signup-confirm-password').value;
+      const preferredModel = document.getElementById('signup-model').value;
+      const submitBtn = document.getElementById('btn-signup-submit');
+
+      if (password !== confirmPassword) {
+        showAuthAlert('Passwords do not match. Please verify.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Creating Account...';
+
+      try {
+        const response = await fetch(`${getBackendHttpUrl()}/api/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: username,
+            display_name: displayName || username,
+            email: email,
+            password: password,
+            preferred_model: preferredModel
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.detail || 'Registration failed.');
+        }
+
+        localStorage.setItem('andromeda_auth_token', data.token);
+        localStorage.setItem('andromeda_user_profile', JSON.stringify(data.user));
+
+        showAuthAlert('Account created! Initializing personal database and launching...', false);
+        setTimeout(() => {
+          closeAuthModal();
+          navigateToWorkspace();
+          notify(`Welcome to Andromeda, ${data.user.display_name || data.user.username}!`, "success");
+        }, 800);
+
+      } catch (err) {
+        showAuthAlert(err.message, true);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="user-check" class="w-4 h-4 text-emerald-400"></i><span>Create Account & Provision DB</span>';
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    async function continueAsGuest() {
+      try {
+        const response = await fetch(`${getBackendHttpUrl()}/api/auth/guest`, {
+          method: 'POST'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem('andromeda_auth_token', data.token);
+          localStorage.setItem('andromeda_user_profile', JSON.stringify(data.user));
+        }
+      } catch {
+        // Fallback for static preview
+      }
+      closeAuthModal();
+      navigateToWorkspace();
+      notify("Exploring as Guest. Chats saved to local demo session.", "info");
+    }
+
+    async function logoutWorkspaceUser() {
+      const token = localStorage.getItem('andromeda_auth_token');
+      if (token) {
+        try {
+          await fetch(`${getBackendHttpUrl()}/api/auth/logout`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        } catch {}
+      }
+      localStorage.removeItem('andromeda_auth_token');
+      localStorage.removeItem('andromeda_user_profile');
+      if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+        coreSocket.close();
+      }
+      notify("Signed out of workspace.", "info");
+      navigateToLanding();
+    }
+
     // Startup
     window.addEventListener('DOMContentLoaded', () => {
-      initCoreSocket();
+      // Determine initial view based on route hash or authentication state
+      const hash = window.location.hash;
+      const token = localStorage.getItem('andromeda_auth_token');
+
+      if (hash === '#/workspace' || (token && hash !== '#/landing' && hash !== '#/overview')) {
+        navigateToWorkspace();
+      } else {
+        navigateToLanding();
+        if (hash === '#/login') openAuthModal('signin');
+        if (hash === '#/signup') openAuthModal('signup');
+      }
+
       initWorkspaceAvatarCanvas();
       fetchMediaStatus();
       setInterval(fetchMediaStatus, 3000);
