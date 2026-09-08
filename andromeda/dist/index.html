@@ -46,17 +46,6 @@
     /* ========================================================= */
     /* NEUMORPHIC SOFT UI SYSTEM (ASTIGMATISM-OPTIMIZED)         */
     /* ========================================================= */
-    :root {
-      --neu-base: #1e2126;
-      --neu-raised: #21252b;
-      --neu-sunken: #1a1c21;
-      --neu-shadow-dark: #131518;
-      --neu-shadow-light: #282c34;
-      --neu-text-primary: #dde2ea;
-      --neu-text-secondary: #8892a0;
-      --neu-text-muted: #646c7a;
-      --neu-accent: #5072a7;
-    }
 
     /* Custom soft scrollbars */
     ::-webkit-scrollbar {
@@ -159,6 +148,7 @@
       background: #22262c;
       box-shadow: 2px 2px 5px #111316, -2px -2px 5px #2b3038;
       cursor: pointer;
+      -webkit-transition: transform 0.1s ease;
       transition: transform 0.1s ease;
     }
     input[type="range"]::-webkit-slider-thumb:hover {
@@ -229,6 +219,10 @@
             </button>
           </div>
           <div id="landing-nav-auth" class="hidden items-center gap-2.5">
+            <a href="app.html" class="neu-btn text-xs font-medium px-3.5 py-2 rounded-xl text-purple-300 hover:text-white flex items-center gap-1.5 border border-purple-500/30 shadow-[0_0_12px_rgba(168,85,247,0.2)]">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-400"></i>
+              <span>Cosmic Deck (React)</span>
+            </a>
             <button onclick="navigateToWorkspace()" class="neu-btn text-xs font-medium px-4 py-2 rounded-xl text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5">
               <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
               <span>Launch Workspace</span>
@@ -742,6 +736,10 @@
 
           <!-- USER PROFILE PILL & LANDING SWITCHER -->
           <div class="flex items-center gap-1.5 ml-1">
+            <a href="app.html" class="neu-pill px-2.5 py-1 text-xs text-purple-300 hover:text-white flex items-center gap-1 border border-purple-500/30" title="Launch React Cosmic Workspace">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-400"></i>
+              <span class="hidden sm:inline text-[11px]">Cosmic Deck</span>
+            </a>
             <button onclick="navigateToLanding()" class="neu-pill px-2.5 py-1 text-xs text-[#8892a0] hover:text-white flex items-center gap-1" title="View Abilities & Overview">
               <i data-lucide="compass" class="w-3.5 h-3.5 text-[#5072a7]"></i>
               <span class="hidden lg:inline text-[11px]">Abilities</span>

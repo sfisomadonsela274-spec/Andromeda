@@ -20,6 +20,11 @@
   },
   "dependencies": {
     "@capacitor/android": "^5.7.8",
-    "@capacitor/core": "^5.7.8"
+    "@capacitor/core": "^5.7.8",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "lucide-react": "^1.43.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   }
 }
