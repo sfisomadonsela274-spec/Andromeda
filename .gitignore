@@ -9,5 +9,6 @@ __pycache__/
 *.db-shm
 *.db-wal
 *.migrated
+bin/
 data/tunnel/
 .DS_Store
