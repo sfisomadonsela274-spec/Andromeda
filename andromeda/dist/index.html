@@ -2154,12 +2154,26 @@
         } else if (actionPayload.action === "chat") {
           content = actionPayload.message || rawMessage;
         } else {
-          content = actionPayload.message || rawMessage;
+          if (actionPayload.message) {
+            content = actionPayload.message;
+          } else {
+            const keys = Object.keys(actionPayload).filter(k => k !== 'action');
+            if (keys.length > 0) {
+              content = keys.map(k => {
+                const val = Array.isArray(actionPayload[k]) ? actionPayload[k].join(', ') : actionPayload[k];
+                return `• <strong>${escapeHtml(k)}</strong>: ${escapeHtml(String(val))}`;
+              }).join('<br>');
+            } else {
+              content = escapeHtml(rawMessage);
+            }
+          }
         }
       } catch (err) {
         // Raw text
       }
-      appendSystemMessage(content);
+      if (content && content.trim() !== '{') {
+        appendSystemMessage(content);
+      }
     }
 
     function showTypingIndicator(statusText = "Thinking...") {

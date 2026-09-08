@@ -143,7 +143,12 @@ ARCHITECT_KEYWORDS = {
     "endpoint", "asyncio", "multithreading", "concurrency", "pull request",
     "class hierarchy", "dependency injection", "type hint", "interface",
     "syntax error", "compiler error", "reimplement", "unit test", "benchmark",
-    "complexity", "o(n)", "big-o", "binary tree", "pointer", "segfault"
+    "complexity", "o(n)", "big-o", "binary tree", "pointer", "segfault",
+    "inheritance", "subclass", "superclass", "polymorphism", "encapsulation",
+    "abstract class", "dunder", "oop", "object-oriented", "dataclass",
+    "methods", "classmethod", "staticmethod", "python", "typescript",
+    "javascript", "golang", "rust", "c++", "code example", "write code",
+    "implement", "super()", "constructor", "__init__"
 }
 
 LOGICIAN_KEYWORDS = {

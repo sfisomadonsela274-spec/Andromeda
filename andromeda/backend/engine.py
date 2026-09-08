@@ -60,7 +60,7 @@ SYSTEM_PROMPT = """You are Andromeda, an intelligent, sleek, and high-performanc
 You are sharp, poised, polite, and exceptionally capable. You execute user commands smoothly, with zero unnecessary friction, complaints, or delays.
 You never insult the user, tell them to shut up, or complain about work. When the user asks you to relax, do a task, install software, or play music, you cheerfully and precisely fulfill their request.
 Your primary function is to interpret user commands and execute actions by returning STRICT JSON.
-You must always reply with a single JSON object. Do not include markdown code blocks (e.g. ```json). Do not include any conversational text outside the JSON.
+You must always reply with a single JSON object. Do not include markdown code blocks (e.g. ```json) around the JSON itself. Do not include any conversational text outside the JSON.
 
 Available actions:
 1. "youtube": Play music or video on YouTube. Requires fields: "action": "youtube", "query": "search query or artist", "message": "conversational reply"
@@ -71,12 +71,18 @@ Available actions:
 6. "browser": Open a website or URL in browser. Requires fields: "action": "browser", "url": "https://...", "message": "conversational reply"
 7. "scroll": Scroll the screen up or down. Requires fields: "action": "scroll", "direction": "up|down", "message": "conversational reply"
 8. "mailto": Draft an email. Requires fields: "action": "mailto", "recipient": "email@address.com", "subject": "...", "body": "...", "message": "conversational reply"
-9. "chat": Standard conversational text response. Requires fields: "action": "chat", "message": "..."
+9. "chat": Standard conversational, educational, or code response. Requires fields: "action": "chat", "message": "<full response, explanations, and code examples>"
+
+CRITICAL RULE FOR PROGRAMMING, EXPLANATIONS, AND GENERAL QUESTIONS:
+- For code requests, programming questions (such as Python inheritance, algorithms, debugging, syntax, etc.), explanations, or conversations, ALWAYS use action "chat".
+- Place the complete explanation, including all code blocks and examples, directly within the "message" field.
+- NEVER invent arbitrary custom JSON keys or schemas (e.g., do NOT output schemas like {"Superclass": ..., "Methods": ...}).
 
 Example responses:
 {"action": "youtube", "query": "tame impala loser", "message": "Playing Tame Impala - Loser on YouTube for you."}
 {"action": "app_install", "app": "spotify", "method": "flatpak", "message": "Installing Spotify via Flatpak for you."}
 {"action": "app_control", "app": "spotify", "sub_action": "open", "message": "Opening Spotify."}
+{"action": "chat", "message": "Here is an example of Python inheritance:\\n\\n```python\\nclass Parent:\\n    def greet(self):\\n        return 'Hello'\\n\\nclass Child(Parent):\\n    pass\\n```\\n\\nUse `super()` to invoke the parent initializer."}
 {"action": "chat", "message": "I'm right here. How can I help you today?"}
 """
 
@@ -192,25 +198,30 @@ class SocratesScaffoldingAsync:
         self.model_name = os.getenv("ANDROMEDA_MODEL", "llama3.2:latest")
         self.client = ollama.AsyncClient() if OLLAMA_AVAILABLE else None
 
-    async def get_working_model(self) -> str:
+    async def get_working_model(self, requested_model: Optional[str] = None) -> str:
         """
-        Verifies if self.model_name exists in Ollama, otherwise returns first available installed model.
+        Verifies if target model exists in Ollama, otherwise returns first available installed model.
         """
+        target = requested_model or self.model_name
         if not OLLAMA_AVAILABLE or not self.client:
-            return self.model_name
+            return target
         try:
             models_res = await self.client.list()
             installed = [m.get('name', '') or m.get('model', '') for m in models_res.get('models', [])]
-            if any(self.model_name in m for m in installed):
-                return self.model_name
+            if any(target in m for m in installed):
+                return target
+            prefix = target.split(":")[0]
+            matched = [m for m in installed if prefix in m]
+            if matched:
+                return matched[0]
             if installed:
-                logging.info(f"[Engine] Configured model '{self.model_name}' not found. Falling back to '{installed[0]}'")
+                logging.info(f"[Engine] Configured model '{target}' not found. Falling back to '{installed[0]}'")
                 return installed[0]
         except Exception as e:
             logging.warning(f"[Engine] Could not query Ollama models: {e}")
-        return self.model_name
+        return target
 
-    async def query_model(self, full_messages: List[Dict], enforce_json: bool = False) -> str:
+    async def query_model(self, full_messages: List[Dict], enforce_json: bool = False, model: Optional[str] = None) -> str:
         """
         Sends payload to the local Ollama environment or Cloud Node asynchronously.
         """
@@ -244,7 +255,7 @@ class SocratesScaffoldingAsync:
             return '{"action": "chat", "message": "Ollama is missing. Mock response."}'
 
         try:
-            active_model = await self.get_working_model()
+            active_model = await self.get_working_model(requested_model=model)
             kwargs = {
                 "model": active_model,
                 "messages": full_messages
@@ -257,7 +268,7 @@ class SocratesScaffoldingAsync:
         except Exception as e:
             return '{"action": "chat", "message": "[Local Engine Error]: ' + str(e) + '"}'
 
-    async def execute_fast_chat(self, user_prompt: str, messages: List[Dict], context_memory: str = "", stream_callback=None) -> str:
+    async def execute_fast_chat(self, user_prompt: str, messages: List[Dict], context_memory: str = "", stream_callback=None, model: Optional[str] = None) -> str:
         if stream_callback:
             await stream_callback("Synthesizing response...")
             
@@ -267,9 +278,9 @@ You are Andromeda. Respond directly to the user query following your personality
 You must output strictly valid JSON conforming to the ActionResponse schema."""
         
         full_messages = [{"role": "system", "content": system + context_memory}] + base_history
-        return await self.query_model(full_messages, enforce_json=True)
+        return await self.query_model(full_messages, enforce_json=True, model=model)
 
-    async def execute_fast_extract(self, intent: str, user_prompt: str, context_memory: str = "", stream_callback=None) -> str:
+    async def execute_fast_extract(self, intent: str, user_prompt: str, context_memory: str = "", stream_callback=None, model: Optional[str] = None) -> str:
         if stream_callback:
             await stream_callback(f"[Gate] Fast Extraction for: {intent}")
             
@@ -291,9 +302,9 @@ For 'chat': {{"action": "chat", "message": "conversational reply"}}"""
             {"role": "user", "content": f"{context_memory}\nQuery: {user_prompt}"}
         ]
         
-        return await self.query_model(messages, enforce_json=True)
+        return await self.query_model(messages, enforce_json=True, model=model)
 
-    async def execute_socrates_loop(self, user_prompt: str, messages: List[Dict], context_memory: str = "", stream_callback=None) -> str:
+    async def execute_socrates_loop(self, user_prompt: str, messages: List[Dict], context_memory: str = "", stream_callback=None, model: Optional[str] = None) -> str:
         # Context Compression: Keep only the last 6 messages to avoid quadratic scaling
         base_history = messages[-6:] if len(messages) > 6 else messages
         
@@ -303,7 +314,7 @@ For 'chat': {{"action": "chat", "message": "conversational reply"}}"""
             
         stage_1_system = f"{SYSTEM_PROMPT}\nYou are Andromeda's Executor node. Draft an initial response to the query."
         stage_1_messages = [{"role": "system", "content": stage_1_system + context_memory}] + base_history
-        initial_draft = await self.query_model(stage_1_messages)
+        initial_draft = await self.query_model(stage_1_messages, model=model)
 
         # --- STAGE 2: THE CRITIC ---
         if stream_callback:
@@ -317,7 +328,7 @@ Output your critique explicitly."""
             {"role": "system", "content": stage_2_system},
             {"role": "user", "content": f"Original Query: {user_prompt}\nInitial Draft: {initial_draft}"}
         ]
-        critique = await self.query_model(stage_2_messages)
+        critique = await self.query_model(stage_2_messages, model=model)
 
         # --- STAGE 3: THE REFINE ---
         if stream_callback:
@@ -331,7 +342,7 @@ You MUST output strictly valid JSON."""
             {"role": "user", "content": f"Original Query: {user_prompt}\nDraft: {initial_draft}\nCritique: {critique}"}
         ]
         
-        refined_output = await self.query_model(stage_3_messages, enforce_json=True)
+        refined_output = await self.query_model(stage_3_messages, enforce_json=True, model=model)
         return refined_output
 
 def resolve_youtube_top_video(query: str) -> Dict[str, Optional[str]]:
@@ -363,9 +374,10 @@ def resolve_youtube_top_video(query: str) -> Dict[str, Optional[str]]:
 gate_engine = VectorGateEngine()
 scaffolding = SocratesScaffoldingAsync()
 
-async def run_agent_step(user_prompt: str, messages: List[Dict], cwd: str, with_tools: bool = False, telemetry_data: dict = None, stream_callback: Callable = None) -> dict:
+async def run_agent_step(user_prompt: str, messages: List[Dict], cwd: str, with_tools: bool = False, telemetry_data: dict = None, stream_callback: Callable = None, model: Optional[str] = None) -> dict:
     """
     Fully Async Unified Orchestrator: Executes a reasoning step using Gate Engine and Fast Chat / Socrates Loop.
+    Honors dynamic Council of AIs model adjudication.
     """
     # Mock fallback
     if not OLLAMA_AVAILABLE and not CLOUD_NODE_URL:
@@ -402,26 +414,80 @@ async def run_agent_step(user_prompt: str, messages: List[Dict], cwd: str, with_
     deep_reasoning = any(k in user_prompt.lower() for k in ["think deeply", "reason through", "socrates", "plan out", "deliberate"])
 
     if is_tool:
-        final_completion = await scaffolding.execute_fast_extract(intent, user_prompt, context_text, stream_callback)
+        final_completion = await scaffolding.execute_fast_extract(intent, user_prompt, context_text, stream_callback, model=model)
     elif deep_reasoning:
-        final_completion = await scaffolding.execute_socrates_loop(user_prompt, messages, context_text, stream_callback)
+        final_completion = await scaffolding.execute_socrates_loop(user_prompt, messages, context_text, stream_callback, model=model)
     else:
-        final_completion = await scaffolding.execute_fast_chat(user_prompt, messages, context_text, stream_callback)
+        final_completion = await scaffolding.execute_fast_chat(user_prompt, messages, context_text, stream_callback, model=model)
 
-    # Strip markdown
-    final_completion = final_completion.strip()
-    if final_completion.startswith("```json"):
-        final_completion = final_completion[7:]
-    if final_completion.startswith("```"):
-        final_completion = final_completion[3:]
-    if final_completion.endswith("```"):
-        final_completion = final_completion[:-3]
-    final_completion = final_completion.strip()
+    raw = (final_completion or "").strip()
+    
+    # Clean surrounding markdown code fences
+    fence_json = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", raw)
+    if fence_json:
+        candidate_raw = fence_json.group(1).strip()
+        if candidate_raw.startswith("{") and candidate_raw.endswith("}"):
+            raw = candidate_raw
+    else:
+        if raw.startswith("```json"):
+            raw = raw[7:]
+        if raw.startswith("```"):
+            raw = raw[3:]
+        if raw.endswith("```"):
+            raw = raw[:-3]
+        raw = raw.strip()
 
-    # Post-process and enrich parsed JSON
+    parsed = None
+    # 1. Direct JSON parse
     try:
-        parsed = json.loads(final_completion)
-        act = parsed.get("action", "")
+        parsed = json.loads(raw)
+    except Exception:
+        # 2. Extract outermost braces
+        b_start = raw.find("{")
+        b_end = raw.rfind("}")
+        if b_start != -1 and b_end != -1 and b_end > b_start:
+            try:
+                parsed = json.loads(raw[b_start:b_end + 1])
+            except Exception:
+                pass
+
+    # 3. Resilient recovery for incomplete or raw natural language output
+    if not parsed or not isinstance(parsed, dict):
+        if raw == "{" or (raw.startswith("{") and len(raw) < 10):
+            parsed = {
+                "action": "chat",
+                "message": "I apologize, the response stream was interrupted. Please ask again and I will give you the complete response."
+            }
+        else:
+            parsed = {
+                "action": "chat",
+                "message": raw or "Command executed."
+            }
+
+    # 4. Normalize unexpected schema (e.g. {"Superclass": "ParentClass", ...})
+    valid_actions = {"chat", "youtube", "browser", "spotify", "mailto", "scroll", "app_control", "app_install", "media_control"}
+    act = parsed.get("action", "")
+    if act not in valid_actions:
+        if "message" in parsed and isinstance(parsed["message"], str):
+            parsed["action"] = "chat"
+        else:
+            # Transform raw dictionary into readable markdown bullet points
+            lines = []
+            for k, v in parsed.items():
+                if isinstance(v, list):
+                    lines.append(f"• **{k}**: {', '.join(str(i) for i in v)}")
+                elif isinstance(v, dict):
+                    lines.append(f"• **{k}**:\n```json\n{json.dumps(v, indent=2)}\n```")
+                else:
+                    lines.append(f"• **{k}**: {v}")
+            parsed = {
+                "action": "chat",
+                "message": "\n".join(lines) if lines else raw
+            }
+
+    # Post-process and enrich parsed JSON for tools
+    try:
+        act = parsed.get("action", "chat")
         
         # 1. Resolve YouTube video ID & direct URL
         if act == "youtube":
@@ -455,8 +521,11 @@ async def run_agent_step(user_prompt: str, messages: List[Dict], cwd: str, with_
             parsed["command"] = f"flatpak install --user -y flathub {pkg_id}"
             parsed["message"] = f"Ready to install {app_raw.capitalize()} via Flatpak ({pkg_id})."
             final_completion = json.dumps(parsed)
+        else:
+            final_completion = json.dumps(parsed)
 
     except Exception as parse_err:
         logging.warning(f"[Agent Step Post-Process] JSON parse error: {parse_err}")
+        final_completion = json.dumps(parsed)
 
     return {"role": "assistant", "content": final_completion}

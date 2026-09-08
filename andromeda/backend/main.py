@@ -58,13 +58,14 @@ except ImportError:
         spice_image = None
 
 try:
-    from council_engine import council, adjudicate_seat
+    from council_engine import council, adjudicate_seat, unload_model
 except ImportError:
     try:
-        from .council_engine import council, adjudicate_seat
+        from .council_engine import council, adjudicate_seat, unload_model
     except ImportError:
         council = None
         adjudicate_seat = None
+        unload_model = None
 
 
 app = FastAPI(title="Andromeda Spatial OS Backend")
@@ -667,7 +668,8 @@ async def core_endpoint(websocket: WebSocket):
                             cwd=cwd, 
                             with_tools=with_tools,
                             telemetry_data=active_telemetry,
-                            stream_callback=stream_status
+                            stream_callback=stream_status,
+                            model=seat_info["model"]
                         )
                         
                         # Append and emit assistant response
@@ -700,6 +702,13 @@ async def core_endpoint(websocket: WebSocket):
                             "model": seat_info["model"],
                             "seat_id": seat_info["id"]
                         })
+                    finally:
+                        # Reclaim 4.7GB VRAM if The Architect was presiding
+                        if seat_info["id"] == "architect" and unload_model:
+                            try:
+                                asyncio.create_task(asyncio.to_thread(unload_model, seat_info["model"]))
+                            except Exception:
+                                pass
                     
             except json.JSONDecodeError:
                 await websocket.send_json({"type": "error", "message": "Invalid JSON payload."})

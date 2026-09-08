@@ -127,10 +127,27 @@ export const App: React.FC = () => {
                     setTimeout(() => setAvatarState('idle'), 2500);
                   }
                 }
-                content = msgObj.reply || msgObj.output || JSON.stringify(msgObj);
+                content = msgObj.message || msgObj.reply || msgObj.output || '';
+                if (!content && typeof msgObj === 'object') {
+                  const keys = Object.keys(msgObj).filter((k) => k !== 'action');
+                  if (keys.length > 0) {
+                    content = keys
+                      .map((k) => {
+                        const val = Array.isArray(msgObj[k])
+                          ? msgObj[k].join(', ')
+                          : typeof msgObj[k] === 'object'
+                          ? JSON.stringify(msgObj[k])
+                          : msgObj[k];
+                        return `• ${k}: ${val}`;
+                      })
+                      .join('\n');
+                  } else {
+                    content = JSON.stringify(msgObj, null, 2);
+                  }
+                }
               }
 
-              if (content) {
+              if (content && content.trim() !== '{') {
                 setMessages((prev) => [
                   ...prev,
                   { role: 'agent', text: content, seat: councilSeat.seat },
