@@ -1782,10 +1782,17 @@
               renderSessionsList([]);
             } else if (data.type === "history") {
               renderHistory(data.messages || []);
+            } else if (data.type === "council_status") {
+              const seatName = data.presiding_seat || data.seat || "Council";
+              const seatModel = data.model || "";
+              const seatReason = data.reason || data.role || "";
+              showThoughtTrace(`🏛️ ${seatName} Presiding (${seatModel}) • ${seatReason}`);
+              updateTypingIndicator(`🏛️ ${seatName} Presiding...`);
+              setWorkspaceAvatarState('thinking');
             } else if (data.type === "status") {
               showThoughtTrace(data.message);
               updateTypingIndicator(data.message);
-              if (data.message && (data.message.includes('Thinking') || data.message.includes('Synthesizing') || data.message.includes('Gate'))) {
+              if (data.message && (data.message.includes('Thinking') || data.message.includes('Synthesizing') || data.message.includes('Gate') || data.message.includes('Presiding') || data.message.includes('presiding'))) {
                 setWorkspaceAvatarState('thinking');
               }
             } else if (data.type === "response") {

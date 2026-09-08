@@ -1,28 +1,45 @@
+import os
+import sys
 import json
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, APIRouter
-from fastapi.middleware.cors import CORSMiddleware
+import time
+import base64
+import re
 import asyncio
+from pathlib import Path
+from typing import Optional, Dict, Any, List
+
+# Ensure site-packages and local modules are resolvable
+local_packages = os.path.expanduser("~/.local/lib/python3.12/site-packages")
+if os.path.exists(local_packages) and local_packages not in sys.path:
+    sys.path.insert(0, local_packages)
+
+current_dir = Path(__file__).resolve().parent
+project_root = current_dir.parent.parent
+for candidate in ["/app", "/home/sfiso/ai-agent", str(project_root), str(current_dir)]:
+    if os.path.exists(candidate) and candidate not in sys.path:
+        sys.path.insert(0, candidate)
+
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, APIRouter, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
 
 from .lobes import telephony
 from .lobes import memory
 from .lobes import vision
 from .engine import run_agent_step
 from . import engine
-from .db import save_message, get_session_history, get_all_sessions, delete_session, delete_all_sessions, get_user_by_token
+from .db import (
+    save_message,
+    get_session_history,
+    get_all_sessions,
+    delete_session,
+    delete_all_sessions,
+    get_user_by_token,
+)
 from .auth import router as auth_router, get_current_user_optional
 
-app = FastAPI(title="Andromeda Spatial OS Backend")
-
-# Allow CORS for the Vite dev server
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-from pydantic import BaseModel
+# Singletons from core modules
 try:
     from media_controller import media_ctrl
 except ImportError:
@@ -31,25 +48,87 @@ except ImportError:
     except ImportError:
         media_ctrl = None
 
+try:
+    from pixel_spicer import spicer, spice_image
+except ImportError:
+    try:
+        from .pixel_spicer import spicer, spice_image
+    except ImportError:
+        spicer = None
+        spice_image = None
+
+try:
+    from council_engine import council, adjudicate_seat
+except ImportError:
+    try:
+        from .council_engine import council, adjudicate_seat
+    except ImportError:
+        council = None
+        adjudicate_seat = None
+
+
+app = FastAPI(title="Andromeda Spatial OS Backend")
+
+# Allow CORS for the Vite dev server and external clients
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# =============================================================================
+# 🎵 MEDIA CONTROLLER ENDPOINTS
+# =============================================================================
+
 media_router = APIRouter(prefix="/api/media", tags=["media"])
 
 class MediaCommand(BaseModel):
     action: str
-    value: float | None = None
-    player: str | None = None
+    value: Optional[float] = None
+    player: Optional[str] = None
+
 
 @media_router.get("/status")
-async def get_media_status():
+async def get_media_status(player: Optional[str] = None):
+    """Returns playback status and active track metadata from Linux MPRIS via playerctl."""
     if not media_ctrl:
-        return {"active": False, "message": "media_controller module not loaded"}
-    return media_ctrl.get_status()
+        return {
+            "active": False,
+            "status": "error",
+            "playback_status": "Stopped",
+            "message": "media_controller module not loaded on host"
+        }
+    try:
+        return media_ctrl.get_status(player=player)
+    except Exception as e:
+        return {
+            "active": False,
+            "status": "error",
+            "playback_status": "Stopped",
+            "message": str(e)
+        }
+
 
 @media_router.post("/execute")
 async def execute_media(cmd: MediaCommand):
+    """Executes a playback or volume action on desktop media players."""
     if not media_ctrl:
-        return {"status": "error", "detail": "media_controller module not loaded"}
-    result = media_ctrl.execute(action=cmd.action, value=cmd.value, player=cmd.player)
-    return {"status": "ok", "detail": result}
+        return {"status": "error", "detail": "media_controller module not loaded on host"}
+    try:
+        result = media_ctrl.execute(action=cmd.action, value=cmd.value, player=cmd.player)
+        is_error = isinstance(result, str) and result.startswith("[ERROR]")
+        return {
+            "status": "error" if is_error else "ok",
+            "action": cmd.action,
+            "result": result,
+            "detail": result
+        }
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
+
 
 @media_router.get("/resolve_youtube")
 async def resolve_youtube_endpoint(query: str):
@@ -58,6 +137,158 @@ async def resolve_youtube_endpoint(query: str):
     return result
 
 app.include_router(media_router)
+
+
+# =============================================================================
+# ✨ PIXEL SPICER ENDPOINTS
+# =============================================================================
+
+spice_router = APIRouter(prefix="/api/spice", tags=["spice"])
+
+class SpiceEnhanceRequest(BaseModel):
+    image_path: Optional[str] = None
+    image_base64: Optional[str] = None
+    filename: Optional[str] = None
+    output_path: Optional[str] = None
+    scale: int = 4
+    model: str = "realesrgan-x4plus"
+    clip_limit: float = 2.0
+    no_clahe: bool = False
+    no_upscale: bool = False
+    no_critique: bool = False
+
+
+@spice_router.post("/enhance")
+async def spice_enhance_endpoint(req: SpiceEnhanceRequest):
+    """
+    Applies the full Andromeda Pixel Spicer pipeline:
+      1. Dynamic Range Balance: OpenCV CLAHE in LAB color space.
+      2. Neural Super-Resolution: Real-ESRGAN NCNN Vulkan binary on host GPU.
+      3. Visual Critique: Moondream (The Sentinel) inspection via Ollama.
+    """
+    if not spicer and not spice_image:
+        raise HTTPException(status_code=500, detail="Pixel Spicer engine not loaded on host")
+
+    spice_fn = spicer.spice_image if spicer else spice_image
+
+    incoming_dir = Path("/home/sfiso/photos_incoming")
+    enhanced_dir = Path("/home/sfiso/photos_enhanced")
+    incoming_dir.mkdir(parents=True, exist_ok=True)
+    enhanced_dir.mkdir(parents=True, exist_ok=True)
+
+    input_file_path = None
+
+    # Handle input path or base64 upload
+    if req.image_path:
+        p = Path(req.image_path)
+        if not p.is_absolute():
+            p = incoming_dir / p
+        if not p.exists():
+            raise HTTPException(status_code=404, detail=f"Source image not found: {req.image_path}")
+        input_file_path = str(p)
+    elif req.image_base64:
+        raw_b64 = req.image_base64
+        if "base64," in raw_b64:
+            raw_b64 = raw_b64.split("base64,")[1]
+        try:
+            img_bytes = base64.b64decode(raw_b64)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid base64 payload: {e}")
+
+        fname = req.filename or f"upload_{int(time.time())}.png"
+        safe_name = os.path.basename(fname)
+        target_in = incoming_dir / safe_name
+        with open(target_in, "wb") as f:
+            f.write(img_bytes)
+        input_file_path = str(target_in)
+    else:
+        raise HTTPException(status_code=400, detail="image_path or image_base64 is required")
+
+    # Determine destination output path
+    dest_path = req.output_path
+    if not dest_path:
+        stem = Path(input_file_path).stem
+        dest_path = str(enhanced_dir / f"{stem}_spiced.png")
+
+    try:
+        loop = asyncio.get_running_loop()
+        res = await loop.run_in_executor(
+            None,
+            lambda: spice_fn(
+                input_path=input_file_path,
+                output_path=dest_path,
+                scale=req.scale,
+                model_name=req.model,
+                clip_limit=req.clip_limit,
+                enable_clahe=not req.no_clahe,
+                enable_upscale=not req.no_upscale,
+                enable_critique=not req.no_critique
+            )
+        )
+
+        out_img = res.get("output_image", dest_path)
+        out_name = os.path.basename(out_img)
+        critique_text = res.get("sentinel_critique")
+        if not critique_text and isinstance(res.get("critique"), dict):
+            critique_text = res.get("critique", {}).get("critique", "")
+
+        return {
+            "status": "success",
+            "output_image": out_img,
+            "filename": out_name,
+            "download_url": f"/api/spice/download/{out_name}",
+            "scale": res.get("scale"),
+            "model": res.get("model"),
+            "critique": critique_text or "Visual critique completed.",
+            "timings": res.get("timings"),
+            "duration_ms": res.get("total_duration_ms")
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Enhancement error: {e}")
+
+
+@spice_router.get("/download/{filename}")
+async def spice_download_endpoint(filename: str):
+    """Serves enhanced photos directly from the photos_enhanced storage directory."""
+    safe_name = os.path.basename(filename)
+    search_dirs = [
+        Path("/home/sfiso/photos_enhanced"),
+        Path("/home/sfiso/photos_incoming"),
+        Path("/app/photos_enhanced")
+    ]
+
+    found_path = None
+    for d in search_dirs:
+        candidate = d / safe_name
+        if candidate.exists() and candidate.is_file():
+            found_path = candidate
+            break
+
+    if not found_path:
+        raise HTTPException(status_code=404, detail=f"Enhanced image '{safe_name}' not found")
+
+    ext = found_path.suffix.lower()
+    media_types = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".webp": "image/webp",
+        ".json": "application/json"
+    }
+    media_type = media_types.get(ext, "application/octet-stream")
+
+    return FileResponse(
+        path=str(found_path),
+        media_type=media_type,
+        filename=safe_name
+    )
+
+app.include_router(spice_router)
+
+
+# =============================================================================
+# 🚀 APP CONTROLLER ENDPOINTS
+# =============================================================================
 
 apps_router = APIRouter(prefix="/api/apps", tags=["apps"])
 
@@ -98,7 +329,10 @@ app.include_router(telephony.router, tags=["telephony"])
 app.include_router(memory.router, tags=["memory"])
 app.include_router(vision.router, tags=["vision"])
 
-from fastapi import Depends
+
+# =============================================================================
+# 💬 SESSIONS ENDPOINTS
+# =============================================================================
 
 sessions_router = APIRouter(prefix="/api/sessions", tags=["sessions"])
 
@@ -121,14 +355,19 @@ async def delete_all_sessions_endpoint(user: dict | None = Depends(get_current_u
 
 app.include_router(sessions_router)
 
+
 @app.get("/")
 def read_root():
     return {"status": "Andromeda Core Online"}
 
+
+# =============================================================================
+# ⚡ WEBSOCKET CORE ENGINE (/ws/core) WITH COUNCIL INTEGRATION
+# =============================================================================
+
 @app.websocket("/ws/core")
 async def core_endpoint(websocket: WebSocket):
     await websocket.accept()
-    # Jimmy expects a stateful message array for the conversation
     conversation_history = []
     session_id = None
     active_telemetry = None
@@ -143,7 +382,6 @@ async def core_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             try:
                 payload = json.loads(data)
-                
                 payload_type = payload.get("type", "prompt")
                 
                 if payload_type == "init":
@@ -201,20 +439,62 @@ async def core_endpoint(websocket: WebSocket):
                     if not session_id:
                         session_id = "default_session"
                         
-                    # Save user prompt
+                    # Save user prompt to database
                     save_message(session_id, "user", prompt, user_id=active_user_id)
-                    
-                    # Append user prompt
                     conversation_history.append({"role": "user", "content": prompt})
                     
-                    # Send a progress event back
+                    # ── COUNCIL ADJUDICATION ──
+                    seat_info = {
+                        "title": "The Scribe",
+                        "id": "scribe",
+                        "model": "qwen2.5-coder:1.5b",
+                        "vram_profile": "~1.0GB VRAM (Resident / Always Warm)",
+                        "role": "Fast Intent Extraction, Quick Tools & Standard Conversation",
+                        "reason": "Standard conversational query"
+                    }
+
+                    adjudicate_fn = (council.adjudicate_seat if council else adjudicate_seat)
+                    if adjudicate_fn:
+                        try:
+                            has_image = bool(re.search(r"\.(?:png|jpe?g|webp|svg)\b", prompt.lower()))
+                            seat_obj, adjudication = adjudicate_fn(prompt=prompt, has_image=has_image)
+                            seat_info = {
+                                "title": seat_obj.title,
+                                "id": seat_obj.id,
+                                "model": seat_obj.model,
+                                "vram_profile": seat_obj.vram_profile,
+                                "role": seat_obj.role,
+                                "reason": adjudication.get("reason", "Council adjudication")
+                            }
+                        except Exception as e:
+                            print(f"[Council Adjudication Error]: {e}")
+
+                    # 1. Emit real-time Council Status packet before processing
+                    await websocket.send_json({
+                        "type": "council_status",
+                        "presiding_seat": seat_info["title"],
+                        "seat": seat_info["title"],
+                        "seat_id": seat_info["id"],
+                        "model": seat_info["model"],
+                        "vram_profile": seat_info["vram_profile"],
+                        "role": seat_info["role"],
+                        "reason": seat_info["reason"],
+                        "message": f"🏛️ {seat_info['title']} is presiding ({seat_info['model']})."
+                    })
+
+                    # Progress helper for thought trace in UI
                     async def stream_status(msg: str):
                         try:
-                            await websocket.send_json({"type": "status", "message": msg})
+                            await websocket.send_json({
+                                "type": "status",
+                                "message": msg,
+                                "presiding_seat": seat_info["title"],
+                                "model": seat_info["model"]
+                            })
                         except Exception:
                             pass
                         
-                    await stream_status("Thinking...")
+                    await stream_status(f"🏛️ {seat_info['title']} presiding ({seat_info['model']}) • {seat_info['reason']}")
                     
                     try:
                         response_dict = await run_agent_step(
@@ -226,18 +506,36 @@ async def core_endpoint(websocket: WebSocket):
                             stream_callback=stream_status
                         )
                         
-                        # Append assistant response
+                        # Append and emit assistant response
                         if response_dict and response_dict.get("content"):
                             conversation_history.append(response_dict)
                             save_message(session_id, "assistant", response_dict["content"], user_id=active_user_id)
-                            await websocket.send_json({"type": "response", "message": response_dict["content"]})
+                            await websocket.send_json({
+                                "type": "response",
+                                "message": response_dict["content"],
+                                "presiding_seat": seat_info["title"],
+                                "model": seat_info["model"],
+                                "seat_id": seat_info["id"]
+                            })
                         else:
                             fallback_msg = json.dumps({"action": "chat", "message": "Command executed successfully."})
-                            await websocket.send_json({"type": "response", "message": fallback_msg})
+                            await websocket.send_json({
+                                "type": "response",
+                                "message": fallback_msg,
+                                "presiding_seat": seat_info["title"],
+                                "model": seat_info["model"],
+                                "seat_id": seat_info["id"]
+                            })
                     except Exception as e:
                         print(f"[Core Agent Step Error]: {e}")
                         err_payload = json.dumps({"action": "chat", "message": f"[Engine Notice]: Could not complete prompt. Error: {e}"})
-                        await websocket.send_json({"type": "response", "message": err_payload})
+                        await websocket.send_json({
+                            "type": "response",
+                            "message": err_payload,
+                            "presiding_seat": seat_info["title"],
+                            "model": seat_info["model"],
+                            "seat_id": seat_info["id"]
+                        })
                     
             except json.JSONDecodeError:
                 await websocket.send_json({"type": "error", "message": "Invalid JSON payload."})
