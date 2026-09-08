@@ -1246,13 +1246,13 @@ JIMMY_TOOLS = [
     }},
     {"type": "function", "function": {
         "name": "run_macro",
-        "description": "Execute multi-step sequential automation macros across shell, apps, and background daemons. Available: 'code_review', 'asset_pipeline_3d', 'deep_work_session'.",
+        "description": "Execute multi-step sequential automation macros across shell, apps, and background daemons. Available: 'code_review', 'asset_pipeline_3d', 'deep_work_session', 'photo_restoration'.",
         "parameters": {
             "type": "object",
             "properties": {
                 "macro_name": {
                     "type": "string",
-                    "description": "Name of the macro to run ('code_review', 'asset_pipeline_3d', 'deep_work_session')."
+                    "description": "Name of the macro to run ('code_review', 'asset_pipeline_3d', 'deep_work_session', 'photo_restoration')."
                 },
                 "overrides_json": {
                     "type": "string",

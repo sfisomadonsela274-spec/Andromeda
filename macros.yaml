@@ -33,7 +33,7 @@ macros:
         command: "mkdir -p ./assets/{project_name}/render ./assets/{project_name}/textures"
       - id: blender_render
         type: bash
-        command: "if which blender >/dev/null; then blender -b -P scripts/render_thumb.py -- ./assets/{project_name}; else echo '[SKIP] Blender CLI not found'; fi"
+        command: "if which blender >/dev/null 2>&1; then blender -b -P scripts/render_thumb.py -- ./assets/{project_name}; else echo '[SKIP] Blender CLI not found'; fi"
       - id: open_figma
         type: app_control
         app: "figma"
@@ -66,3 +66,25 @@ macros:
       - id: tail_logs
         type: daemon
         command: "docker compose logs -f --tail=50 andromeda-backend"
+
+  photo_restoration:
+    description: "End-to-end neural photo enhancement using CLAHE LAB dynamic range balance, Real-ESRGAN Vulkan super-resolution, and Moondream Sentinel visual critique."
+    inputs:
+      - name: image_path
+        default: "/home/sfiso/photos_incoming/sample.jpg"
+      - name: output_path
+        default: "/home/sfiso/photos_enhanced/sample_enhanced.png"
+      - name: scale
+        default: "4"
+      - name: model
+        default: "realesrgan-x4plus"
+    steps:
+      - id: prepare_directories
+        type: bash
+        command: "mkdir -p /home/sfiso/photos_incoming /home/sfiso/photos_enhanced $(dirname \"{output_path}\")"
+      - id: neural_restoration
+        type: bash
+        command: "python3 /home/sfiso/ai-agent/pixel_spicer.py \"{image_path}\" -o \"{output_path}\" -s {scale} -m {model}"
+      - id: verify_restoration
+        type: bash
+        command: "test -f \"{output_path}\" && echo '[OK] Photo restoration verified: {output_path}'"
