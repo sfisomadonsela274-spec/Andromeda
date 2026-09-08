@@ -22,7 +22,7 @@ Seamlessly blending local SLM inference, desktop hardware bridges, and real-time
 
 ## 📖 Overview
 
-**Andromeda** is an autonomous, multimodal spatial assistant designed for zero-latency developer workflows and daily desktop computing. Unlike conventional conversational bots confined to isolated browser text boxes, Andromeda acts as a tactile desktop agent capable of controlling local media, executing terminal and Flatpak operations, managing long-term memory, and orchestrating local and cloud AI models.
+**Andromeda** is an autonomous, multimodal spatial assistant designed for zero-latency developer workflows and daily desktop computing. Though still under active development, it is a strong chatbot with solid knowledge and practical uses. Unlike conventional conversational bots confined to isolated browser text boxes, Andromeda acts as a tactile desktop agent capable of controlling local media, executing terminal and Flatpak operations, managing long-term memory, and orchestrating local and cloud AI models.
 
 Built from the ground up with **Neumorphism (Soft UI)**, the entire interface is clinically calibrated for users with astigmatism: eliminating high-contrast "halation" flares, harsh 1px tacky borders, and saturated neon lights in favor of gentle dual-diffuse shadows on a soothing slate surface (`#1e2126`).
 
