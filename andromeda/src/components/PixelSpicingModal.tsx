@@ -37,6 +37,7 @@ interface EnhanceResponse {
   output_file?: string;
   filename?: string;
   download_url: string;
+  image_base64?: string;
   original_resolution?: string | [number, number];
   enhanced_resolution?: string | [number, number];
   sentinel_critique?: string;
@@ -552,7 +553,7 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                     </div>
                     <div className="w-1/2 h-full relative overflow-hidden flex items-center justify-center bg-black/60">
                       <img
-                        src={result.download_url}
+                        src={result.image_base64 || result.download_url}
                         alt="Enhanced"
                         className="max-h-full max-w-full object-contain"
                       />
@@ -564,7 +565,7 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                 ) : viewMode === 'enhanced' ? (
                   <div className="w-full h-full flex items-center justify-center relative">
                     <img
-                      src={result.download_url}
+                      src={result.image_base64 || result.download_url}
                       alt="Enhanced"
                       className="max-h-full max-w-full object-contain"
                     />
@@ -608,7 +609,7 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                 <div className="flex items-center gap-2">
                   <a
-                    href={result.download_url}
+                    href={result.image_base64 || result.download_url}
                     download={result.filename || 'spiced_enhanced.png'}
                     className="py-3 px-5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold text-sm shadow-[0_4px_20px_rgba(16,185,129,0.35)] hover:brightness-110 active:scale-[0.98] transition-all flex items-center gap-2"
                   >

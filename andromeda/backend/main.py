@@ -246,11 +246,22 @@ async def spice_enhance_endpoint(req: SpiceEnhanceRequest):
         if isinstance(critique_text, dict):
             critique_text = critique_text.get("critique", "")
 
+        # Read enhanced image to return base64 for instant zero-latency client rendering
+        enhanced_b64 = None
+        try:
+            if os.path.exists(out_img):
+                with open(out_img, "rb") as f:
+                    ext = os.path.splitext(out_img)[1].lower().replace(".", "") or "png"
+                    enhanced_b64 = f"data:image/{ext};base64,{base64.b64encode(f.read()).decode('utf-8')}"
+        except Exception:
+            pass
+
         return {
             "status": "success",
             "output_image": out_img,
             "filename": out_name,
             "download_url": f"/api/spice/download/{out_name}",
+            "image_base64": enhanced_b64,
             "scale": res.get("super_resolution", {}).get("scale", req.scale),
             "model": res.get("super_resolution", {}).get("model", req.model),
             "camera_metadata": res.get("camera_metadata", {}),
