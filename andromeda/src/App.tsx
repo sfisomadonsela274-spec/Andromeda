@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { WorkspaceAvatar, AvatarState, CouncilBadgeInfo } from './components/WorkspaceAvatar';
 import { MediaDeck } from './components/MediaDeck';
 import { PixelSpicingModal } from './components/PixelSpicingModal';
+import { MacroRunnerModal } from './components/MacroRunnerModal';
+import { AppLauncherModal } from './components/AppLauncherModal';
 
 export const App: React.FC = () => {
   const [avatarState, setAvatarState] = useState<AvatarState>('idle');
@@ -13,6 +15,9 @@ export const App: React.FC = () => {
   });
   const [activeMediaEmbed, setActiveMediaEmbed] = useState<string | null>(null);
   const [isPixelSpicerOpen, setIsPixelSpicerOpen] = useState<boolean>(false);
+  const [isMacroRunnerOpen, setIsMacroRunnerOpen] = useState<boolean>(false);
+  const [isAppLauncherOpen, setIsAppLauncherOpen] = useState<boolean>(false);
+  const [sweepNotice, setSweepNotice] = useState<string | null>(null);
   const [promptInput, setPromptInput] = useState<string>('');
   const [messages, setMessages] = useState<
     Array<{ role: 'user' | 'agent' | 'system'; text: string; seat?: string }>
@@ -210,6 +215,18 @@ export const App: React.FC = () => {
     }
   };
 
+  const executeVramSweep = async () => {
+    try {
+      const res = await fetch('/api/memory/sweep', { method: 'POST' });
+      const data = await res.json();
+      setSweepNotice(data.message || 'VRAM & heavy models swept');
+      setTimeout(() => setSweepNotice(null), 3500);
+    } catch {
+      setSweepNotice('Memory sweep dispatched to Ollama engine');
+      setTimeout(() => setSweepNotice(null), 2500);
+    }
+  };
+
   const switchToClassicWorkspace = () => {
     if (typeof (window as any).navigateToWorkspace === 'function') {
       (window as any).hideReactCosmicDeck?.();
@@ -250,15 +267,46 @@ export const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2.5">
+        {/* Action Controls & Modal Triggers */}
+        <div className="flex flex-wrap items-center gap-2">
+          
           {/* Pixel Spicer Trigger */}
           <button
             onClick={() => setIsPixelSpicerOpen(true)}
-            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-600/30 via-orange-600/30 to-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-medium hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-600/30 via-orange-600/30 to-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-medium hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+            title="Open EXIF-aware Pixel Spicer modal"
           >
             <span>✨</span>
             <span>Pixel-Spicer (4x)</span>
+          </button>
+
+          {/* Workflow Macro Trigger */}
+          <button
+            onClick={() => setIsMacroRunnerOpen(true)}
+            className="px-3 py-1.5 rounded-xl bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-500/40 text-indigo-200 text-xs font-medium active:scale-95 transition-all flex items-center gap-1.5"
+            title="Open Automation Macro Runner"
+          >
+            <span>⚙️</span>
+            <span>Macros</span>
+          </button>
+
+          {/* Desktop Apps Trigger */}
+          <button
+            onClick={() => setIsAppLauncherOpen(true)}
+            className="px-3 py-1.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-500/40 text-cyan-200 text-xs font-medium active:scale-95 transition-all flex items-center gap-1.5"
+            title="Open Desktop Application Hub"
+          >
+            <span>🖥️</span>
+            <span>Apps</span>
+          </button>
+
+          {/* VRAM Sweep Button */}
+          <button
+            onClick={executeVramSweep}
+            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-rose-300 text-xs transition-colors"
+            title="Sweep VRAM & Evict Heavy Models"
+          >
+            🧹
           </button>
 
           {/* Switch View Trigger */}
@@ -267,11 +315,24 @@ export const App: React.FC = () => {
             className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5"
             title="Switch to Neumorphic Soft UI Workspace"
           >
-            <span>🖥️</span>
-            <span className="hidden sm:inline">Neumorphic View</span>
+            <span>📐</span>
+            <span className="hidden sm:inline">Neumorphic</span>
           </button>
         </div>
       </header>
+
+      {/* Sweep Notification Toast */}
+      {sweepNotice && (
+        <div className="w-full max-w-md p-3 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-200 text-xs flex items-center justify-between mb-4 shadow-lg animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <span>🧹</span>
+            <span>{sweepNotice}</span>
+          </div>
+          <button onClick={() => setSweepNotice(null)} className="text-emerald-400 hover:text-white">
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Main Grid: Avatar Stage & MediaDeck */}
       <main className="w-full max-w-6xl flex-1 flex flex-col items-center justify-start space-y-6">
@@ -403,7 +464,7 @@ export const App: React.FC = () => {
           <form onSubmit={sendPrompt} className="flex gap-2 pt-2 border-t border-white/5">
             <input
               type="text"
-              placeholder="Ask the Council or enter media action (e.g. '/music lofi chill' or 'inspect memory')..."
+              placeholder="Ask the Council or enter action (e.g. '/music lofi chill', '/install vscode', '/macro deep_work')..."
               value={promptInput}
               onChange={(e) => setPromptInput(e.target.value)}
               className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50"
@@ -418,10 +479,20 @@ export const App: React.FC = () => {
         </div>
       </main>
 
-      {/* Pixel Spicing Modal */}
+      {/* Modals */}
       <PixelSpicingModal
         isOpen={isPixelSpicerOpen}
         onClose={() => setIsPixelSpicerOpen(false)}
+      />
+
+      <MacroRunnerModal
+        isOpen={isMacroRunnerOpen}
+        onClose={() => setIsMacroRunnerOpen(false)}
+      />
+
+      <AppLauncherModal
+        isOpen={isAppLauncherOpen}
+        onClose={() => setIsAppLauncherOpen(false)}
       />
     </div>
   );

@@ -1,0 +1,90 @@
+version: "1.0"
+macros:
+  code_review:
+    description: "Checkout branch, extract git diff summary, open changed file in IDE, and generate code review."
+    inputs:
+      - name: branch
+        default: "main"
+      - name: file_path
+        default: "."
+    steps:
+      - id: git_checkout
+        type: bash
+        command: "git checkout {branch} 2>/dev/null || echo '[NOTE] Branch {branch} active'"
+      - id: git_diff
+        type: bash
+        command: "git diff --stat HEAD~1 2>/dev/null || git status --short"
+      - id: open_ide
+        type: app_control
+        app: "vscode"
+        action: "file"
+        params:
+          path: "{file_path}"
+        mode: "auto"
+
+  asset_pipeline_3d:
+    description: "Scaffold asset folder, run headless Blender render, and open outputs in GIMP and Figma."
+    inputs:
+      - name: project_name
+        default: "demo_asset"
+    steps:
+      - id: scaffold_dirs
+        type: bash
+        command: "mkdir -p ./assets/{project_name}/render ./assets/{project_name}/textures"
+      - id: blender_render
+        type: bash
+        command: "if which blender >/dev/null 2>&1; then blender -b -P scripts/render_thumb.py -- ./assets/{project_name}; else echo '[SKIP] Blender CLI not found'; fi"
+      - id: open_figma
+        type: app_control
+        app: "figma"
+        action: "open"
+        params: {}
+        mode: "web"
+
+  deep_work_session:
+    description: "Launch project IDE, queue focus audio on Spotify, and tail backend container logs."
+    inputs:
+      - name: repo_dir
+        default: "."
+      - name: playlist
+        default: "synthwave focus"
+    steps:
+      - id: open_editor
+        type: app_control
+        app: "vscode"
+        action: "open"
+        params:
+          path: "{repo_dir}"
+        mode: "auto"
+      - id: focus_audio
+        type: app_control
+        app: "spotify"
+        action: "play"
+        params:
+          query: "{playlist}"
+        mode: "auto"
+      - id: tail_logs
+        type: daemon
+        command: "docker compose logs -f --tail=50 andromeda-backend"
+
+  photo_restoration:
+    description: "End-to-end neural photo enhancement using CLAHE LAB dynamic range balance, Real-ESRGAN Vulkan super-resolution, and Moondream Sentinel visual critique."
+    inputs:
+      - name: image_path
+        default: "/home/sfiso/photos_incoming/sample.jpg"
+      - name: output_path
+        default: "/home/sfiso/photos_enhanced/sample_enhanced.png"
+      - name: scale
+        default: "4"
+      - name: model
+        default: "realesrgan-x4plus"
+    steps:
+      - id: prepare_directories
+        type: bash
+        command: "mkdir -p /home/sfiso/photos_incoming /home/sfiso/photos_enhanced $(dirname \"{output_path}\")"
+      - id: neural_restoration
+        type: bash
+        command: "python3 /home/sfiso/ai-agent/pixel_spicer.py \"{image_path}\" -o \"{output_path}\" -s {scale} -m {model}"
+      - id: verify_restoration
+        type: bash
+        command: "test -f \"{output_path}\" && echo '[OK] Photo restoration verified: {output_path}'"

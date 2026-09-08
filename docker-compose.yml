@@ -59,6 +59,9 @@ services:
       - ./media_controller.py:/app/media_controller.py
       - ./app_controller.py:/app/app_controller.py
       - ./app_registry.py:/app/app_registry.py
+      - ./macro_runner.py:/app/macro_runner.py
+      - ./macros.yaml:/app/macros.yaml
+      - ./pixel_spicer.py:/app/pixel_spicer.py
       - /run/user/1000/bus:/run/user/1000/bus
     depends_on:
       ollama:

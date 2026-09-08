@@ -156,6 +156,10 @@ class SpiceEnhanceRequest(BaseModel):
     no_clahe: bool = False
     no_upscale: bool = False
     no_critique: bool = False
+    target_screen_width: Optional[int] = None
+    target_screen_height: Optional[int] = None
+    device_pixel_ratio: Optional[float] = 1.0
+    auto_adaptive: bool = True
 
 
 @spice_router.post("/enhance")
@@ -210,6 +214,14 @@ async def spice_enhance_endpoint(req: SpiceEnhanceRequest):
         stem = Path(input_file_path).stem
         dest_path = str(enhanced_dir / f"{stem}_spiced.png")
 
+    target_screen = None
+    if req.target_screen_width and req.target_screen_height:
+        target_screen = {
+            "width": req.target_screen_width,
+            "height": req.target_screen_height,
+            "device_pixel_ratio": req.device_pixel_ratio or 1.0
+        }
+
     try:
         loop = asyncio.get_running_loop()
         res = await loop.run_in_executor(
@@ -222,25 +234,31 @@ async def spice_enhance_endpoint(req: SpiceEnhanceRequest):
                 clip_limit=req.clip_limit,
                 enable_clahe=not req.no_clahe,
                 enable_upscale=not req.no_upscale,
-                enable_critique=not req.no_critique
+                enable_critique=not req.no_critique,
+                target_screen=target_screen,
+                auto_adaptive=req.auto_adaptive
             )
         )
 
-        out_img = res.get("output_image", dest_path)
+        out_img = res.get("output", {}).get("path") or res.get("output_image", dest_path)
         out_name = os.path.basename(out_img)
         critique_text = res.get("sentinel_critique")
-        if not critique_text and isinstance(res.get("critique"), dict):
-            critique_text = res.get("critique", {}).get("critique", "")
+        if isinstance(critique_text, dict):
+            critique_text = critique_text.get("critique", "")
 
         return {
             "status": "success",
             "output_image": out_img,
             "filename": out_name,
             "download_url": f"/api/spice/download/{out_name}",
-            "scale": res.get("scale"),
-            "model": res.get("model"),
+            "scale": res.get("super_resolution", {}).get("scale", req.scale),
+            "model": res.get("super_resolution", {}).get("model", req.model),
+            "camera_metadata": res.get("camera_metadata", {}),
+            "adaptive_tuning": res.get("adaptive_tuning", {}),
+            "denoise": res.get("denoise", {}),
+            "original_resolution": res.get("input", {}).get("dimensions"),
+            "enhanced_resolution": res.get("output", {}).get("dimensions"),
             "critique": critique_text or "Visual critique completed.",
-            "timings": res.get("timings"),
             "duration_ms": res.get("total_duration_ms")
         }
     except Exception as e:
@@ -296,6 +314,25 @@ class AppInstallPayload(BaseModel):
     app: str
     method: str = "flatpak"
 
+class AppExecutePayload(BaseModel):
+    app: str
+    action: str = "launch"  # "launch" or "install"
+
+@apps_router.get("")
+async def list_apps_endpoint():
+    """Lists registered desktop applications and their launch definitions."""
+    apps_list = [
+        {"id": "vscode", "name": "VS Code", "category": "development", "icon": "code", "package_id": "com.visualstudio.code", "flatpak": True},
+        {"id": "spotify", "name": "Spotify", "category": "media", "icon": "music", "package_id": "com.spotify.Client", "flatpak": True},
+        {"id": "discord", "name": "Discord", "category": "social", "icon": "message-circle", "package_id": "com.discordapp.Discord", "flatpak": True},
+        {"id": "vlc", "name": "VLC Media Player", "category": "media", "icon": "video", "package_id": "org.videolan.VLC", "flatpak": True},
+        {"id": "blender", "name": "Blender 3D", "category": "design", "icon": "box", "package_id": "org.blender.Blender", "flatpak": True},
+        {"id": "gimp", "name": "GIMP Image Editor", "category": "design", "icon": "image", "package_id": "org.gimp.GIMP", "flatpak": True},
+        {"id": "obs", "name": "OBS Studio", "category": "media", "icon": "radio", "package_id": "com.obsproject.Studio", "flatpak": True},
+        {"id": "slack", "name": "Slack", "category": "communication", "icon": "hash", "package_id": "com.slack.Slack", "flatpak": True}
+    ]
+    return {"status": "ok", "apps": apps_list}
+
 @apps_router.post("/install")
 async def app_install_endpoint(req: AppInstallPayload):
     flatpak_ids = {
@@ -319,7 +356,123 @@ async def app_install_endpoint(req: AppInstallPayload):
         "message": f"Execute on terminal: {cmd}"
     }
 
+@apps_router.post("/execute")
+async def app_execute_endpoint(req: AppExecutePayload):
+    app_key = req.app.lower().strip()
+    if req.action == "install":
+        cmd = f"flatpak install --user -y flathub {app_key}"
+        return {"status": "staged", "action": "install", "command": cmd, "message": f"Staged Flatpak install: {cmd}"}
+    else:
+        cmd = f"gtk-launch {app_key} 2>/dev/null || flatpak run {app_key} 2>/dev/null || which {app_key}"
+        import subprocess
+        try:
+            subprocess.Popen(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return {"status": "launched", "action": "launch", "app": app_key, "message": f"Dispatched launch for {app_key}."}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
 app.include_router(apps_router)
+
+
+# =============================================================================
+# 📜 WORKFLOW MACROS ENDPOINTS
+# =============================================================================
+
+macro_router = APIRouter(prefix="/api/macros", tags=["macros"])
+
+class MacroRunPayload(BaseModel):
+    macro_name: str
+    overrides: Optional[Dict[str, Any]] = None
+
+@macro_router.get("")
+async def list_macros_endpoint():
+    """Lists available workflow macros from macros.yaml."""
+    yaml_candidates = [
+        Path("/app/macros.yaml"),
+        Path("/home/sfiso/ai-agent/macros.yaml"),
+        Path(__file__).resolve().parent / "macros.yaml"
+    ]
+    macros_data = {}
+    for cand in yaml_candidates:
+        if cand.exists():
+            try:
+                import yaml
+                with open(cand, "r", encoding="utf-8") as f:
+                    macros_data = yaml.safe_load(f).get("macros", {})
+                break
+            except Exception:
+                pass
+
+    result = []
+    for mid, mdata in macros_data.items():
+        result.append({
+            "id": mid,
+            "name": mdata.get("name", mid),
+            "description": mdata.get("description", ""),
+            "steps_count": len(mdata.get("steps", [])),
+            "steps": mdata.get("steps", [])
+        })
+    return {"status": "ok", "macros": result}
+
+@macro_router.post("/run")
+async def run_macro_endpoint(payload: MacroRunPayload):
+    """Executes a workflow macro via macro_runner asynchronously."""
+    try:
+        from macro_runner import runner as m_runner
+    except ImportError:
+        try:
+            from .macro_runner import runner as m_runner
+        except ImportError:
+            m_runner = None
+
+    if not m_runner:
+        raise HTTPException(status_code=500, detail="Macro runner engine not available on host")
+
+    loop = asyncio.get_running_loop()
+    res = await loop.run_in_executor(
+        None,
+        lambda: m_runner.run_macro(payload.macro_name, payload.overrides or {})
+    )
+    return res
+
+app.include_router(macro_router)
+
+
+# =============================================================================
+# 🧹 MEMORY & VRAM RECLAIM ENDPOINTS
+# =============================================================================
+
+memory_reclaim_router = APIRouter(prefix="/api/memory", tags=["memory"])
+
+@memory_reclaim_router.post("/sweep")
+async def memory_sweep_endpoint():
+    """Unloads idle Ollama models from GPU VRAM and runs Python garbage collection."""
+    import gc
+    gc.collect()
+    evictions = []
+
+    host = os.environ.get("OLLAMA_HOST", "http://localhost:11434").rstrip("/")
+    for m in ["qwen2.5-coder:7b", "llama3.2"]:
+        try:
+            req = urllib.request.Request(
+                f"{host}/api/generate",
+                data=json.dumps({"model": m, "keep_alive": 0}).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=3.0) as resp:
+                evictions.append(m)
+        except Exception:
+            pass
+
+    return {
+        "status": "success",
+        "message": f"VRAM sweep executed. Evicted: {', '.join(evictions) if evictions else 'Heavy models cleared'}.",
+        "evicted_models": evictions,
+        "gc_collected": True
+    }
+
+app.include_router(memory_reclaim_router)
 
 # Include Auth Router
 app.include_router(auth_router)

@@ -20,7 +20,7 @@ rsync -av --exclude='node_modules' --exclude='.git' --exclude='jimmy_env' \
   "$SRC_DIR/" "$DEST_DIR/"
 
 echo "🚀 2. Performing zero-downtime rolling build of backend and frontend..."
-docker compose -f "$DEST_DIR/docker-compose.yml" up -d --build --no-deps andromeda-backend andromeda-frontend
+docker compose -p ai-agent -f "$DEST_DIR/docker-compose.yml" up -d --build --no-deps andromeda-backend andromeda-frontend
 
 echo "✅ 3. Sync and reload complete! GPU models and traces preserved."
 "$DEST_DIR/get-url.sh"
