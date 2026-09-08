@@ -339,6 +339,20 @@ def spice_image(
     return metadata
 
 
+class PixelSpicer:
+    """Singleton wrapper exposing pixel_spicer image operations."""
+    spice_image = staticmethod(spice_image)
+    run = staticmethod(spice_image)
+    enhance = staticmethod(spice_image)
+    apply_clahe_lab = staticmethod(apply_clahe_lab)
+    run_realesrgan = staticmethod(run_realesrgan)
+    critique_with_sentinel = staticmethod(critique_with_sentinel)
+
+
+# Singleton instance for direct import across modules
+spicer = PixelSpicer()
+
+
 # =============================================================================
 # 💻 CLI INTERFACE
 # =============================================================================

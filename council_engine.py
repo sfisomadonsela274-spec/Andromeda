@@ -559,6 +559,21 @@ async def deliberate_async(
     )
 
 
+class CouncilEngine:
+    """Council of AIs orchestration singleton."""
+    deliberate = staticmethod(deliberate)
+    deliberate_async = staticmethod(deliberate_async)
+    adjudicate_seat = staticmethod(adjudicate_seat)
+    unload_model = staticmethod(unload_model)
+    warm_the_scribe = staticmethod(warm_the_scribe)
+    calculate_code_density = staticmethod(calculate_code_density)
+
+
+# Singleton instance for direct import across modules
+council = CouncilEngine()
+
+
+
 # =============================================================================
 # 🖥️ COMMAND-LINE DEMONSTRATION & BENCHMARK SUITE
 # =============================================================================

@@ -24,7 +24,10 @@ import glob
 import threading
 import sys
 import os
-from pathlib import Path
+# Robustly ensure user site-packages is included to prevent ModuleNotFoundError when run globally
+local_packages = os.path.expanduser("~/.local/lib/python3.12/site-packages")
+if local_packages not in sys.path:
+    sys.path.insert(0, local_packages)
 
 try:
     import docker
@@ -53,15 +56,33 @@ except ImportError:
     PLAYWRIGHT_AVAILABLE = False
 
 try:
+    from council_engine import council
+    COUNCIL_AVAILABLE = True
+except Exception as e:
+    council = None
+    COUNCIL_AVAILABLE = False
+
+try:
     from media_controller import media_ctrl
     MEDIA_AVAILABLE = True
 except Exception:
+    media_ctrl = None
     MEDIA_AVAILABLE = False
 
 try:
-    from macro_runner import runner as macro_runner
+    from pixel_spicer import spicer
+    SPICER_AVAILABLE = True
+except Exception:
+    spicer = None
+    SPICER_AVAILABLE = False
+
+try:
+    from macro_runner import runner
+    macro_runner = runner
     MACROS_AVAILABLE = True
 except Exception:
+    runner = None
+    macro_runner = None
     MACROS_AVAILABLE = False
 
 # Robustly ensure user site-packages is included to prevent ModuleNotFoundError when run globally
@@ -750,6 +771,48 @@ def run_macro(macro_name: str, overrides_json: str = "{}") -> str:
     return res
 
 
+def spice_photo(
+    image_path: str,
+    output_path: str = None,
+    scale: int = 4,
+    model: str = "realesrgan-x4plus",
+    clip_limit: float = 2.0,
+    no_clahe: bool = False,
+    no_upscale: bool = False,
+    no_critique: bool = False
+) -> str:
+    log_event("tool_call", {"tool": "spice_photo", "image_path": image_path})
+    console.print(f"\n[bold magenta][✨ PIXEL SPICER]:[/bold magenta] Enhancing '{image_path}' (scale={scale}, model={model})...")
+    if not SPICER_AVAILABLE or not spicer:
+        return "[ERROR] pixel_spicer module is not available"
+    try:
+        res = spicer.spice_image(
+            input_path=image_path,
+            output_path=output_path,
+            scale=int(scale),
+            model_name=model,
+            clip_limit=float(clip_limit),
+            enable_clahe=not no_clahe,
+            enable_upscale=not no_upscale,
+            enable_critique=not no_critique
+        )
+        out_img = res.get("output_image", output_path or image_path)
+        critique_summary = res.get("critique", {}).get("critique", "") if res.get("critique") else "No critique generated"
+        console.print(f"[bold green][✨ PIXEL SPICER RESULT]:[/bold green] Saved to {out_img}")
+        return json.dumps({
+            "status": "success",
+            "output_image": out_img,
+            "scale": res.get("scale"),
+            "model": res.get("model"),
+            "critique": critique_summary,
+            "duration_ms": res.get("total_duration_ms")
+        }, indent=2)
+    except Exception as e:
+        err_msg = f"[ERROR] [MOMENTUM_TRIGGER] Failed to spice photo '{image_path}': {e}"
+        console.print(f"[bold red]{err_msg}[/bold red]")
+        return err_msg
+
+
 def ide_interact(action: str, payload: str = "") -> str:
     log_event("tool_call", {"tool": "ide_interact", "action": action})
     console.print(f"\n[bold cyan][💻 IDE]:[/bold cyan] {action} → {payload[:60]}")
@@ -1132,6 +1195,7 @@ AVAILABLE_TOOLS = {
     "init_framework": init_framework,
     "media_control": media_control,
     "run_macro": run_macro,
+    "spice_photo": spice_photo,
     "install_app": install_app,
 }
 
@@ -1260,6 +1324,37 @@ JIMMY_TOOLS = [
                 }
             },
             "required": ["macro_name"]
+        }
+    }},
+    {"type": "function", "function": {
+        "name": "spice_photo",
+        "description": "Enhance photos using OpenCV CLAHE in LAB color space, Real-ESRGAN Vulkan super-resolution, and Moondream (The Sentinel) visual critique.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "image_path": {
+                    "type": "string",
+                    "description": "Path to the input image file to restore/enhance."
+                },
+                "output_path": {
+                    "type": "string",
+                    "description": "Optional destination path for the enhanced image."
+                },
+                "scale": {
+                    "type": "integer",
+                    "enum": [2, 3, 4],
+                    "description": "Upscale factor (default: 4)."
+                },
+                "model": {
+                    "type": "string",
+                    "description": "Real-ESRGAN model name (default: 'realesrgan-x4plus')."
+                },
+                "clip_limit": {
+                    "type": "number",
+                    "description": "CLAHE contrast clip limit (default: 2.0)."
+                }
+            },
+            "required": ["image_path"]
         }
     }},
     {"type": "function", "function": {
@@ -1628,13 +1723,86 @@ def compress_context(messages: list, cwd: str) -> list:
 
 
 # ─────────────────────────────────────────────
+# Council Seat Indicator
+# ─────────────────────────────────────────────
+def render_council_seat_indicator(verdict: dict):
+    """Renders a rich visual indicator of the presiding Council Seat."""
+    seat_title = verdict.get("seat", "The Scribe")
+    model = verdict.get("model", "qwen2.5-coder:1.5b")
+    vram_profile = verdict.get("vram_profile", "~1.0GB VRAM")
+    vram_action = verdict.get("vram_action", "")
+    duration_ms = verdict.get("duration_ms", 0.0)
+    adjudication = verdict.get("adjudication", {})
+    reason = adjudication.get("reason", "Standard conversational query or rapid tool dispatch.")
+    code_density = adjudication.get("code_density", 0.0)
+
+    theme_map = {
+        "The Scribe": {
+            "icon": "📜",
+            "style": "bold cyan",
+            "border": "cyan",
+            "tag": "RAPID COORDINATOR",
+            "desc": "Fast Intent Extraction, Quick Tools & Standard Conversation"
+        },
+        "The Architect": {
+            "icon": "🏛️",
+            "style": "bold blue",
+            "border": "blue",
+            "tag": "MASTER SOFTWARE ARCHITECT",
+            "desc": "Deep Coder, Multi-File Engineering & Complex Syntax"
+        },
+        "The Logician": {
+            "icon": "🧠",
+            "style": "bold magenta",
+            "border": "magenta",
+            "tag": "PHILOSOPHICAL THINKER",
+            "desc": "Deep Thinker, Systematic Analysis & Socrates Critique Loops"
+        },
+        "The Sentinel": {
+            "icon": "👁️",
+            "style": "bold green",
+            "border": "green",
+            "tag": "VISION & PIXEL-SPICER",
+            "desc": "Pixel-Spacing, Layout Critique, Design Aesthetics & Image Inspection"
+        }
+    }
+    theme = theme_map.get(seat_title, {
+        "icon": "⚖️",
+        "style": "bold yellow",
+        "border": "yellow",
+        "tag": "COUNCIL ADJUDICATION",
+        "desc": "Orchestrated Multi-Model Deliberation"
+    })
+
+    panel_content = (
+        f"[{theme['style']}]{theme['icon']} {seat_title.upper()} PRESIDING[/{theme['style']}] "
+        f"[dim]• {theme['tag']}[/dim]\n"
+        f"[bold white]Model:[/bold white] [cyan]{model}[/cyan]  |  "
+        f"[bold white]VRAM Policy:[/bold white] [dim]{vram_profile}[/dim]  |  "
+        f"[bold white]Latency:[/bold white] [yellow]{duration_ms} ms[/yellow]\n"
+        f"[bold white]Adjudication:[/bold white] [dim]{reason}[/dim] "
+        f"[dim](Code Density: {code_density:.2f})[/dim]"
+    )
+    if vram_action and "Evicted" in vram_action:
+        panel_content += f"\n[bold green]⚡ VRAM Action:[/bold green] [dim]{vram_action}[/dim]"
+
+    console.print(Panel(
+        panel_content,
+        border_style=theme["border"],
+        title="[bold]🏛️ Council of AIs[/bold]",
+        subtitle=f"[dim]{theme['desc']}[/dim]"
+    ))
+
+
+# ─────────────────────────────────────────────
 # Main loop
 # ─────────────────────────────────────────────
 def chat_loop():
-    welcome_msg = f"""[bold cyan]Gate[/bold cyan]   : [green]{ROUTER_MODEL:<30}[/green]
-[bold cyan]Brain[/bold cyan]  : [green]{BRAIN_MODEL:<30}[/green]
-[bold cyan]Log[/bold cyan]    : [dim]{str(session_log)[-30:]:<30}[/dim]
-[bold cyan]Trace[/bold cyan]  : [dim]{px_session.url:<30}[/dim]
+    welcome_msg = f"""[bold cyan]Council[/bold cyan] : [green]The Scribe • The Architect • The Logician • The Sentinel[/green]
+[bold cyan]Gate[/bold cyan]    : [green]{ROUTER_MODEL:<30}[/green]
+[bold cyan]Brain[/bold cyan]   : [green]{BRAIN_MODEL:<30}[/green]
+[bold cyan]Log[/bold cyan]     : [dim]{str(session_log)[-30:]:<30}[/dim]
+[bold cyan]Trace[/bold cyan]   : [dim]{px_session.url:<30}[/dim]
 [dim]Type 'exit' to quit | 'auto' to enable autonomous mode[/dim]"""
     console.print(Panel(welcome_msg, title="[bold magenta]Jimmy v7.2 — Split-Brain Agent[/bold magenta]", border_style="magenta"))
 
@@ -1689,20 +1857,54 @@ def chat_loop():
         if len(messages) > CONTEXT_KEEP + 4:
             messages = compress_context(messages, cwd)
 
-        # ── Step 0: Gate (TOOL vs CHAT) ──
+        # ── Step 0: Council Deliberation & Seat Adjudication ──
+        verdict = None
+        if COUNCIL_AVAILABLE and council:
+            with console.status("[bold cyan]Council of AIs is deliberating...[/bold cyan]", spinner="dots"):
+                history = [
+                    {"role": m["role"], "content": m.get("content", "")}
+                    for m in messages[:-1]
+                    if m.get("content") and m.get("role") in ("user", "assistant")
+                ]
+                has_image = bool(re.search(r"\.(?:png|jpe?g|webp|svg)\b", user_input.lower()))
+                try:
+                    verdict = council.deliberate(
+                        prompt=user_input,
+                        has_image=has_image,
+                        conversation_history=history[-4:]
+                    )
+                except Exception as e:
+                    logging.warning(f"Council deliberation error: {e}")
+                    verdict = None
+
+            if verdict:
+                render_council_seat_indicator(verdict)
+
+        # ── Step 0b: Gate (TOOL vs CHAT) ──
         with console.status("[dim]Gate is analyzing intent...[/dim]", spinner="dots"):
             tool_turn = needs_tool(messages)
             
         if not tool_turn:
             console.print("[dim]\\[Gate: CHAT mode][/dim]")
-            with console.status("[bold green]Jimmy is thinking...[/bold green]", spinner="dots"):
-                chat_msg = agent_step(CHAT_SYSTEM, messages, cwd, with_tools=False)
-                final_chat = (chat_msg.get("content") or "").strip()
+            if verdict and verdict.get("content"):
+                final_chat = verdict["content"].strip()
+                seat_name = verdict.get("seat", "Jimmy")
+            else:
+                with console.status("[bold green]Jimmy is thinking...[/bold green]", spinner="dots"):
+                    chat_msg = agent_step(CHAT_SYSTEM, messages, cwd, with_tools=False)
+                    final_chat = (chat_msg.get("content") or "").strip()
+                    seat_name = "Jimmy"
+
             if final_chat:
                 messages.append({"role": "assistant", "content": final_chat})
-                console.print("\n[bold magenta]Jimmy:[/bold magenta]")
+                console.print(f"\n[bold magenta]{seat_name}:[/bold magenta]")
                 console.print(Markdown(final_chat))
             continue
+
+        # In tool execution mode, provide Council adjudication wisdom into context
+        if verdict and verdict.get("content"):
+            messages.append({"role": "system", "content": f"[COUNCIL GUIDANCE - {verdict['seat']}]\n{verdict['content']}"})
+
 
         # ── Step 1a: The Ideator (Scaffolding Options) ──
         with console.status("[bold cyan]The Ideator is brainstorming approaches...[/bold cyan]", spinner="dots"):
