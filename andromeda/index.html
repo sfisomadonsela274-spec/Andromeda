@@ -1684,7 +1684,41 @@
     // ==========================================
     // BACKEND WEBSOCKET & DYNAMIC ENDPOINT RESOLUTION
     // ==========================================
-    const DEFAULT_24_7_BACKEND = "https://either-mercury-rehabilitation-middle.trycloudflare.com";
+    let DEFAULT_24_7_BACKEND = "https://charts-proportion-cooper-ireland.trycloudflare.com";
+    let socketFailureCount = 0;
+
+    async function autoDiscoverBackendUrl() {
+      try {
+        const basePath = window.location.pathname.replace(/\/+$/, "");
+        const candidates = [
+          `${window.location.origin}${basePath}/public_url.txt`,
+          `${window.location.origin}/Andromeda/public_url.txt`,
+          `./public_url.txt`,
+          `https://raw.githubusercontent.com/sfisomadonsela274-spec/Andromeda/main/public_url.txt`
+        ];
+        for (const candidate of candidates) {
+          try {
+            const resp = await fetch(candidate, { cache: "no-cache" });
+            if (resp.ok) {
+              const text = (await resp.text()).trim();
+              const match = text.match(/https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/);
+              if (match) {
+                const discovered = match[0];
+                DEFAULT_24_7_BACKEND = discovered;
+                const saved = localStorage.getItem("andromeda_backend_url");
+                if (!saved || saved.includes("either-mercury-rehabilitation-middle")) {
+                  localStorage.setItem("andromeda_backend_url", discovered);
+                }
+                return discovered;
+              }
+            }
+          } catch (_) {}
+        }
+      } catch (err) {
+        console.warn("Auto-discover backend URL error:", err);
+      }
+      return DEFAULT_24_7_BACKEND;
+    }
 
     function getBackendHttpUrl() {
       const params = new URLSearchParams(window.location.search);
@@ -1695,7 +1729,13 @@
         return cleaned;
       }
       const saved = localStorage.getItem("andromeda_backend_url");
-      if (saved) return saved.replace(/\/+$/, "");
+      if (saved) {
+        if (saved.includes("either-mercury-rehabilitation-middle")) {
+          localStorage.removeItem("andromeda_backend_url");
+        } else {
+          return saved.replace(/\/+$/, "");
+        }
+      }
 
       const host = window.location.hostname;
       if (host === "localhost" || host === "127.0.0.1" || host === "optiplex-9010.local") {
@@ -1766,6 +1806,7 @@
         coreSocket = new WebSocket(wsUrl);
 
         coreSocket.onopen = () => {
+          socketFailureCount = 0;
           updateBackendStatusIndicator("connected", wsUrl);
           const cloudUrl = localStorage.getItem("andromeda_cloud_url") || "";
           coreSocket.send(JSON.stringify({ type: "init", session_id: activeSessionId, cloud_url: cloudUrl, token: token }));
@@ -1821,6 +1862,14 @@
 
         coreSocket.onclose = () => {
           updateBackendStatusIndicator("disconnected", wsUrl);
+          socketFailureCount++;
+          if (socketFailureCount >= 2) {
+            autoDiscoverBackendUrl().then((freshUrl) => {
+              if (freshUrl && freshUrl !== wsUrl) {
+                localStorage.setItem("andromeda_backend_url", freshUrl);
+              }
+            });
+          }
           setTimeout(initCoreSocket, 3000);
         };
 
@@ -3300,6 +3349,7 @@
 
     // Startup
     window.addEventListener('DOMContentLoaded', () => {
+      autoDiscoverBackendUrl();
       // Determine initial view based on route hash or authentication state
       const hash = window.location.hash;
       const token = localStorage.getItem('andromeda_auth_token');
