@@ -7,14 +7,14 @@
 **An Edge-Native, Spatial AI Agent and Neumorphic Operating Workspace.**  
 Seamlessly blending local SLM inference, desktop hardware bridges, and real-time observability into a calm, astigmatism-ergonomic soft UI.
 
-[![Deployment: GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20Frontend-5072a7?logo=github)](https://sfisomadonsela274-spec.github.io/andromeda/)
-[![Runtime: Docker 24/7](https://img.shields.io/badge/Runtime-Docker%20Compose%2024%2F7-5e937d?logo=docker)](https://github.com/sfisomadonsela274-spec/andromeda)
+[![Deployment: GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20Frontend-5072a7?logo=github)](https://sfisomadonsela274-spec.github.io/Andromeda/)
+[![Runtime: Docker 24/7](https://img.shields.io/badge/Runtime-Docker%20Compose%2024%2F7-5e937d?logo=docker)](https://github.com/sfisomadonsela274-spec/Andromeda)
 [![Tunnel: Cloudflare](https://img.shields.io/badge/Tunnel-Cloudflare%20Zero%20Trust-b88a44?logo=cloudflare)](https://cloudflare.com)
 [![Observability: Arize Phoenix](https://img.shields.io/badge/Telemetry-Arize%20Phoenix-858e9c?logo=opentelemetry)](http://localhost:6006)
-[![Style: Neumorphism Soft UI](https://img.shields.io/badge/Design-Neumorphism%20Soft%20UI-1e2126)](https://sfisomadonsela274-spec.github.io/andromeda/)
+[![Style: Neumorphism Soft UI](https://img.shields.io/badge/Design-Neumorphism%20Soft%20UI-1e2126)](https://sfisomadonsela274-spec.github.io/Andromeda/)
 [![License: Non-Commercial](https://img.shields.io/badge/License-Source--Available%20Non--Commercial-a65b5b)](LICENSE)
 
-[Live Web Demo](https://sfisomadonsela274-spec.github.io/andromeda/) • [Architecture](#-system-architecture) • [Getting Started](#-getting-started) • [Deployment](#-247-production-deployment) • [API & Sockets](#-api--websocket-reference)
+[Live Web Demo](https://sfisomadonsela274-spec.github.io/Andromeda/) • [Architecture](#-system-architecture) • [Getting Started](#-getting-started) • [Deployment](#-247-production-deployment) • [API & Sockets](#-api--websocket-reference)
 
 ---
 
@@ -35,7 +35,7 @@ Built from the ground up with **Neumorphism (Soft UI)**, the entire interface is
 ```mermaid
 flowchart TD
     subgraph Clients["Edge Clients"]
-        GHPages["GitHub Pages (Static Edge)<br/>sfisomadonsela274-spec.github.io/andromeda"]
+        GHPages["GitHub Pages (Static Edge)<br/>sfisomadonsela274-spec.github.io/Andromeda"]
         LocalBrowser["Local Ingress (:80 / :5173)<br/>caddy-ingress & nginx"]
         MobileApp["Android Mobile App<br/>Capacitor Native Bridge"]
     end
@@ -192,7 +192,7 @@ cat /home/sfiso/andromeda-runtime/public_url.txt
 Andromeda's static frontend is hosted on **GitHub Pages** and dynamically connects to your 24/7 backend runner over secure WebSockets (`wss://`) and REST (`https://`).
 
 ### Live URL
-🔗 **[https://sfisomadonsela274-spec.github.io/andromeda/](https://sfisomadonsela274-spec.github.io/andromeda/)**
+🔗 **[https://sfisomadonsela274-spec.github.io/Andromeda/](https://sfisomadonsela274-spec.github.io/Andromeda/)**
 
 ### Deploying Updates to GitHub Pages
 To publish commits made in the project to GitHub Pages:
