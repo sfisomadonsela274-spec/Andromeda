@@ -25,6 +25,10 @@ echo "📦 Target Repository: $REPO_URL"
 echo "🌐 Native URL:        https://sfisomadonsela274-spec.github.io/Andromeda/"
 echo ""
 
+# Build latest frontend distribution
+echo "🔨 Building latest frontend distribution with Vite..."
+(cd andromeda && npm run build)
+
 # Deploy dist folder to gh-pages branch
 TEMP_DIR=$(mktemp -d)
 echo "📁 Staging distribution files in $TEMP_DIR..."
