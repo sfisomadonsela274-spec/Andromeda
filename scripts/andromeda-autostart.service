@@ -1,0 +1,15 @@
+[Unit]
+Description=Andromeda Intelligent Workspace - 24/7 Autostart & Process Interconnect
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/sfiso/andromeda-runtime
+ExecStart=/home/sfiso/andromeda-runtime/bin/andromeda-boot.sh
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=default.target

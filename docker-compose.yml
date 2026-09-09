@@ -102,6 +102,17 @@ services:
       phoenix:
         condition: service_healthy
 
+  # 6. Cloudflare Zero Trust Ingress Tunnel
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel --logfile /data/tunnel/cloudflared.log --no-autoupdate --url http://caddy-ingress:80
+    volumes:
+      - ./data/tunnel:/data/tunnel
+    depends_on:
+      - caddy-ingress
+
 volumes:
   phoenix_data:
   caddy_data:
