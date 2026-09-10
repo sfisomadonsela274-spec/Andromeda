@@ -45,6 +45,19 @@ def save_url(url):
         except Exception:
             pass
 
+def deploy_github_pages():
+    try:
+        deploy_script = os.path.join(RUNTIME_DIR, "deploy-gh-pages.sh")
+        if os.path.exists(deploy_script):
+            subprocess.Popen(
+                [deploy_script],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                cwd=RUNTIME_DIR
+            )
+    except Exception as e:
+        print(f"[Deploy Error]: {e}", file=sys.stderr)
+
 def main():
     if "--once" in sys.argv:
         url = extract_url()
@@ -64,6 +77,7 @@ def main():
             last_url = url
             save_url(url)
             print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 🟢 New Public URL: {url}", flush=True)
+            deploy_github_pages()
         time.sleep(5)
 
 if __name__ == "__main__":

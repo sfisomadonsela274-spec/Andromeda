@@ -1674,7 +1674,7 @@
     // ==========================================
     // BACKEND WEBSOCKET & DYNAMIC ENDPOINT RESOLUTION
     // ==========================================
-    let DEFAULT_24_7_BACKEND = "https://charts-proportion-cooper-ireland.trycloudflare.com";
+    let DEFAULT_24_7_BACKEND = "https://sin-serial-hearts-calendar.trycloudflare.com";
     let socketFailureCount = 0;
 
     async function autoDiscoverBackendUrl() {
@@ -1696,7 +1696,7 @@
                 const discovered = match[0];
                 DEFAULT_24_7_BACKEND = discovered;
                 const saved = localStorage.getItem("andromeda_backend_url");
-                if (!saved || saved.includes("either-mercury-rehabilitation-middle")) {
+                if (!saved || saved !== discovered) {
                   localStorage.setItem("andromeda_backend_url", discovered);
                 }
                 return discovered;
@@ -1718,19 +1718,22 @@
         localStorage.setItem("andromeda_backend_url", cleaned);
         return cleaned;
       }
-      const saved = localStorage.getItem("andromeda_backend_url");
-      if (saved) {
-        if (saved.includes("either-mercury-rehabilitation-middle")) {
-          localStorage.removeItem("andromeda_backend_url");
-        } else {
-          return saved.replace(/\/+$/, "");
-        }
-      }
 
       const host = window.location.hostname;
       if (host === "localhost" || host === "127.0.0.1" || host === "optiplex-9010.local") {
         return window.location.origin;
       }
+
+      const saved = localStorage.getItem("andromeda_backend_url");
+      if (saved) {
+        // If saved is an old or different ephemeral trycloudflare URL, automatically update to active default
+        if (saved.includes("trycloudflare.com") && saved !== DEFAULT_24_7_BACKEND) {
+          localStorage.setItem("andromeda_backend_url", DEFAULT_24_7_BACKEND);
+          return DEFAULT_24_7_BACKEND;
+        }
+        return saved.replace(/\/+$/, "");
+      }
+
       return DEFAULT_24_7_BACKEND;
     }
 

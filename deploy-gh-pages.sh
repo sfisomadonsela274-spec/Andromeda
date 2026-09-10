@@ -33,6 +33,7 @@ echo "🔨 Building latest frontend distribution with Vite..."
 TEMP_DIR=$(mktemp -d)
 echo "📁 Staging distribution files in $TEMP_DIR..."
 cp -r andromeda/dist/* "$TEMP_DIR/"
+[ -f public_url.txt ] && cp public_url.txt "$TEMP_DIR/public_url.txt"
 rm -f "$TEMP_DIR/CNAME"
 
 cd "$TEMP_DIR"

@@ -162,7 +162,18 @@ for i in {1..15}; do
 done
 
 # ------------------------------------------------------------------------------
-# STEP 6: Final Diagnostics & Status Report
+# STEP 6: Synchronize and Deploy to GitHub Pages Edge
+# ------------------------------------------------------------------------------
+if [ -n "$TUNNEL_URL" ]; then
+    log "Step 6: Publishing active Cloudflare tunnel URL to GitHub Pages..."
+    if [ -x "$RUNTIME_DIR/deploy-gh-pages.sh" ]; then
+        "$RUNTIME_DIR/deploy-gh-pages.sh" >/dev/null 2>&1 || true
+        log "GitHub Pages edge updated with live tunnel endpoint."
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# STEP 7: Final Diagnostics & Status Report
 # ------------------------------------------------------------------------------
 echo ""
 echo "================================================================="
