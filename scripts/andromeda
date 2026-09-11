@@ -1,0 +1,313 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# 🌌 Andromeda Intelligent Workspace CLI
+# ==============================================================================
+# Launch, manage, and monitor all Andromeda servers and AI core services.
+# Usage:
+#   andromeda              - Start all servers and bring the core online (default)
+#   andromeda start        - Start all servers and verify health
+#   andromeda status       - Display live health status and service endpoints
+#   andromeda stop         - Stop all Andromeda servers
+#   andromeda restart      - Restart all services and re-verify health
+#   andromeda logs [name]  - Tail logs for all or a specific container
+#   andromeda open         - Open Andromeda in the default web browser
+#   andromeda sync         - Sync USB development files to SSD production runtime
+# ==============================================================================
+
+set -eo pipefail
+
+# ANSI Color Codes
+BOLD="\033[1m"
+DIM="\033[2m"
+GREEN="\033[38;5;78m"
+BLUE="\033[38;5;75m"
+CYAN="\033[38;5;80m"
+YELLOW="\033[38;5;221m"
+RED="\033[38;5;203m"
+PURPLE="\033[38;5;176m"
+MUTED="\033[38;5;244m"
+RESET="\033[0m"
+
+# Project and Runtime Paths
+RUNTIME_DIR="/home/sfiso/andromeda-runtime"
+USB_PROJECT="/media/sfiso/USB STICK/Projects/ai-agent"
+
+# Determine active compose directory
+if [ -f "$RUNTIME_DIR/docker-compose.yml" ]; then
+    TARGET_DIR="$RUNTIME_DIR"
+elif [ -f "$USB_PROJECT/docker-compose.yml" ]; then
+    TARGET_DIR="$USB_PROJECT"
+elif [ -f "$(pwd)/docker-compose.yml" ]; then
+    TARGET_DIR="$(pwd)"
+else
+    echo -e "${RED}✖ Error: docker-compose.yml not found in runtime or USB project.${RESET}"
+    exit 1
+fi
+
+COMPOSE_FILE="$TARGET_DIR/docker-compose.yml"
+PROJECT_NAME="ai-agent"
+
+print_header() {
+    echo -e "${CYAN}${BOLD}"
+    echo "  ╔═══════════════════════════════════════════════════════════════╗"
+    echo "  ║             🌌  ANDROMEDA INTELLIGENT WORKSPACE              ║"
+    echo "  ║              Neural Core & Service Orchestrator               ║"
+    echo "  ╚═══════════════════════════════════════════════════════════════╝"
+    echo -e "${RESET}"
+}
+
+check_docker() {
+    if ! docker info >/dev/null 2>&1; then
+        echo -e "${YELLOW}⏳ Docker daemon is not active. Attempting to start...${RESET}"
+        sudo systemctl start docker 2>/dev/null || true
+        local waited=0
+        while ! docker info >/dev/null 2>&1; do
+            sleep 1
+            waited=$((waited + 1))
+            if [ $waited -ge 10 ]; then
+                echo -e "${RED}✖ Error: Docker daemon could not be reached. Please run 'sudo systemctl start docker'.${RESET}"
+                exit 1
+            fi
+        done
+        echo -e "${GREEN}✓ Docker daemon is ready.${RESET}"
+    fi
+}
+
+sync_usb_if_present() {
+    if [ -d "$USB_PROJECT" ] && [ "$TARGET_DIR" = "$RUNTIME_DIR" ]; then
+        echo -e "${MUTED}📦 Syncing USB development files to SSD runtime...${RESET}"
+        rsync -av --exclude='node_modules' --exclude='.git' --exclude='jimmy_env' \
+          --exclude='__pycache__' --exclude='data/tunnel' --exclude='public_url.txt' \
+          "$USB_PROJECT/" "$RUNTIME_DIR/" >/dev/null 2>&1 || true
+    fi
+}
+
+get_public_url() {
+    local url=""
+    local tunnel_file="$TARGET_DIR/public_url.txt"
+    if [ -s "$tunnel_file" ]; then
+        url=$(tr -d ' \n\r' < "$tunnel_file")
+    fi
+    if [ -z "$url" ] || [ "$url" = "null" ]; then
+        url=$(docker logs cloudflared 2>&1 | grep -oE 'https://[a-zA-Z0-9-]+\.trycloudflare\.com' | tail -n 1 || true)
+    fi
+    echo "$url"
+}
+
+check_endpoint() {
+    local url="$1"
+    local timeout="${2:-2}"
+    curl -sf --max-time "$timeout" "$url" >/dev/null 2>&1
+}
+
+wait_for_core() {
+    echo -e "${BLUE}⚡ Verifying core interconnects & service health...${RESET}"
+    local max_wait=45
+    local elapsed=0
+    local all_up=false
+
+    while [ $elapsed -lt $max_wait ]; do
+        local backend_ok=false
+        local frontend_ok=false
+        local ingress_ok=false
+        local phoenix_ok=false
+        local ollama_ok=false
+
+        check_endpoint "http://localhost:8000/" && backend_ok=true
+        check_endpoint "http://localhost:5173/" && frontend_ok=true
+        check_endpoint "http://localhost:80/" && ingress_ok=true
+        check_endpoint "http://localhost:6006/" && phoenix_ok=true
+        check_endpoint "http://localhost:11434/" && ollama_ok=true
+
+        if [ "$backend_ok" = true ] && [ "$frontend_ok" = true ] && \
+           [ "$ingress_ok" = true ] && [ "$phoenix_ok" = true ] && [ "$ollama_ok" = true ]; then
+            all_up=true
+            break
+        fi
+
+        sleep 2
+        elapsed=$((elapsed + 2))
+        printf "\r  ${YELLOW}⏳ Waiting for services to respond (${elapsed}s)...${RESET}"
+    done
+
+    printf "\r\033[K" # Clear waiting line
+
+    if [ "$all_up" = true ]; then
+        echo -e "${GREEN}✓ All internal services are healthy and responsive.${RESET}"
+    else
+        echo -e "${YELLOW}⚠️ Warning: Some services are still initializing or slow to respond.${RESET}"
+    fi
+}
+
+show_dashboard() {
+    echo ""
+    echo -e "${BOLD}${GREEN}  🟢 ANDROMEDA CORE ONLINE & OPERATIONAL${RESET}"
+    echo -e "${MUTED}  ─────────────────────────────────────────────────────────────${RESET}"
+
+    # Service Health Checks
+    local s_backend="${RED}DOWN${RESET}"
+    local s_frontend="${RED}DOWN${RESET}"
+    local s_ingress="${RED}DOWN${RESET}"
+    local s_phoenix="${RED}DOWN${RESET}"
+    local s_ollama="${RED}DOWN${RESET}"
+    local s_tunnel="${YELLOW}CONNECTING${RESET}"
+
+    check_endpoint "http://localhost:8000/" && s_backend="${GREEN}HEALTHY${RESET}"
+    check_endpoint "http://localhost:5173/" && s_frontend="${GREEN}HEALTHY${RESET}"
+    check_endpoint "http://localhost:80/" && s_ingress="${GREEN}HEALTHY${RESET}"
+    check_endpoint "http://localhost:6006/" && s_phoenix="${GREEN}HEALTHY${RESET}"
+    check_endpoint "http://localhost:11434/" && s_ollama="${GREEN}HEALTHY${RESET}"
+
+    local pub_url
+    pub_url=$(get_public_url)
+    if [ -n "$pub_url" ]; then
+        s_tunnel="${GREEN}ACTIVE${RESET}"
+    fi
+
+    echo -e "  ${BOLD}Service Grid Status:${RESET}"
+    echo -e "    ⚡ Core Backend  [FastAPI / WebSockets]   : $s_backend"
+    echo -e "    🎨 SPA Frontend  [Neumorphic Interface]   : $s_frontend"
+    echo -e "    🌐 Web Ingress   [Caddy Reverse Proxy]    : $s_ingress"
+    echo -e "    📊 Observability [Arize Phoenix]          : $s_phoenix"
+    echo -e "    🧠 Inference SLM [Ollama / GPU]           : $s_ollama"
+    echo -e "    ☁️  Edge Tunnel  [Cloudflare Zero Trust]  : $s_tunnel"
+    echo ""
+    echo -e "  ${BOLD}Access Endpoints:${RESET}"
+    echo -e "    🎨 Local Workspace : ${CYAN}${BOLD}http://localhost:80${RESET}  ${DIM}(or :5173)${RESET}"
+    echo -e "    ⚡ Core API & Docs : ${BLUE}http://localhost:8000/docs${RESET}"
+    echo -e "    📊 Phoenix Telemetry: ${PURPLE}http://localhost:6006${RESET}"
+    if [ -n "$pub_url" ]; then
+        echo -e "    🔗 Public Tunnel   : ${GREEN}${BOLD}$pub_url${RESET}"
+    fi
+    echo -e "    🌐 GitHub Pages    : ${CYAN}https://sfisomadonsela274-spec.github.io/Andromeda/${RESET}"
+    echo -e "${MUTED}  ─────────────────────────────────────────────────────────────${RESET}"
+    echo -e "  ${DIM}Type '${BOLD}andromeda help${RESET}${DIM}' for commands (status, stop, restart, logs, open)${RESET}"
+    echo ""
+}
+
+start_andromeda() {
+    print_header
+    check_docker
+    sync_usb_if_present
+
+    echo -e "${BLUE}🚀 Starting Andromeda container cluster...${RESET}"
+    docker compose -p "$PROJECT_NAME" -f "$COMPOSE_FILE" up -d
+
+    # Ensure URL fetcher service is active
+    if systemctl --user is-enabled andromeda-url-fetcher.service >/dev/null 2>&1; then
+        systemctl --user start andromeda-url-fetcher.service 2>/dev/null || true
+    fi
+
+    wait_for_core
+    show_dashboard
+}
+
+stop_andromeda() {
+    print_header
+    echo -e "${YELLOW}🛑 Stopping Andromeda services...${RESET}"
+    docker compose -p "$PROJECT_NAME" -f "$COMPOSE_FILE" stop
+    echo -e "${GREEN}✓ All Andromeda servers stopped.${RESET}"
+}
+
+restart_andromeda() {
+    print_header
+    check_docker
+    sync_usb_if_present
+    echo -e "${YELLOW}🔄 Restarting Andromeda services...${RESET}"
+    docker compose -p "$PROJECT_NAME" -f "$COMPOSE_FILE" restart
+    wait_for_core
+    show_dashboard
+}
+
+status_andromeda() {
+    print_header
+    check_docker
+    show_dashboard
+    echo -e "  ${BOLD}Active Docker Containers:${RESET}"
+    docker ps --filter "name=andromeda|caddy|phoenix|ollama|cloudflared" --format "    - {{.Names}}: {{.Status}}"
+    echo ""
+}
+
+logs_andromeda() {
+    local target="${1:-}"
+    if [ -n "$target" ]; then
+        docker compose -p "$PROJECT_NAME" -f "$COMPOSE_FILE" logs -f "$target"
+    else
+        docker compose -p "$PROJECT_NAME" -f "$COMPOSE_FILE" logs -f
+    fi
+}
+
+open_andromeda() {
+    local url="http://localhost:80"
+    echo -e "${GREEN}🚀 Opening Andromeda Workspace in browser ($url)...${RESET}"
+    if command -v xdg-open >/dev/null 2>&1; then
+        xdg-open "$url" >/dev/null 2>&1 &
+    elif command -v sensible-browser >/dev/null 2>&1; then
+        sensible-browser "$url" >/dev/null 2>&1 &
+    else
+        echo -e "${YELLOW}Open this link in your browser: $url${RESET}"
+    fi
+}
+
+sync_andromeda() {
+    print_header
+    if [ -f "$TARGET_DIR/sync-to-online.sh" ]; then
+        bash "$TARGET_DIR/sync-to-online.sh"
+    else
+        sync_usb_if_present
+        echo -e "${GREEN}✓ USB sync complete.${RESET}"
+    fi
+}
+
+show_help() {
+    print_header
+    echo -e "${BOLD}Usage:${RESET} andromeda [command]"
+    echo ""
+    echo -e "${BOLD}Commands:${RESET}"
+    echo -e "  ${CYAN}andromeda${RESET}             Start all servers and ensure core is online (default)"
+    echo -e "  ${CYAN}andromeda start${RESET}       Start all servers and verify health"
+    echo -e "  ${CYAN}andromeda status${RESET}      Show live health dashboard and active URLs"
+    echo -e "  ${CYAN}andromeda stop${RESET}        Stop all Andromeda background servers"
+    echo -e "  ${CYAN}andromeda restart${RESET}     Restart all containers and re-verify connectivity"
+    echo -e "  ${CYAN}andromeda logs [svc]${RESET}  Tail live logs (e.g., andromeda logs andromeda-backend)"
+    echo -e "  ${CYAN}andromeda open${RESET}        Open Andromeda UI in your default browser"
+    echo -e "  ${CYAN}andromeda sync${RESET}        Sync development files from USB to SSD runtime"
+    echo -e "  ${CYAN}andromeda help${RESET}        Display this help message"
+    echo ""
+}
+
+# Command Router
+CMD="${1:-start}"
+shift || true
+
+case "$CMD" in
+    start|"")
+        start_andromeda
+        ;;
+    stop|down)
+        stop_andromeda
+        ;;
+    restart)
+        restart_andromeda
+        ;;
+    status)
+        status_andromeda
+        ;;
+    logs)
+        logs_andromeda "$@"
+        ;;
+    open)
+        open_andromeda
+        ;;
+    sync)
+        sync_andromeda
+        ;;
+    help|-h|--help)
+        show_help
+        ;;
+    *)
+        echo -e "${RED}Unknown command: $CMD${RESET}"
+        echo -e "Run '${BOLD}andromeda help${RESET}' for available commands."
+        exit 1
+        ;;
+esac

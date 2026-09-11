@@ -1674,7 +1674,7 @@
     // ==========================================
     // BACKEND WEBSOCKET & DYNAMIC ENDPOINT RESOLUTION
     // ==========================================
-    let DEFAULT_24_7_BACKEND = "https://sin-serial-hearts-calendar.trycloudflare.com";
+    let DEFAULT_24_7_BACKEND = "https://culture-subsection-howard-arm.trycloudflare.com";
     let socketFailureCount = 0;
 
     async function autoDiscoverBackendUrl() {
@@ -1684,22 +1684,25 @@
           `${window.location.origin}${basePath}/public_url.txt`,
           `${window.location.origin}/Andromeda/public_url.txt`,
           `./public_url.txt`,
+          `https://raw.githubusercontent.com/sfisomadonsela274-spec/Andromeda/gh-pages/public_url.txt`,
           `https://raw.githubusercontent.com/sfisomadonsela274-spec/Andromeda/main/public_url.txt`
         ];
         for (const candidate of candidates) {
           try {
-            const resp = await fetch(candidate, { cache: "no-cache" });
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2500);
+            const resp = await fetch(candidate, { cache: "no-cache", signal: controller.signal });
+            clearTimeout(timeoutId);
             if (resp.ok) {
               const text = (await resp.text()).trim();
               const match = text.match(/https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/);
               if (match) {
                 const discovered = match[0];
-                DEFAULT_24_7_BACKEND = discovered;
-                const saved = localStorage.getItem("andromeda_backend_url");
-                if (!saved || saved !== discovered) {
+                if (!discovered.includes("sin-serial-hearts-calendar") && !discovered.includes("either-mercury-rehabilitation-middle")) {
+                  DEFAULT_24_7_BACKEND = discovered;
                   localStorage.setItem("andromeda_backend_url", discovered);
+                  return discovered;
                 }
-                return discovered;
               }
             }
           } catch (_) {}
@@ -1719,15 +1722,20 @@
         return cleaned;
       }
 
+      const proto = window.location.protocol;
       const host = window.location.hostname;
-      if (host === "localhost" || host === "127.0.0.1" || host === "optiplex-9010.local") {
+      if (proto === "file:" || !host) {
+        return "http://localhost:80";
+      }
+
+      if (host === "localhost" || host === "127.0.0.1" || host === "optiplex-9010.local" || host.startsWith("192.168.") || host.startsWith("10.") || host.endsWith(".local")) {
         return window.location.origin;
       }
 
       const saved = localStorage.getItem("andromeda_backend_url");
-      if (saved) {
-        // If saved is an old or different ephemeral trycloudflare URL, automatically update to active default
-        if (saved.includes("trycloudflare.com") && saved !== DEFAULT_24_7_BACKEND) {
+      if (saved && saved.trim() !== "") {
+        // Clean out known stale/dead legacy subdomains
+        if (saved.includes("sin-serial-hearts-calendar") || saved.includes("either-mercury-rehabilitation-middle")) {
           localStorage.setItem("andromeda_backend_url", DEFAULT_24_7_BACKEND);
           return DEFAULT_24_7_BACKEND;
         }
@@ -1786,7 +1794,14 @@
     let activeSessionId = localStorage.getItem("andromeda_session_id") || ("session_" + Math.random().toString(36).substring(2, 9));
     localStorage.setItem("andromeda_session_id", activeSessionId);
 
-    function initCoreSocket() {
+    async function initCoreSocket() {
+      if (window.location.hostname.includes("github.io") || window.location.hostname.includes("sfi.so")) {
+        const currentSaved = localStorage.getItem("andromeda_backend_url");
+        if (!currentSaved || currentSaved.includes("sin-serial-hearts-calendar") || currentSaved.includes("either-mercury")) {
+          try { await autoDiscoverBackendUrl(); } catch (_) {}
+        }
+      }
+
       let wsUrl = getBackendWsUrl();
       const token = localStorage.getItem("andromeda_auth_token") || "";
       if (token) {

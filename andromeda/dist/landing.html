@@ -842,14 +842,18 @@
         return queryBackend.replace(/\/+$/, "");
       }
       const saved = localStorage.getItem("andromeda_backend_url");
-      if (saved && !saved.includes("either-mercury-rehabilitation-middle")) {
+      if (saved && !saved.includes("either-mercury") && !saved.includes("sin-serial-hearts-calendar")) {
         return saved.replace(/\/+$/, "");
       }
+      const proto = window.location.protocol;
       const host = window.location.hostname;
-      if (host === "localhost" || host === "127.0.0.1" || host === "optiplex-9010.local") {
+      if (proto === "file:" || !host) {
+        return "http://localhost:80";
+      }
+      if (host === "localhost" || host === "127.0.0.1" || host === "optiplex-9010.local" || host.startsWith("192.168.") || host.startsWith("10.") || host.endsWith(".local")) {
         return window.location.origin;
       }
-      return "https://sin-serial-hearts-calendar.trycloudflare.com";
+      return "https://culture-subsection-howard-arm.trycloudflare.com";
     }
 
     async function handleSignIn(e) {

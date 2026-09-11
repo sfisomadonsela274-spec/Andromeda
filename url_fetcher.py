@@ -49,10 +49,13 @@ def deploy_github_pages():
     try:
         deploy_script = os.path.join(RUNTIME_DIR, "deploy-gh-pages.sh")
         if os.path.exists(deploy_script):
+            log_dir = os.path.join(RUNTIME_DIR, "logs")
+            os.makedirs(log_dir, exist_ok=True)
+            log_file = open(os.path.join(log_dir, "deploy-gh-pages.log"), "a")
             subprocess.Popen(
-                [deploy_script],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+                ["/usr/bin/env", "bash", deploy_script],
+                stdout=log_file,
+                stderr=log_file,
                 cwd=RUNTIME_DIR
             )
     except Exception as e:

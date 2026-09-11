@@ -151,7 +151,23 @@ source venv/bin/activate
 pip install -r andromeda/backend/requirements.txt
 ```
 
-### 3. Run Locally via Docker Compose
+### 3. One-Command CLI Launch
+Simply type:
+```bash
+andromeda
+```
+This automatically validates Docker, syncs active development files, launches all containers, verifies that the FastAPI Core and SLM inference engine are online, and presents an interactive status dashboard.
+
+Available subcommands:
+- `andromeda status` — Instant health check and live URLs
+- `andromeda stop` — Stop all Andromeda containers
+- `andromeda restart` — Restart all services and re-verify health
+- `andromeda logs [svc]` — Tail real-time service logs
+- `andromeda open` — Open Andromeda Workspace in your browser
+- `andromeda sync` — Sync development repository to SSD runtime
+- `andromeda help` — Display CLI command reference
+
+### 4. Run Manually via Docker Compose (Alternative)
 ```bash
 docker compose up -d --build
 ```
