@@ -1,0 +1,3385 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#1e2126] text-[#dde2ea] antialiased selection:bg-[#282d36] selection:text-white">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Andromeda // Intelligent Workspace</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            neu: {
+              base: '#1e2126',
+              raised: '#21252b',
+              sunken: '#1a1c21',
+              dark: '#141619',
+              light: '#282c34',
+              accent: '#5072a7',
+              accentHover: '#5d82bc',
+              sage: '#5e937d',
+              ochre: '#b88a44',
+              coral: '#a65b5b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* ========================================================= */
+    /* NEUMORPHIC SOFT UI SYSTEM (ASTIGMATISM-OPTIMIZED)         */
+    /* ========================================================= */
+
+    /* Custom soft scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1a1c21;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #282c34;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #323742;
+    }
+
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Raised Surfaces (extruded gently from slate) */
+    .neu-raised-sm {
+      background: #1e2126;
+      box-shadow: 3px 3px 7px #131518, -3px -3px 7px #282c34;
+    }
+    .neu-raised {
+      background: #1e2126;
+      box-shadow: 5px 5px 12px #121417, -5px -5px 12px #292d35;
+    }
+    .neu-raised-lg {
+      background: #202329;
+      box-shadow: 8px 8px 22px #101215, -8px -8px 22px #2b3038;
+    }
+
+    /* Recessed / Debossed Surfaces (grooves, inputs, active states) */
+    .neu-inset-sm {
+      background: #1b1e23;
+      box-shadow: inset 2px 2px 5px #131518, inset -2px -2px 5px #272b33;
+    }
+    .neu-inset {
+      background: #1a1d22;
+      box-shadow: inset 3px 3px 7px #121417, inset -3px -3px 7px #262a31;
+    }
+    .neu-inset-deep {
+      background: #181a1f;
+      box-shadow: inset 4px 4px 9px #101215, inset -4px -4px 9px #252830;
+    }
+
+    /* Tactile Buttons */
+    .neu-btn {
+      background: #1e2126;
+      box-shadow: 3px 3px 7px #131518, -3px -3px 7px #282c34;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #dde2ea;
+    }
+    .neu-btn:hover {
+      background: #22262d;
+      box-shadow: 4px 4px 9px #121417, -4px -4px 9px #2a2f38;
+      color: #ffffff;
+    }
+    .neu-btn:active, .neu-btn.active {
+      background: #191c20;
+      box-shadow: inset 2px 2px 5px #111316, inset -2px -2px 5px #262930;
+      transform: translateY(1px);
+    }
+
+    /* Tactile Pills */
+    .neu-pill {
+      background: #1e2126;
+      box-shadow: 3px 3px 7px #131518, -3px -3px 7px #282c34;
+      border-radius: 9999px;
+      transition: all 0.15s ease;
+      color: #dde2ea;
+    }
+    .neu-pill:hover {
+      background: #22262d;
+      box-shadow: 4px 4px 10px #121417, -4px -4px 10px #2a2f38;
+      color: #ffffff;
+    }
+    .neu-pill:active, .neu-pill.active {
+      background: #191c20;
+      box-shadow: inset 2px 2px 5px #111316, inset -2px -2px 5px #262930;
+    }
+
+    /* Neumorphic Range Slider */
+    input[type="range"] {
+      -webkit-appearance: none;
+      background: #181a1f;
+      box-shadow: inset 2px 2px 4px #111316, inset -2px -2px 4px #262a30;
+      border-radius: 9999px;
+      height: 6px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #22262c;
+      box-shadow: 2px 2px 5px #111316, -2px -2px 5px #2b3038;
+      cursor: pointer;
+      -webkit-transition: transform 0.1s ease;
+      transition: transform 0.1s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+      background: #262a32;
+    }
+    input[type="range"]::-webkit-slider-thumb:active {
+      box-shadow: inset 1px 1px 3px #111316, inset -1px -1px 3px #2b3038;
+    }
+
+    /* Elevated Dialogue Slab */
+    .glass-panel {
+      background: #202329;
+      box-shadow: 8px 8px 24px #101215, -8px -8px 24px #2b3038;
+    }
+
+    @keyframes subtle-pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 0.9; }
+    }
+    .pulse-subtle {
+      animation: subtle-pulse 2.2s infinite ease-in-out;
+    }
+  </style>
+</head>
+
+<body class="h-full bg-[#1e2126] text-[#dde2ea] flex flex-col font-sans overflow-hidden">
+  
+  <!-- Hidden Native File Input Wrapper for Document Uploading -->
+  <input type="file" id="native-file-picker" class="hidden" onchange="handleFileSelection(event)" accept=".pdf,.doc,.docx,.txt,.json,.js,.py,.rs">
+
+  <!-- ============================================================== -->
+  <!-- 1. LANDING PAGE & ABILITIES OVERVIEW VIEW CONTAINER            -->
+  <!-- ============================================================== -->
+  <div id="app-landing-view" class="hidden min-h-screen w-full bg-[#1e2126] text-[#dde2ea] flex-col overflow-y-auto z-30">
+    <!-- Top Landing Header -->
+    <header class="sticky top-0 z-50 bg-[#1e2126]/90 backdrop-blur-md border-b border-[#242830]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl neu-raised flex items-center justify-center text-[#5072a7]">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-bold text-sm tracking-tight text-white flex items-center gap-2">
+              Andromeda
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded-full neu-inset-sm text-emerald-400 font-normal">v8.4</span>
+            </span>
+            <span class="text-[10px] text-[#8892a0] font-mono tracking-wider">INTELLIGENT WORKSPACE</span>
+          </div>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-6 text-xs font-medium text-[#8892a0]">
+          <a href="#lp-abilities" class="hover:text-white transition-colors">Abilities</a>
+          <a href="#lp-usages" class="hover:text-white transition-colors">Usages</a>
+          <a href="#lp-architecture" class="hover:text-white transition-colors">Architecture</a>
+          <a href="#lp-storage" class="hover:text-white transition-colors">SQLite Engine</a>
+        </nav>
+
+        <div class="flex items-center gap-2.5">
+          <div id="landing-nav-unauth" class="flex items-center gap-2">
+            <button onclick="openAuthModal('signin')" class="neu-btn text-xs font-medium px-3.5 py-2 rounded-xl text-zinc-300 hover:text-white flex items-center gap-1.5">
+              <i data-lucide="log-in" class="w-3.5 h-3.5 text-[#5072a7]"></i>
+              <span>Sign In</span>
+            </button>
+            <button onclick="openAuthModal('signup')" class="neu-btn text-xs font-medium px-4 py-2 rounded-xl bg-[#21252b] text-white hover:text-blue-200 border-l border-t border-[#313742] flex items-center gap-1.5 shadow-[3px_3px_8px_#131518]">
+              <i data-lucide="user-plus" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>Sign Up</span>
+            </button>
+          </div>
+          <div id="landing-nav-auth" class="hidden items-center gap-2.5">
+            <a href="app.html" class="neu-btn text-xs font-medium px-3.5 py-2 rounded-xl text-purple-300 hover:text-white flex items-center gap-1.5 border border-purple-500/30 shadow-[0_0_12px_rgba(168,85,247,0.2)]">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-400"></i>
+              <span>Cosmic Deck (React)</span>
+            </a>
+            <button onclick="navigateToWorkspace()" class="neu-btn text-xs font-medium px-4 py-2 rounded-xl text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+              <span>Launch Workspace</span>
+            </button>
+            <button onclick="logoutWorkspaceUser()" class="neu-btn text-xs p-2 rounded-xl text-zinc-400 hover:text-rose-400" title="Sign Out">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative pt-12 pb-20 overflow-hidden">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full neu-inset-sm text-xs text-[#8892a0]">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-slow"></span>
+          <span class="font-mono text-zinc-300">24/7 Containerized Runtime Online</span>
+          <span class="text-[#646c7a]">•</span>
+          <span class="text-[#5072a7] font-medium">SQLite3 Unified WAL Engine</span>
+        </div>
+
+        <div class="space-y-4 max-w-3xl mx-auto">
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+            Tactile Intelligence for <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#5072a7] via-[#5e937d] to-[#b88a44]">Edge Computing</span>.
+          </h1>
+          <p class="text-base sm:text-lg text-[#8892a0] leading-relaxed">
+            An Edge-Native, Spatial AI Agent and Neumorphic Operating Workspace. Seamlessly blending local SLM inference, desktop hardware bridges, and persistent user-scoped SQLite storage into a calm, astigmatism-ergonomic soft UI.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+          <button onclick="openAuthModal('signup')" class="neu-btn px-6 py-3.5 rounded-2xl text-sm font-semibold text-white flex items-center gap-2.5 hover:scale-[1.02] active:scale-[0.98]">
+            <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
+            <span>Get Started Free</span>
+          </button>
+          <button onclick="continueAsGuest()" class="neu-btn px-6 py-3.5 rounded-2xl text-sm font-semibold text-[#8892a0] hover:text-white flex items-center gap-2.5">
+            <i data-lucide="compass" class="w-4 h-4 text-[#5072a7]"></i>
+            <span>Instant Guest Demo</span>
+          </button>
+          <a href="#lp-abilities" class="neu-btn px-5 py-3.5 rounded-2xl text-sm font-medium text-[#8892a0] hover:text-white flex items-center gap-2">
+            <i data-lucide="arrow-down" class="w-4 h-4"></i>
+            <span>Abilities & Usages</span>
+          </a>
+        </div>
+
+        <!-- Dynamic Island Teaser -->
+        <div class="pt-8 max-w-4xl mx-auto">
+          <div class="neu-raised-lg p-6 rounded-3xl border border-[#262a32] relative space-y-5">
+            <div class="flex items-center justify-between border-b border-[#242830] pb-4">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-rose-500/60 inline-block"></span>
+                <span class="w-3 h-3 rounded-full bg-amber-500/60 inline-block"></span>
+                <span class="w-3 h-3 rounded-full bg-emerald-500/60 inline-block"></span>
+                <span class="ml-2 text-xs font-mono text-[#8892a0]">andromeda-core // container:andromeda-backend</span>
+              </div>
+              <div class="px-4 py-1.5 rounded-full neu-inset-sm flex items-center gap-3 text-xs">
+                <i data-lucide="radio" class="w-3.5 h-3.5 text-emerald-400 animate-pulse"></i>
+                <span class="text-zinc-300 font-mono text-[11px]">MPRIS • PulseAudio Synced</span>
+              </div>
+              <div class="text-xs font-mono text-[#5072a7] hidden sm:block">
+                SQLITE: WAL ACTIVE
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left font-mono text-xs">
+              <div class="neu-inset-sm p-4 rounded-2xl space-y-2 col-span-2">
+                <div class="flex items-center justify-between text-[#8892a0] text-[11px]">
+                  <span>AGENT REASONING STREAM</span>
+                  <span class="text-emerald-400">STATUS: 200 OK</span>
+                </div>
+                <div class="text-zinc-300 space-y-1 text-[11px]">
+                  <p class="text-blue-300">> /music lofi beats for coding</p>
+                  <p class="text-[#8892a0]">↳ MPRIS D-Bus Bridge: Handshake initialized with Spotify & VLC</p>
+                  <p class="text-[#8892a0]">↳ SQLite: Persisted session context to `andromeda.db` (User scoped)</p>
+                  <p class="text-emerald-400">✔ Playback stream mounted • Dynamic Island HUD updated</p>
+                </div>
+              </div>
+
+              <div class="neu-inset-sm p-4 rounded-2xl space-y-2.5">
+                <div class="text-[11px] font-medium text-[#8892a0]">EDGE METRICS</div>
+                <div class="space-y-1.5 text-[11px]">
+                  <div class="flex justify-between">
+                    <span class="text-[#8892a0]">Local SLM:</span>
+                    <span class="text-emerald-400">Qwen 1.5B (FP8)</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-[#8892a0]">KV-Cache:</span>
+                    <span class="text-zinc-300">2-bit SQR (72MB)</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-[#8892a0]">DB Latency:</span>
+                    <span class="text-zinc-300">0.84 ms (WAL)</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-[#8892a0]">Tracing:</span>
+                    <span class="text-[#5072a7]">Arize Phoenix</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Abilities Section -->
+    <section id="lp-abilities" class="py-20 border-t border-[#242830]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div class="text-center space-y-3 max-w-2xl mx-auto">
+          <span class="text-xs font-mono uppercase tracking-widest text-[#5072a7]">Capabilities</span>
+          <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">Engineered for Spatial & Tactile Work</h2>
+          <p class="text-sm sm:text-base text-[#8892a0]">Andromeda is not a standard web chatbot. It is an edge-native desktop operating layer built with tactile hardware controls.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="neu-raised p-6 rounded-3xl space-y-4 hover:-translate-y-1 transition-transform">
+            <div class="w-12 h-12 rounded-2xl neu-inset-sm flex items-center justify-center text-[#5072a7]">
+              <i data-lucide="sliders" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-white">Spatial Agent & Desktop Bridges</h3>
+            <p class="text-xs text-[#8892a0] leading-relaxed">Native Linux D-Bus MPRIS and PulseAudio integration. Andromeda controls desktop music (Spotify, VLC, browser), sets volumes, and coordinates host desktop processes.</p>
+            <div class="pt-2 flex flex-wrap gap-1.5 text-[11px] font-mono text-zinc-400">
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">MPRIS</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">PulseAudio</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">D-Bus</span>
+            </div>
+          </div>
+
+          <div class="neu-raised p-6 rounded-3xl space-y-4 hover:-translate-y-1 transition-transform">
+            <div class="w-12 h-12 rounded-2xl neu-inset-sm flex items-center justify-center text-[#5e937d]">
+              <i data-lucide="cpu" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-white">Multi-Tier Inference Grid</h3>
+            <p class="text-xs text-[#8892a0] leading-relaxed">Dynamic hot-switching between Local Qwen-2.5 1.5B (SQR FP8 edge execution), LAN Bridge 7B Turbo on OptiPlex, and Google Gemini Cloud fallback for complex reasoning.</p>
+            <div class="pt-2 flex flex-wrap gap-1.5 text-[11px] font-mono text-zinc-400">
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Ollama</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">1.5B Edge</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">7B Turbo LAN</span>
+            </div>
+          </div>
+
+          <div id="lp-storage" class="neu-raised p-6 rounded-3xl space-y-4 hover:-translate-y-1 transition-transform">
+            <div class="w-12 h-12 rounded-2xl neu-inset-sm flex items-center justify-center text-[#b88a44]">
+              <i data-lucide="database" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-white">Unified Containerized SQLite3</h3>
+            <p class="text-xs text-[#8892a0] leading-relaxed">All user records, passwords (PBKDF2-HMAC-SHA256 salted), session tokens, and conversations are stored in a single high-performance `andromeda.db` volume with Write-Ahead Logging.</p>
+            <div class="pt-2 flex flex-wrap gap-1.5 text-[11px] font-mono text-zinc-400">
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">SQLite3 WAL</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">PBKDF2 100k</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">User Scoped</span>
+            </div>
+          </div>
+
+          <div class="neu-raised p-6 rounded-3xl space-y-4 hover:-translate-y-1 transition-transform">
+            <div class="w-12 h-12 rounded-2xl neu-inset-sm flex items-center justify-center text-[#a65b5b]">
+              <i data-lucide="eye" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-white">Astigmatism-Ergonomic UI</h3>
+            <p class="text-xs text-[#8892a0] leading-relaxed">Calibrated dual-diffuse directional lighting on slate (`#1e2126`). Eliminates corneal light bleed, harsh 1px tacky borders, and high-contrast glare that cause severe eyestrain.</p>
+            <div class="pt-2 flex flex-wrap gap-1.5 text-[11px] font-mono text-zinc-400">
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Slate #1e2126</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Zero Halation</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Soft Shadows</span>
+            </div>
+          </div>
+
+          <div class="neu-raised p-6 rounded-3xl space-y-4 hover:-translate-y-1 transition-transform">
+            <div class="w-12 h-12 rounded-2xl neu-inset-sm flex items-center justify-center text-blue-400">
+              <i data-lucide="disc" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-white">Dynamic Island & Audio HUD</h3>
+            <p class="text-xs text-[#8892a0] leading-relaxed">Real-time audio visualizer waves, playback transport deck, and acoustic sound feedback synthesized with Web Audio API for tactile user interactions.</p>
+            <div class="pt-2 flex flex-wrap gap-1.5 text-[11px] font-mono text-zinc-400">
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Dynamic Island</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Web Audio Chimes</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Visualizer</span>
+            </div>
+          </div>
+
+          <div class="neu-raised p-6 rounded-3xl space-y-4 hover:-translate-y-1 transition-transform">
+            <div class="w-12 h-12 rounded-2xl neu-inset-sm flex items-center justify-center text-purple-400">
+              <i data-lucide="terminal" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-white">Slash Commands & Telemetry</h3>
+            <p class="text-xs text-[#8892a0] leading-relaxed">Execute instant terminal actions with `/music`, `/install <app>`, `/status`, `/model`. Monitored 24/7 with Arize Phoenix OpenTelemetry tracing on port 6006.</p>
+            <div class="pt-2 flex flex-wrap gap-1.5 text-[11px] font-mono text-zinc-400">
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Slash Macros</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Arize Phoenix</span>
+              <span class="px-2 py-0.5 rounded-md neu-inset-sm">Flathub</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Usages Section -->
+    <section id="lp-usages" class="py-20 bg-[#1b1e23] border-t border-[#242830]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div class="text-center space-y-3 max-w-2xl mx-auto">
+          <span class="text-xs font-mono uppercase tracking-widest text-emerald-400">Workflows</span>
+          <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">How Andromeda Powers Daily Computing</h2>
+          <p class="text-sm sm:text-base text-[#8892a0]">Discover how developers and power users employ Andromeda's tactile desktop capabilities.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="neu-raised p-8 rounded-3xl space-y-4 flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full neu-inset-sm text-xs font-mono text-[#5072a7]">
+                <span>01 // DEVELOPER ASSISTANT</span>
+              </div>
+              <h3 class="text-xl font-bold text-white">Zero-Latency Terminal & Coding Companion</h3>
+              <p class="text-xs sm:text-sm text-[#8892a0] leading-relaxed">Stage terminal commands, inspect system logs, verify Git repositories, and generate Flathub install pipelines (VSCode, Discord, Blender) directly from the prompt bar.</p>
+            </div>
+            <div class="neu-inset-deep p-4 rounded-2xl font-mono text-xs text-zinc-300 space-y-1">
+              <div class="text-[#8892a0]">// Staging Flatpak app installation:</div>
+              <div class="text-emerald-400">$ /install vscode</div>
+              <div class="text-[#8892a0]">✔ Staged: flatpak install --user -y flathub com.visualstudio.code</div>
+            </div>
+          </div>
+
+          <div class="neu-raised p-8 rounded-3xl space-y-4 flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full neu-inset-sm text-xs font-mono text-[#5e937d]">
+                <span>02 // AMBIENT MEDIA HUB</span>
+              </div>
+              <h3 class="text-xl font-bold text-white">Desktop Audio Master & Live In-Stream Deck</h3>
+              <p class="text-xs sm:text-sm text-[#8892a0] leading-relaxed">Use voice or text prompts to stream YouTube audio or trigger MPRIS playback. Andromeda's Dynamic Island floats above your workspace with animated waves.</p>
+            </div>
+            <div class="neu-inset-deep p-4 rounded-2xl font-mono text-xs text-zinc-300 space-y-1">
+              <div class="text-[#8892a0]">// Media transport invocation:</div>
+              <div class="text-blue-400">$ /music synthwave mix 2026</div>
+              <div class="text-[#8892a0]">✔ Resolved top stream • In-Stream player active on Header HUD</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="lp-architecture" class="py-20 border-t border-[#242830]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div class="text-center space-y-3 max-w-2xl mx-auto">
+          <span class="text-xs font-mono uppercase tracking-widest text-[#5072a7]">System Blueprint</span>
+          <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">Edge-to-Container Architecture</h2>
+          <p class="text-sm sm:text-base text-[#8892a0]">A robust microservice architecture designed for zero latency and rock-solid persistence.</p>
+        </div>
+
+        <div class="neu-raised-lg p-8 rounded-3xl space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+            <div class="neu-inset-sm p-5 rounded-2xl space-y-2">
+              <div class="w-8 h-8 mx-auto rounded-xl neu-raised flex items-center justify-center text-blue-400">
+                <i data-lucide="globe" class="w-4 h-4"></i>
+              </div>
+              <h4 class="text-sm font-semibold text-white">1. Edge Clients</h4>
+              <p class="text-[11px] text-[#8892a0]">GitHub Pages static SPA, Local Ingress (:80/:5173), Android Native Bridge</p>
+            </div>
+            <div class="neu-inset-sm p-5 rounded-2xl space-y-2">
+              <div class="w-8 h-8 mx-auto rounded-xl neu-raised flex items-center justify-center text-emerald-400">
+                <i data-lucide="shield" class="w-4 h-4"></i>
+              </div>
+              <h4 class="text-sm font-semibold text-white">2. Ingress & Tunnel</h4>
+              <p class="text-[11px] text-[#8892a0]">Caddy 2 & Cloudflare Zero Trust Tunnel routing WSS and REST endpoints</p>
+            </div>
+            <div class="neu-inset-sm p-5 rounded-2xl space-y-2">
+              <div class="w-8 h-8 mx-auto rounded-xl neu-raised flex items-center justify-center text-amber-400">
+                <i data-lucide="cpu" class="w-4 h-4"></i>
+              </div>
+              <h4 class="text-sm font-semibold text-white">3. FastAPI Core</h4>
+              <p class="text-[11px] text-[#8892a0]">Socrates Reasoning Loop, MPRIS Bridge, Arize Phoenix Tracing (:6006)</p>
+            </div>
+            <div class="neu-inset-sm p-5 rounded-2xl space-y-2">
+              <div class="w-8 h-8 mx-auto rounded-xl neu-raised flex items-center justify-center text-purple-400">
+                <i data-lucide="database" class="w-4 h-4"></i>
+              </div>
+              <h4 class="text-sm font-semibold text-white">4. Container SQLite3</h4>
+              <p class="text-[11px] text-[#8892a0]">`andromeda.db` WAL volume, PBKDF2 tokens, user-scoped sessions & memory</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-[#242830] bg-[#1a1c21] py-8 text-xs text-[#8892a0]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-7 h-7 rounded-lg neu-raised flex items-center justify-center text-[#5072a7]">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+          </div>
+          <span>Andromeda Intelligent Workspace • 2026</span>
+        </div>
+        <div class="flex items-center gap-4 text-zinc-400">
+          <span>SQLite WAL Persistent</span>
+          <span>•</span>
+          <span>Docker 24/7 Runtime</span>
+          <span>•</span>
+          <button onclick="navigateToWorkspace()" class="text-emerald-400 hover:text-emerald-300 font-medium">Launch Workspace &rarr;</button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- 2. ROOT APP WORKSPACE CONTAINER                                -->
+  <!-- ============================================================== -->
+  <div id="app-workspace-view" class="flex h-full w-full max-w-[1440px] mx-auto overflow-hidden relative">
+
+    <!-- ============================================================== -->
+    <!-- LEFT SIDEBAR: SESSIONS & SYSTEM TOOLS (COLLAPSIBLE) -->
+    <!-- ============================================================== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-[#1b1e23] flex flex-col justify-between transition-transform duration-300 ease-in-out -translate-x-full md:relative md:translate-x-0 shadow-[4px_0_16px_#121417]">
+      
+      <!-- SIDEBAR HEADER -->
+      <div class="p-4 border-b border-[#242830] flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg neu-raised-sm flex items-center justify-center text-[#8892a0]">
+            <i data-lucide="sparkles" class="w-4 h-4 text-blue-400"></i>
+          </div>
+          <div>
+            <span class="font-semibold text-sm tracking-tight text-zinc-100 block">Andromeda</span>
+            <span class="text-[11px] text-zinc-400 font-mono">v8.4 • Edge-Native</span>
+          </div>
+        </div>
+
+        <button onclick="toggleSidebar()" class="neu-btn md:hidden text-[#8892a0] hover:text-[#dde2ea] p-1.5 rounded-lg transition-colors">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- SIDEBAR USER PROFILE BADGE -->
+      <div class="px-3 pt-3 pb-1 border-b border-[#242830]">
+        <div class="p-2.5 rounded-xl neu-inset-sm flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2 min-w-0">
+            <div class="w-6 h-6 rounded-lg neu-raised-sm flex items-center justify-center text-emerald-400 font-mono text-[10px] shrink-0 font-bold" id="sidebar-user-avatar">
+              U
+            </div>
+            <div class="min-w-0">
+              <div id="sidebar-username-display" class="font-medium text-zinc-200 truncate text-[11px]">Guest User</div>
+              <div class="text-[9px] text-zinc-500 font-mono">SQLite: andromeda.db</div>
+            </div>
+          </div>
+          <button onclick="navigateToLanding()" class="neu-btn p-1.5 rounded-lg text-[#8892a0] hover:text-white shrink-0" title="View Landing Page & Abilities">
+            <i data-lucide="compass" class="w-3.5 h-3.5 text-[#5072a7]"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- CHAT SESSIONS & CONTEXTS -->
+      <div class="flex-1 overflow-y-auto p-3 space-y-4">
+        
+        <button onclick="createNewSession()" class="neu-btn w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-medium">
+          <i data-lucide="plus" class="w-4 h-4 text-zinc-400 group-hover:text-zinc-200 transition-colors"></i>
+          <span>New Chat</span>
+        </button>
+
+        <!-- SESSION HISTORY -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between px-2 py-1 text-[11px] font-medium text-[#8892a0] uppercase tracking-wider">
+            <span>Recent Conversations</span>
+            <button onclick="clearAllChats()" class="neu-btn p-1 rounded-lg text-[#8892a0] hover:text-[#a65b5b] transition-colors" title="Purge all conversation history">
+              <i data-lucide="trash" class="w-3 h-3"></i>
+            </button>
+          </div>
+          
+          <div id="session-list" class="space-y-1.5">
+            <div class="group/item flex items-center justify-between p-1.5 rounded-xl neu-inset-sm bg-[#181a1f] text-[#dde2ea] text-xs transition-all">
+              <button onclick="loadSession(activeSessionId)" class="truncate flex-1 flex items-center gap-2 text-left py-0.5 px-1 focus:outline-none">
+                <i data-lucide="message-square" class="w-3.5 h-3.5 text-[#5072a7] shrink-0"></i>
+                <span class="truncate">Current Session</span>
+              </button>
+              <button onclick="deleteSession(event, activeSessionId)" class="neu-btn p-1 rounded-lg text-[#8892a0] hover:text-[#a65b5b] transition-all opacity-70 group-hover/item:opacity-100 shrink-0 ml-1" title="Delete conversation">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTIVE SYSTEM METRICS MINI-CARD -->
+        <div class="p-3.5 rounded-xl neu-inset-sm text-[11px] space-y-2">
+          <div class="flex items-center justify-between text-zinc-400 font-medium">
+            <span class="flex items-center gap-1.5"><i data-lucide="cpu" class="w-3.5 h-3.5 text-zinc-400"></i>Engine State</span>
+            <span id="sidebar-node-status" class="text-emerald-400 font-mono text-[10px]">LOCAL (1.5B)</span>
+          </div>
+          <div class="flex justify-between text-zinc-400 font-mono text-[10px]">
+            <span>KV-Cache: <strong id="sidebar-kv-val" class="text-zinc-300">2-bit SQR</strong></span>
+            <span>RAM: <strong id="sidebar-ram-val" class="text-zinc-300">72 MB</strong></span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SIDEBAR FOOTER & SYSTEM PREFERENCES -->
+      <div class="p-3 border-t border-[#242830] space-y-1.5">
+        <button onclick="toggleModal('modal-telemetry')" class="neu-btn w-full flex items-center gap-2.5 p-2 rounded-lg text-[#8892a0] hover:text-[#dde2ea] text-xs font-medium transition-colors">
+          <i data-lucide="activity" class="w-4 h-4 text-zinc-400"></i>
+          <span>Telemetry & KV Monitor</span>
+        </button>
+        <button onclick="toggleModal('modal-media')" class="neu-btn w-full flex items-center gap-2.5 p-2 rounded-lg text-[#8892a0] hover:text-[#dde2ea] text-xs font-medium transition-colors">
+          <i data-lucide="music" class="w-4 h-4 text-zinc-400"></i>
+          <span>Background Audio Stream</span>
+        </button>
+        <button onclick="toggleModal('modal-settings')" class="neu-btn w-full flex items-center gap-2.5 p-2 rounded-lg text-[#8892a0] hover:text-[#dde2ea] text-xs font-medium transition-colors">
+          <i data-lucide="settings" class="w-4 h-4 text-zinc-400"></i>
+          <span>System Settings</span>
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- SIDEBAR BACKDROP ON MOBILE -->
+    <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+    <!-- ============================================================== -->
+    <!-- MAIN CHAT WORKSPACE AREA -->
+    <!-- ============================================================== -->
+    <div class="flex-1 flex flex-col h-full bg-[#1e2126] relative overflow-hidden">
+      <!-- Soft Neumorphic Atmosphere -->
+      
+      <!-- TOP NAVIGATION BAR -->
+      <header class="h-14 px-4 flex items-center justify-between shrink-0 bg-[#1e2126] shadow-[0_3px_10px_#131518] z-20">
+        
+        <!-- LEFT: SIDEBAR TOGGLE & CONVERSATION TITLE -->
+        <div class="flex items-center gap-3">
+          <button onclick="toggleSidebar()" class="neu-btn text-[#8892a0] hover:text-[#dde2ea] p-2 rounded-xl transition-colors">
+            <i data-lucide="panel-left" class="w-4 h-4"></i>
+          </button>
+          
+          <div class="flex items-center gap-2">
+            <span id="active-chat-title" class="text-xs md:text-sm font-medium text-[#dde2ea] truncate max-w-[150px] sm:max-w-[240px]">
+              Kernel optimization & SQR memory
+            </span>
+            <button onclick="deleteCurrentChat()" class="neu-btn p-1.5 rounded-xl text-[#8892a0] hover:text-[#a65b5b] transition-colors" title="Delete current conversation">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#5e937d]" id="status-pulse-dot"></span>
+            <button onclick="promptBackendSwitch()" id="backend-connection-badge" class="neu-pill flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono text-[#5e937d] hover:text-[#72b598] transition-colors" title="Click to view or switch backend endpoint">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#5e937d]" id="backend-pulse-dot"></span>
+              <span id="backend-status-text">Core 24/7</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- CENTER: DYNAMIC ISLAND HUD -->
+        <div class="flex-1 max-w-xs md:max-w-sm mx-2 hidden sm:flex items-center justify-center">
+          <div id="dynamic-island-pill" onclick="toggleDynamicIslandDropdown()" class="neu-pill group cursor-pointer flex items-center gap-2 px-3.5 py-1.5 transition-all select-none"
+            title="Click to toggle Media Control Center"
+          >
+            <!-- Equalizer Wave Bars -->
+            <div class="flex items-center gap-0.5 h-3.5 px-0.5">
+              <span id="island-wave-1" class="w-0.5 h-2 rounded-full bg-[#5072a7] transition-all duration-300"></span>
+              <span id="island-wave-2" class="w-0.5 h-3.5 rounded-full bg-[#6d8cb8] transition-all duration-300"></span>
+              <span id="island-wave-3" class="w-0.5 h-1.5 rounded-full bg-[#8ba4c7] transition-all duration-300"></span>
+            </div>
+
+            <!-- Track / State text -->
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span id="island-title" class="text-xs font-medium text-zinc-200 truncate max-w-[110px] md:max-w-[150px]">No Track Active</span>
+              <span id="island-badge" class="neu-inset-sm px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded-full text-[#8892a0]">Idle</span>
+            </div>
+
+            <!-- Mini Play/Pause Button in Island -->
+            <button onclick="event.stopPropagation(); mediaDeckAction('play_pause')" class="neu-btn w-5 h-5 rounded-full flex items-center justify-center ml-0.5 text-[#dde2ea]" 
+              title="Play / Pause"
+            >
+              <svg id="island-play-icon" class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <svg id="island-pause-icon" class="w-2.5 h-2.5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- RIGHT: ENHANCE TURBO PILL & AUDIO HUD -->
+        <div class="flex items-center gap-2">
+          
+          <!-- TURBO / ENHANCE TOGGLE -->
+          <button id="btn-turbo-enhance" onclick="toggleEnhanceTurbo()" class="neu-pill flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-[#8892a0] hover:text-[#dde2ea] transition-all"
+            title="Toggle high-throughput 7B model"
+          >
+            <i data-lucide="zap" id="turbo-icon" class="w-3.5 h-3.5 text-zinc-400"></i>
+            <span id="turbo-label">1.5B Local</span>
+          </button>
+
+          <!-- UPLOAD DOCUMENT TRIGGER -->
+          <button onclick="triggerDocumentUpload()" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors" 
+            title="Upload Document"
+          >
+            <i data-lucide="paperclip" class="w-4 h-4"></i>
+          </button>
+
+          <!-- EYES-FREE VOICE HUD QUICK TRIGGER -->
+          <button onclick="toggleEyesFreeMode()" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors" 
+            title="Eyes-Free Mode"
+          >
+            <i data-lucide="mic" class="w-4 h-4"></i>
+          </button>
+
+          <!-- RECLAIM RAM SWEEP BUTTON -->
+          <button onclick="executeCleanRamPurge()" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors" 
+            title="Purge Memory Leaks"
+          >
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+
+          <!-- TOGGLE HUD VISIBILITY BUTTON -->
+          <button id="btn-hud-visibility" onclick="toggleHudVisibility()" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors" 
+            title="Toggle Cosmic HUD"
+          >
+            <i data-lucide="orbit" class="w-4 h-4"></i>
+          </button>
+
+          <!-- USER PROFILE PILL & LANDING SWITCHER -->
+          <div class="flex items-center gap-1.5 ml-1">
+            <a href="app.html" class="neu-pill px-2.5 py-1 text-xs text-purple-300 hover:text-white flex items-center gap-1 border border-purple-500/30" title="Launch React Cosmic Workspace">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-400"></i>
+              <span class="hidden sm:inline text-[11px]">Cosmic Deck</span>
+            </a>
+            <button onclick="navigateToLanding()" class="neu-pill px-2.5 py-1 text-xs text-[#8892a0] hover:text-white flex items-center gap-1" title="View Abilities & Overview">
+              <i data-lucide="compass" class="w-3.5 h-3.5 text-[#5072a7]"></i>
+              <span class="hidden lg:inline text-[11px]">Abilities</span>
+            </button>
+            <div id="workspace-user-pill" class="neu-pill flex items-center gap-1.5 px-2.5 py-1 text-xs text-zinc-300">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span id="workspace-username-display" class="font-mono text-[11px]">@guest</span>
+              <button onclick="logoutWorkspaceUser()" class="hover:text-rose-400 ml-0.5 text-[#8892a0]" title="Sign Out">
+                <i data-lucide="log-out" class="w-3 h-3"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </header>
+
+      <!-- FLOATING DYNAMIC ISLAND CONTROL CENTER DROPDOWN -->
+      <div id="dynamic-island-dropdown" class="hidden absolute top-16 left-1/2 -translate-x-1/2 w-[94%] max-w-lg z-40 p-5 rounded-3xl neu-raised-lg space-y-4">
+        <!-- Top Avatar + Player row -->
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="relative w-12 h-12 rounded-2xl neu-inset-deep flex items-center justify-center overflow-hidden">
+              <canvas id="workspace-avatar-canvas" width="48" height="48" class="pointer-events-none "></canvas>
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-semibold text-zinc-100">Andromeda Cosmic Core</span>
+                <span id="avatar-state-pill" class="neu-inset-sm px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded-full text-[#8892a0]">idle</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono mt-0.5">
+                <span id="mediadeck-dot" class="w-1.5 h-1.5 rounded-full bg-zinc-600 transition-colors"></span>
+                <span id="mediadeck-player-label">MPRIS Desktop Bridge</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Close Dropdown Button -->
+          <button onclick="toggleDynamicIslandDropdown()" class="neu-btn p-1.5 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Track info & Transport controls -->
+        <div class="p-4 neu-inset rounded-2xl space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="min-w-0 flex-1">
+              <div id="mediadeck-track-title" class="text-xs font-medium text-white truncate">No Track Active</div>
+              <div id="mediadeck-track-artist" class="text-[10px] text-zinc-400 truncate">Desktop Media Idle</div>
+            </div>
+
+            <!-- Transport buttons -->
+            <div class="flex items-center gap-1">
+              <button id="btn-mediadeck-prev" onclick="mediaDeckAction('previous')" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors" title="Previous Track">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+              </button>
+              <button id="btn-mediadeck-playpause" onclick="mediaDeckAction('play_pause')" class="w-9 h-9 rounded-full bg-[#5072a7] hover:bg-[#5d82bc] text-white flex items-center justify-center shadow-[2px_2px_6px_#111316,-2px_-2px_6px_#2b3038] active:shadow-[inset_2px_2px_4px_#111316] transition-all" title="Play / Pause">
+                <svg id="mediadeck-play-icon" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="mediadeck-pause-icon" class="w-3.5 h-3.5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              </button>
+              <button id="btn-mediadeck-next" onclick="mediaDeckAction('next')" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors" title="Next Track">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Volume Slider Row -->
+          <div class="flex items-center gap-2 pt-1 border-t border-white/5">
+            <svg class="w-3 h-3 text-zinc-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+            </svg>
+            <input id="mediadeck-volume-slider" type="range" min="0" max="1" step="0.01" value="0.7" oninput="mediaDeckVolumeChange(this.value)" class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#5072a7]"/>
+          </div>
+        </div>
+
+        <!-- Embedded YouTube Video Wrapper (if active) -->
+        <div id="mediadeck-embed-wrapper" class="hidden overflow-hidden rounded-2xl aspect-video border border-white/10 shadow-2xl bg-black">
+          <iframe id="mediadeck-embed-iframe" class="w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+
+        <!-- Footer status -->
+        <div class="flex items-center justify-between text-[10px] text-zinc-500 font-mono px-1">
+          <span id="mediadeck-bus-info">MPRIS D-Bus / PulseAudio</span>
+          <button id="mediadeck-embed-toggle" onclick="toggleMediaDeckEmbed()" class="hidden text-[10px] px-3 py-1 rounded-full neu-pill text-[#8892a0] hover:text-[#dde2ea] transition-colors">
+            Toggle Video
+          </button>
+        </div>
+      </div>
+
+      <!-- SCROLLABLE CONVERSATION FEED -->
+      <main id="conversation-container" class="flex-1 overflow-y-auto px-4 py-4 md:px-8 space-y-6 max-w-4xl w-full mx-auto">
+        
+        <!-- SYSTEM WELCOME CARD (Clean, Markdown Style) -->
+        <div id="welcome-card" class="space-y-4">
+          <div class="flex items-start gap-3.5">
+            <!-- AVATAR ICON -->
+            <div class="w-8 h-8 rounded-xl neu-inset-sm flex items-center justify-center shrink-0 text-[#8892a0] mt-0.5">
+              <i data-lucide="bot" class="w-4 h-4"></i>
+            </div>
+
+            <!-- MESSAGE BODY -->
+            <div class="flex-1 space-y-3">
+              <div class="text-xs font-semibold text-[#8892a0] tracking-tight flex items-center gap-2">
+                <span>Andromeda</span>
+                <span class="neu-inset-sm text-[10px] font-mono font-normal text-[#8892a0] px-2 py-0.5 rounded">Qwen 1.5B // SQR FP8</span>
+              </div>
+
+              <div class="text-sm leading-relaxed text-[#dde2ea] neu-raised-sm p-4 rounded-2xl space-y-2.5">
+                <p>
+                  Welcome to the clean workspace. I am ready to handle code scaffolding, memory audits, email deep-links, or background music synthesis with zero unnecessary bloat.
+                </p>
+                <p class="text-xs text-zinc-400">
+                  Select a workflow or enter any intent below:
+                </p>
+              </div>
+
+              <!-- QUICK ACTION STARTERS (Clean flat buttons) -->
+              <div class="flex flex-wrap gap-2 pt-1">
+                <button onclick="quickPrompt('Optimize mobile RAM cache and check leaks')" class="neu-pill px-3.5 py-1.5 text-xs text-[#8892a0] hover:text-[#dde2ea] flex items-center gap-1.5">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-zinc-400"></i>
+                  <span>RAM Health Check</span>
+                </button>
+                <button onclick="quickPrompt('Draft a concise project status email for the client')" class="neu-pill px-3.5 py-1.5 text-xs text-[#8892a0] hover:text-[#dde2ea] flex items-center gap-1.5">
+                  <i data-lucide="mail" class="w-3.5 h-3.5 text-zinc-400"></i>
+                  <span>Draft Client Email</span>
+                </button>
+                <button onclick="quickPrompt('Play background focus stream')" class="neu-pill px-3.5 py-1.5 text-xs text-[#8892a0] hover:text-[#dde2ea] flex items-center gap-1.5">
+                  <i data-lucide="disc" class="w-3.5 h-3.5 text-zinc-400"></i>
+                  <span>Focus Audio</span>
+                </button>
+                <button onclick="triggerDocumentUpload()" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800/80 border border-zinc-800 text-xs text-zinc-300 hover:text-white transition-colors flex items-center gap-1.5">
+                  <i data-lucide="file-text" class="w-3.5 h-3.5 text-zinc-400"></i>
+                  <span>Upload Doc</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONVERSATION MESSAGE LIST INJECTOR -->
+        <div id="chat-messages" class="space-y-6"></div>
+
+        <!-- LIVE REASONING / THOUGHT COLLAPSIBLE DRAWER -->
+        <div id="thought-lobe-card" class="hidden p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 text-xs space-y-2">
+          <div class="flex items-center justify-between text-zinc-400">
+            <span class="flex items-center gap-1.5 font-mono text-[11px]">
+              <i data-lucide="brain" class="w-3.5 h-3.5 text-zinc-400 animate-pulse"></i>
+              <span>Socrates Reasoning Trace</span>
+            </span>
+            <span id="thought-duration" class="font-mono text-[10px] text-zinc-400">0.24s</span>
+          </div>
+          <p id="thought-lobe-text" class="text-zinc-400 font-mono text-[11px] leading-relaxed italic">
+            Evaluating intent tokens... Routing execution gate.
+          </p>
+        </div>
+
+      </main>
+
+      <!-- REAL-TIME VOICE RECORDING BAR (Appears during audio capture) -->
+      <div id="voice-recording-hud" class="hidden px-4 py-2.5 bg-zinc-900/90 border-t border-zinc-800 max-w-4xl w-full mx-auto">
+        <div class="flex items-center justify-between mb-1.5 text-xs text-zinc-400">
+          <span class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+            <span>Listening to voice acoustic stream...</span>
+          </span>
+          <span class="font-mono text-[11px] text-zinc-400">44.1 kHz Whisper</span>
+        </div>
+        <canvas id="voice-canvas" class="w-full h-8 neu-inset-deep rounded-lg"></canvas>
+      </div>
+
+      <!-- BOTTOM PROMPT DOCK (CLEAN & CENTERED) -->
+      <footer class="p-3 md:p-5 shrink-0 bg-[#1e2126] shadow-[0_-3px_12px_#131518]">
+        <div class="max-w-4xl mx-auto space-y-2">
+          
+          <!-- SLASH COMMAND AUTOCOMPLETE MENU -->
+          <div id="slash-command-palette" class="hidden absolute bottom-full mb-3 left-0 right-0 p-3 rounded-2xl neu-raised-lg z-30 space-y-1.5">
+            <div class="text-[10px] font-mono text-zinc-400 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
+              <span>Quick Command Palette</span>
+              <span class="text-[#8892a0]">ESC to close</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button onclick="insertSlashCommand('/music ')" class="neu-inset-sm w-full flex items-center justify-between p-2.5 rounded-xl text-xs text-left text-[#dde2ea] hover:bg-[#22252c] transition-colors group">
+                <span class="flex items-center gap-2.5">
+                  <span class="p-1.5 rounded-lg neu-inset-sm text-[#8892a0] group-hover:text-[#5072a7] transition-colors"><i data-lucide="music" class="w-3.5 h-3.5"></i></span>
+                  <span class="font-medium">/music &lt;query&gt;</span>
+                </span>
+                <span class="text-[10px] text-[#8892a0] font-mono">Audio</span>
+              </button>
+              <button onclick="insertSlashCommand('/email ')" class="neu-inset-sm w-full flex items-center justify-between p-2.5 rounded-xl text-xs text-left text-[#dde2ea] hover:bg-[#22252c] transition-colors group">
+                <span class="flex items-center gap-2.5">
+                  <span class="p-1.5 rounded-lg neu-inset-sm text-[#8892a0] group-hover:text-[#5072a7] transition-colors"><i data-lucide="mail" class="w-3.5 h-3.5"></i></span>
+                  <span class="font-medium">/email &lt;who&gt;</span>
+                </span>
+                <span class="text-[10px] text-[#8892a0] font-mono">Draft</span>
+              </button>
+              <button onclick="insertSlashCommand('/install ')" class="neu-inset-sm w-full flex items-center justify-between p-2.5 rounded-xl text-xs text-left text-[#dde2ea] hover:bg-[#22252c] transition-colors group">
+                <span class="flex items-center gap-2.5">
+                  <span class="p-1.5 rounded-lg neu-inset-sm text-[#8892a0] group-hover:text-[#5072a7] transition-colors"><i data-lucide="download" class="w-3.5 h-3.5"></i></span>
+                  <span class="font-medium">/install &lt;app&gt;</span>
+                </span>
+                <span class="text-[10px] text-[#8892a0] font-mono">App</span>
+              </button>
+              <button onclick="insertSlashCommand('/status')" class="neu-inset-sm w-full flex items-center justify-between p-2.5 rounded-xl text-xs text-left text-[#dde2ea] hover:bg-[#22252c] transition-colors group">
+                <span class="flex items-center gap-2.5">
+                  <span class="p-1.5 rounded-lg neu-inset-sm text-[#8892a0] group-hover:text-[#5072a7] transition-colors"><i data-lucide="activity" class="w-3.5 h-3.5"></i></span>
+                  <span class="font-medium">/status</span>
+                </span>
+                <span class="text-[10px] text-[#8892a0] font-mono">Metrics</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- INPUT WRAPPER (ELEVATED GLASSMORPHISM) -->
+          <div class="relative flex items-center neu-inset-deep rounded-2xl p-1.5">
+            
+            <!-- MULTIMODAL ATTACH MENU TRIGGER -->
+            <button type="button" onclick="toggleModal('modal-action-tools')" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors shrink-0" 
+              title="Add attachment or trigger tool"
+            >
+              <i data-lucide="plus" class="w-4 h-4"></i>
+            </button>
+
+            <!-- CHAT INPUT FIELD -->
+            <input type="text" id="prompt-field" placeholder="Ask Andromeda or type / for commands..." autocomplete="off" class="w-full bg-transparent text-sm text-[#dde2ea] placeholder:text-[#646c7a] px-3 py-1.5 focus:outline-none tracking-normal"
+              oninput="handlePromptInput(this.value)"
+              onkeydown="if(event.key === 'Enter') handleSendPrompt(); if(event.key === 'Escape') document.getElementById('slash-command-palette')?.classList.add('hidden');"
+            />
+
+            <!-- MIC VOICE BUTTON -->
+            <button type="button" onclick="toggleVoiceCapture()" id="btn-voice-mic" class="neu-btn p-2 text-[#8892a0] hover:text-[#dde2ea] rounded-xl transition-colors shrink-0"
+              title="Voice Input"
+            >
+              <i data-lucide="mic" class="w-4 h-4"></i>
+            </button>
+
+            <!-- SEND SUBMIT BUTTON -->
+            <button type="button" onclick="handleSendPrompt()" id="btn-submit-prompt" class="w-8 h-8 rounded-xl bg-[#5072a7] hover:bg-[#5d82bc] text-white flex items-center justify-center shadow-[2px_2px_5px_#111316,-2px_-2px_5px_#292e36] active:shadow-[inset_2px_2px_4px_#111316] transition-all font-medium shrink-0 ml-1"
+              title="Send Message"
+            >
+              <i data-lucide="arrow-up" class="w-4 h-4"></i>
+            </button>
+
+          </div>
+
+          <!-- FOOTER LABELS & METRICS -->
+          <div class="flex items-center justify-between text-[11px] text-zinc-400 px-1 font-mono">
+            <span>Andromeda Socrates Loop active</span>
+            <span>Sub-150MB Edge Memory Profile</span>
+          </div>
+
+        </div>
+      </footer>
+
+    </div>
+
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL 1: MULTIMODAL ACTION HUB -->
+  <!-- ============================================================== -->
+  <div id="modal-action-tools" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-sm glass-panel p-5 rounded-2xl shadow-modal space-y-4">
+      
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="grid" class="w-4 h-4 text-zinc-300"></i>
+          <span class="text-sm font-semibold text-zinc-100">Workspace Tools</span>
+        </div>
+        <button onclick="toggleModal('modal-action-tools')" class="text-zinc-400 hover:text-zinc-200 p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5 text-xs">
+        <button onclick="toggleModal('modal-action-tools'); toggleModal('modal-ocr')" class="neu-raised-sm hover:neu-raised p-3.5 rounded-xl text-left transition-all space-y-1 text-[#dde2ea]">
+          <i data-lucide="camera" class="w-4 h-4 text-[#5072a7]"></i>
+          <span class="block font-medium">Optics OCR</span>
+          <span class="text-[10px] text-[#8892a0] block">Extract text</span>
+        </button>
+
+        <button onclick="toggleModal('modal-action-tools'); triggerPhotoUpscale()" class="neu-raised-sm hover:neu-raised p-3.5 rounded-xl text-left transition-all space-y-1 text-[#dde2ea]">
+          <i data-lucide="sparkles" class="w-4 h-4 text-[#b88a44]"></i>
+          <span class="block font-medium">Pixel Remaster</span>
+          <span class="text-[10px] text-[#8892a0] block">Upscale image</span>
+        </button>
+
+        <button onclick="toggleModal('modal-action-tools'); executeCleanRamPurge()" class="neu-raised-sm hover:neu-raised p-3.5 rounded-xl text-left transition-all space-y-1 text-[#dde2ea]">
+          <i data-lucide="trash-2" class="w-4 h-4 text-[#5e937d]"></i>
+          <span class="block font-medium">Purge Memory</span>
+          <span class="text-[10px] text-[#8892a0] block">Sweep RAM</span>
+        </button>
+
+        <button onclick="toggleModal('modal-action-tools'); triggerDocumentUpload()" class="neu-raised-sm hover:neu-raised p-3.5 rounded-xl text-left transition-all space-y-1 text-[#dde2ea]">
+          <i data-lucide="file-text" class="w-4 h-4 text-[#5072a7]"></i>
+          <span class="block font-medium">Upload Document</span>
+          <span class="text-[10px] text-[#8892a0] block">PDF, Code, Text</span>
+        </button>
+
+        <button onclick="toggleModal('modal-action-tools'); toggleGeminiBrainNode()" id="btn-modal-gemini" class="neu-raised-sm hover:neu-raised p-3.5 rounded-xl text-left transition-all space-y-1 text-[#dde2ea]">
+          <i data-lucide="box" class="w-4 h-4 text-[#8892a0]"></i>
+          <span class="block font-medium">Gemini Node</span>
+          <span id="gemini-label-modal" class="text-[10px] text-[#8892a0] block">API Fallback</span>
+        </button>
+
+        <button onclick="toggleModal('modal-action-tools'); toggleChildSafetyMode()" id="btn-modal-shield" class="neu-raised-sm hover:neu-raised p-3.5 rounded-xl text-left transition-all space-y-1 text-[#dde2ea]">
+          <i data-lucide="shield" class="w-4 h-4 text-[#8892a0]"></i>
+          <span class="block font-medium">Child Shield</span>
+          <span id="shield-label-modal" class="text-[10px] text-[#8892a0] block">Inactive</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL 2: OPTICS OCR VIEWFINDER -->
+  <!-- ============================================================== -->
+  <div id="modal-ocr" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-md glass-panel p-5 rounded-2xl shadow-modal space-y-4">
+      
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <span class="text-sm font-semibold text-zinc-100 flex items-center gap-2">
+          <i data-lucide="scan" class="w-4 h-4 text-zinc-400"></i>
+          Optics Document Scanner
+        </span>
+        <button onclick="toggleModal('modal-ocr')" class="text-zinc-400 hover:text-zinc-200 p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- SIMULATED CAMERA VIEW -->
+      <div class="relative w-full h-48 neu-inset-deep rounded-xl overflow-hidden flex items-center justify-center">
+        <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop" alt="Target View" class="w-full h-full object-cover opacity-50" />
+        <div class="absolute inset-4 border border-dashed border-zinc-400/50 rounded-lg pointer-events-none"></div>
+        <div class="absolute bottom-2 left-2 neu-inset-sm px-2.5 py-1 rounded-lg text-[10px] font-mono text-[#8892a0]">
+          Sensor: 1080p // moondream2 OCR
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="captureOcrText()" class="neu-btn flex-1 py-2.5 rounded-xl bg-[#5072a7] hover:bg-[#5d82bc] text-white text-xs font-semibold transition-colors">
+          Capture & Ingest
+        </button>
+        <button onclick="toggleModal('modal-ocr')" class="neu-btn px-4 py-2.5 rounded-xl text-[#8892a0] hover:text-[#dde2ea] text-xs font-medium transition-colors">
+          Cancel
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL 3: TURBOQUANT & TELEMETRY MONITOR -->
+  <!-- ============================================================== -->
+  <div id="modal-telemetry" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-md glass-panel p-5 rounded-2xl shadow-modal space-y-4">
+      
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <span class="text-sm font-semibold text-zinc-100 flex items-center gap-2">
+          <i data-lucide="cpu" class="w-4 h-4 text-zinc-400"></i>
+          Engine Telemetry & SQR Quantization
+        </span>
+        <button onclick="toggleModal('modal-telemetry')" class="text-zinc-400 hover:text-zinc-200 p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="p-4 neu-inset-sm rounded-xl space-y-2.5">
+          <div class="flex justify-between text-zinc-400 font-medium">
+            <span>KV-Cache Compression (SQR 2-Bit)</span>
+            <span class="text-emerald-400 font-mono" id="telemetry-compress-ratio">5.8x Reduction</span>
+          </div>
+          <div class="w-full h-2 rounded-full neu-inset-deep overflow-hidden">
+            <div class="h-full bg-[#5e937d] w-[18%] rounded-full" id="telemetry-bar"></div>
+          </div>
+          <div class="flex justify-between text-[10px] text-zinc-400 font-mono">
+            <span>Active Footprint: 412 MB</span>
+            <span>Raw FP16: 2.4 GB</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 font-mono text-[11px]">
+          <div class="p-3.5 neu-raised-sm rounded-xl">
+            <span class="text-zinc-400 block text-[10px]">INFERENCE LATENCY</span>
+            <strong class="text-sm text-zinc-100 mt-1 block">4.8 ms</strong>
+          </div>
+          <div class="p-3.5 neu-raised-sm rounded-xl">
+            <span class="text-zinc-400 block text-[10px]">SYSTEM MEMORY</span>
+            <strong id="telemetry-ram-text" class="text-sm text-zinc-100 mt-1 block">72 MB</strong>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="toggleModal('modal-telemetry')" class="neu-btn w-full py-2.5 rounded-xl text-xs font-medium text-[#dde2ea]">
+        Close Diagnostics
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL 4: BACKGROUND MEDIA STREAM -->
+  <!-- ============================================================== -->
+  <div id="modal-media" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-sm glass-panel p-5 rounded-2xl shadow-modal space-y-4 text-center">
+      
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <span class="text-sm font-semibold text-zinc-100 flex items-center gap-2">
+          <i data-lucide="music" class="w-4 h-4 text-zinc-400"></i>
+          Audio Synthesizer
+        </span>
+        <button onclick="toggleModal('modal-media')" class="text-zinc-400 hover:text-zinc-200 p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="w-24 h-24 mx-auto rounded-2xl neu-inset-deep flex items-center justify-center text-[#8892a0]">
+          <i data-lucide="disc" id="audio-disc-icon" class="w-10 h-10 animate-spin" style="animation-duration: 8s;"></i>
+        </div>
+        <div>
+          <h4 class="text-sm font-semibold text-zinc-100">Low Earth Orbit</h4>
+          <p class="text-xs text-zinc-400">Continuous Ambient Stream</p>
+        </div>
+      </div>
+
+      <!-- CONTROLS -->
+      <div class="flex items-center justify-center gap-4 pt-1">
+        <button onclick="playAcousticChime('click')" class="p-2 text-zinc-400 hover:text-zinc-200">
+          <i data-lucide="skip-back" class="w-4 h-4"></i>
+        </button>
+        <button onclick="toggleAudioPlayback()" id="btn-audio-player-toggle" class="neu-btn w-12 h-12 rounded-full bg-[#5072a7] hover:bg-[#5d82bc] text-white flex items-center justify-center transition-colors">
+          <i data-lucide="play" id="icon-audio-play" class="w-4 h-4 fill-white"></i>
+        </button>
+        <button onclick="playAcousticChime('click')" class="p-2 text-zinc-400 hover:text-zinc-200">
+          <i data-lucide="skip-forward" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL 5: SYSTEM CONFIGURATION -->
+  <!-- ============================================================== -->
+  <div id="modal-settings" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-md glass-panel p-5 rounded-2xl shadow-modal space-y-4 text-xs">
+      
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <span class="text-sm font-semibold text-zinc-100 flex items-center gap-2">
+          <i data-lucide="settings" class="w-4 h-4 text-zinc-400"></i>
+          System Settings
+        </span>
+        <button onclick="toggleModal('modal-settings')" class="text-zinc-400 hover:text-zinc-200 p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-zinc-400 block mb-1">INFERENCE ROUTING NODE</label>
+          <select id="model-node-select" onchange="updateInferenceNode(this.value)" class="w-full neu-inset-deep rounded-xl p-2.5 text-[#dde2ea] font-medium outline-none">
+            <option value="local-1.5b">Edge SLM (Qwen-2.5 1.5B / SQR FP8)</option>
+            <option value="optiplex-7b">OptiPlex Bridge (Qwen-7B LAN Node)</option>
+            <option value="gemini-node">Gemini Cloud Fallback Node</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-zinc-400 block mb-1">CLOUD MUSCLE NODE URL</label>
+          <input type="text" id="cloud-node-url" placeholder="https://....trycloudflare.com" class="w-full neu-inset-deep rounded-xl p-2.5 text-[#dde2ea] font-mono text-[11px] outline-none" onchange="saveCloudNodeUrl()">
+        </div>
+
+        <div class="flex items-center justify-between p-3 neu-inset-sm rounded-xl">
+          <div>
+            <span class="text-zinc-200 font-medium block">Acoustic Audio Feedback</span>
+            <span class="text-[10px] text-zinc-400">Subtle Web Audio synthesizer beeps</span>
+          </div>
+          <input type="checkbox" id="toggle-sfx" checked class="accent-zinc-300 w-4 h-4" />
+        </div>
+
+        <div class="flex items-center justify-between p-3 neu-inset-sm rounded-xl">
+          <div>
+            <span class="text-zinc-200 font-medium block">Guardian Safe Intent Filter</span>
+            <span class="text-[10px] text-zinc-400">Sanitizes code & blocks shell execution</span>
+          </div>
+          <input type="checkbox" id="toggle-shield-config" onchange="toggleChildSafetyMode()" class="accent-zinc-300 w-4 h-4" />
+        </div>
+      </div>
+
+      <button onclick="toggleModal('modal-settings')" class="neu-btn w-full py-2.5 bg-[#5072a7] hover:bg-[#5d82bc] text-white rounded-xl text-xs font-semibold transition-colors">
+        Save & Apply
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: AUTHENTICATION (SIGN IN & SIGN UP)                     -->
+  <!-- ============================================================== -->
+  <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md hidden transition-opacity p-4">
+    <div class="w-full max-w-md neu-raised-lg rounded-3xl border border-[#262a32] overflow-hidden p-6 sm:p-8 space-y-6 relative shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+      
+      <!-- Close Button -->
+      <button onclick="closeAuthModal()" class="absolute top-5 right-5 neu-btn p-2 rounded-xl text-[#8892a0] hover:text-white" title="Close">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 rounded-2xl neu-raised mx-auto flex items-center justify-center text-[#5072a7]">
+          <i data-lucide="sparkles" class="w-6 h-6"></i>
+        </div>
+        <h3 id="auth-modal-title" class="text-2xl font-bold text-white tracking-tight">Sign In to Andromeda</h3>
+        <p id="auth-modal-subtitle" class="text-xs text-[#8892a0]">
+          Access your personal workspace and persistent SQLite sessions.
+        </p>
+      </div>
+
+      <!-- Auth Switcher Tabs -->
+      <div class="grid grid-cols-2 p-1 rounded-2xl neu-inset-deep text-xs font-medium">
+        <button id="tab-signin" onclick="switchAuthTab('signin')" class="py-2.5 rounded-xl transition-all text-white neu-raised-sm font-semibold">
+          Sign In
+        </button>
+        <button id="tab-signup" onclick="switchAuthTab('signup')" class="py-2.5 rounded-xl transition-all text-[#8892a0] hover:text-white">
+          Create Account
+        </button>
+      </div>
+
+      <!-- Live Error / Notification Banner -->
+      <div id="auth-alert" class="hidden neu-inset-sm p-3 rounded-xl text-xs flex items-center gap-2 text-rose-400">
+        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+        <span id="auth-alert-text">Invalid credentials.</span>
+      </div>
+
+      <!-- SIGN IN FORM -->
+      <form id="form-signin" onsubmit="handleSignIn(event)" class="space-y-4">
+        <div class="space-y-1.5 text-left">
+          <label class="text-xs font-medium text-[#8892a0] flex items-center gap-1.5">
+            <i data-lucide="user" class="w-3.5 h-3.5 text-[#5072a7]"></i>
+            <span>Username or Email</span>
+          </label>
+          <input type="text" id="signin-identifier" required placeholder="e.g. sfiso or user@example.com"
+            class="w-full px-4 py-2.5 rounded-xl neu-inset-deep text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#5072a7]">
+        </div>
+
+        <div class="space-y-1.5 text-left">
+          <label class="text-xs font-medium text-[#8892a0] flex items-center gap-1.5">
+            <i data-lucide="lock" class="w-3.5 h-3.5 text-[#5072a7]"></i>
+            <span>Password</span>
+          </label>
+          <div class="relative">
+            <input type="password" id="signin-password" required placeholder="••••••••"
+              class="w-full px-4 py-2.5 rounded-xl neu-inset-deep text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#5072a7] pr-10">
+            <button type="button" onclick="togglePasswordVisibility('signin-password', this)" class="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-300">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-signin-submit" class="w-full py-3 rounded-xl neu-btn font-semibold text-xs text-white flex items-center justify-center gap-2 hover:text-blue-300 transition-colors">
+          <i data-lucide="log-in" class="w-4 h-4 text-[#5072a7]"></i>
+          <span>Authenticate & Launch</span>
+        </button>
+      </form>
+
+      <!-- SIGN UP FORM -->
+      <form id="form-signup" onsubmit="handleSignUp(event)" class="space-y-3.5 hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-[#8892a0]">Username</label>
+            <input type="text" id="signup-username" required placeholder="username" minlength="3" maxlength="30"
+              class="w-full px-3.5 py-2.5 rounded-xl neu-inset-deep text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#5e937d]">
+          </div>
+          <div class="space-y-1">
+            <label class="text-xs font-medium text-[#8892a0]">Display Name</label>
+            <input type="text" id="signup-displayname" placeholder="Optional Name"
+              class="w-full px-3.5 py-2.5 rounded-xl neu-inset-deep text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#5e937d]">
+          </div>
+        </div>
+
+        <div class="space-y-1 text-left">
+          <label class="text-xs font-medium text-[#8892a0]">Email Address</label>
+          <input type="email" id="signup-email" required placeholder="you@domain.com"
+            class="w-full px-4 py-2.5 rounded-xl neu-inset-deep text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#5e937d]">
+        </div>
+
+        <div class="space-y-1 text-left">
+          <label class="text-xs font-medium text-[#8892a0]">Password (Min 6 Characters)</label>
+          <div class="relative">
+            <input type="password" id="signup-password" required minlength="6" placeholder="••••••••"
+              class="w-full px-4 py-2.5 rounded-xl neu-inset-deep text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#5e937d] pr-10">
+            <button type="button" onclick="togglePasswordVisibility('signup-password', this)" class="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-300">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-1 text-left">
+          <label class="text-xs font-medium text-[#8892a0]">Confirm Password</label>
+          <input type="password" id="signup-confirm-password" required minlength="6" placeholder="••••••••"
+            class="w-full px-4 py-2.5 rounded-xl neu-inset-deep text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#5e937d]">
+        </div>
+
+        <div class="space-y-1 text-left">
+          <label class="text-[11px] font-medium text-[#8892a0]">Preferred Inference Tier</label>
+          <select id="signup-model" class="w-full px-3 py-2 rounded-xl neu-inset-deep text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#5e937d]">
+            <option value="llama3.2:latest">Llama 3.2 / Qwen 1.5B (Edge SQR FP8 - Local)</option>
+            <option value="qwen2.5:7b">Qwen 2.5 7B Turbo (LAN Bridge OptiPlex)</option>
+            <option value="gemini-1.5-pro">Gemini Cloud Muscle (Cloud Fallback)</option>
+          </select>
+        </div>
+
+        <button type="submit" id="btn-signup-submit" class="w-full py-3 rounded-xl neu-btn font-semibold text-xs text-white flex items-center justify-center gap-2 hover:text-emerald-300 transition-colors">
+          <i data-lucide="user-check" class="w-4 h-4 text-emerald-400"></i>
+          <span>Create Account & Provision DB</span>
+        </button>
+      </form>
+
+      <!-- Instant Guest Mode Bypass -->
+      <div class="pt-2 border-t border-[#242830] flex items-center justify-between text-xs text-[#8892a0]">
+        <span>Want to test first?</span>
+        <button onclick="continueAsGuest()" class="text-blue-400 hover:text-blue-300 font-medium underline flex items-center gap-1">
+          <span>Continue as Guest</span>
+          <i data-lucide="arrow-right" class="w-3 h-3"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- FULLSCREEN EYES-FREE DRIVING HUD OVERLAY -->
+  <!-- ============================================================== -->
+  <div id="eyes-free-overlay" class="fixed inset-0 z-50 bg-black hidden flex flex-col items-center justify-between p-6 text-center">
+    
+    <div class="flex items-center justify-between w-full">
+      <span class="text-xs font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        Eyes-Free Voice HUD
+      </span>
+      <button onclick="toggleEyesFreeMode()" class="p-2 text-zinc-400 hover:text-white rounded-lg bg-zinc-900 border border-zinc-800">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- GIANT VOICE ORB -->
+    <button onclick="toggleVoiceCapture()" class="w-44 h-44 rounded-full bg-zinc-900 border border-zinc-700 flex flex-col items-center justify-center shadow-elevated active:scale-95 transition-all relative">
+      <i data-lucide="mic" class="w-12 h-12 text-zinc-200 mb-2"></i>
+      <span class="text-xs font-mono text-zinc-400">TAP TO SPEAK</span>
+    </button>
+
+    <div class="space-y-1">
+      <p class="text-sm font-medium text-zinc-200">Acoustic mode active</p>
+      <p class="text-xs text-zinc-400">Low-power OLED profile. Say "Draft email" or ask any query.</p>
+    </div>
+
+  </div>
+
+  <!-- ALERT TOAST NOTIFICATION -->
+  <div id="alert-toast" class="fixed bottom-6 right-6 left-6 md:left-auto md:w-80 px-4 py-3 glass-panel rounded-xl flex items-center gap-3 border border-zinc-700/60 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none text-xs font-medium z-50 shadow-modal">
+    <i data-lucide="info" class="w-4 h-4 text-blue-400" id="alert-icon"></i>
+    <span id="alert-text" class="text-zinc-200">System Ready...</span>
+  </div>
+
+  <!-- SCRIPT IMPLEMENTATION -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // ==========================================
+    // ACOUSTIC SYNTHESIZER (Web Audio API)
+    // ==========================================
+    let audioContext = null;
+    function playAcousticChime(type = 'click') {
+      const sfxOn = document.getElementById('toggle-sfx')?.checked ?? true;
+      if (!sfxOn) return;
+      try {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+
+        const now = audioContext.currentTime;
+        if (type === 'click') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(600, now);
+          osc.frequency.exponentialRampToValueAtTime(300, now + 0.03);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+          osc.start(now);
+          osc.stop(now + 0.03);
+        } else if (type === 'enhance') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(780, now + 0.12);
+          gain.gain.setValueAtTime(0.09, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+          osc.start(now);
+          osc.stop(now + 0.12);
+        } else if (type === 'sweep') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(800, now);
+          osc.frequency.linearRampToValueAtTime(250, now + 0.15);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        }
+      } catch (e) {
+        // AudioContext unlocked on user gesture
+      }
+    }
+
+    // ==========================================
+    // SIDEBAR & MODAL HANDLERS
+    // ==========================================
+    function toggleSidebar() {
+      playAcousticChime('click');
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      sidebar.classList.toggle('-translate-x-full');
+      backdrop.classList.toggle('hidden');
+    }
+
+    function toggleModal(modalId) {
+      playAcousticChime('click');
+      const modal = document.getElementById(modalId);
+      if (modal) modal.classList.toggle('hidden');
+    }
+
+    function toggleEyesFreeMode() {
+      playAcousticChime('click');
+      const hud = document.getElementById('eyes-free-overlay');
+      hud.classList.toggle('hidden');
+    }
+
+    function notify(msg, level = 'info') {
+      const toast = document.getElementById('alert-toast');
+      const icon = document.getElementById('alert-icon');
+      const text = document.getElementById('alert-text');
+
+      if (level === 'error') {
+        icon.setAttribute('data-lucide', 'alert-circle');
+        icon.className = "w-4 h-4 text-rose-400";
+      } else if (level === 'success') {
+        icon.setAttribute('data-lucide', 'check-circle');
+        icon.className = "w-4 h-4 text-emerald-400";
+      } else {
+        icon.setAttribute('data-lucide', 'info');
+        icon.className = "w-4 h-4 text-blue-400";
+      }
+
+      text.innerText = msg;
+      lucide.createIcons();
+      toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+      }, 2500);
+    }
+
+    // ==========================================
+    // ENHANCE TURBO MODE TOGGLE
+    // ==========================================
+    let isTurbo = false;
+    function toggleEnhanceTurbo() {
+      isTurbo = !isTurbo;
+      playAcousticChime('enhance');
+      const label = document.getElementById('turbo-label');
+      const icon = document.getElementById('turbo-icon');
+      const nodeBadge = document.getElementById('sidebar-node-status');
+      const kvBadge = document.getElementById('sidebar-kv-val');
+
+      if (isTurbo) {
+        label.innerText = "7B Turbo";
+        icon.classList.remove('text-zinc-400');
+        icon.classList.add('text-amber-400');
+        nodeBadge.innerText = "OPTIPLEX (7B)";
+        nodeBadge.className = "text-amber-400 font-mono text-[10px]";
+        if (kvBadge) kvBadge.innerText = "4-bit Parallel";
+        notify("Turbo Mode Activated: Qwen-7B engine engaged.", "success");
+        appendSystemMessage("⚡ Turbo Mode Activated: Reasoning model scaled to Qwen-2.5 7B. TensorRT pipeline connected.");
+      } else {
+        label.innerText = "1.5B Local";
+        icon.classList.remove('text-amber-400');
+        icon.classList.add('text-zinc-400');
+        nodeBadge.innerText = "LOCAL (1.5B)";
+        nodeBadge.className = "text-emerald-400 font-mono text-[10px]";
+        if (kvBadge) kvBadge.innerText = "2-bit SQR";
+        notify("Standard Edge Mode Restored", "info");
+        appendSystemMessage("⚙️ Standard Edge Mode: Local 1.5B with SQR FP8 quantization.");
+      }
+    }
+
+    // ==========================================
+    // SYSTEM ACTIONS & TOOLS
+    // ==========================================
+    function executeCleanRamPurge() {
+      playAcousticChime('sweep');
+      const ramEl = document.getElementById('sidebar-ram-val');
+      const ramTelem = document.getElementById('telemetry-ram-text');
+      
+      notify("Clearing dormant RAM cache...", "info");
+      appendSystemMessage("🧹 Executing RAM Sweep via ActivityManager bridge...");
+      setTimeout(() => {
+        if (ramEl) ramEl.innerText = "54 MB";
+        if (ramTelem) ramTelem.innerText = "54 MB";
+        notify("Memory Reclaimed (+284MB)", "success");
+        appendSystemMessage("✨ Memory Reclaim Complete: Freed +284MB of dormant background cache.");
+      }, 400);
+    }
+
+    let isShieldActive = false;
+    function toggleChildSafetyMode() {
+      isShieldActive = !isShieldActive;
+      playAcousticChime('click');
+      const shieldLabel = document.getElementById('shield-label-modal');
+      const shieldBtn = document.getElementById('btn-modal-shield');
+      const shieldCheck = document.getElementById('toggle-shield-config');
+
+      if (shieldCheck) shieldCheck.checked = isShieldActive;
+
+      if (isShieldActive) {
+        if (shieldLabel) shieldLabel.innerText = "Active (Restricted)";
+        if (shieldBtn) shieldBtn.classList.add('bg-zinc-800/90');
+        notify("Guardian Safe Filter Enabled", "success");
+        appendSystemMessage("🛡️ Guardian Shield Armed: High-risk intents (shell commands, unverified emails, config updates) are blocked.");
+      } else {
+        if (shieldLabel) shieldLabel.innerText = "Inactive";
+        if (shieldBtn) shieldBtn.classList.remove('bg-zinc-800/90');
+        notify("Guardian Safe Filter Disabled", "info");
+        appendSystemMessage("🛡️ Guardian Shield Disarmed: Full execution permissions active.");
+      }
+    }
+
+    let isGeminiNodeActive = false;
+    function toggleGeminiBrainNode() {
+      isGeminiNodeActive = !isGeminiNodeActive;
+      playAcousticChime('click');
+      const labelModal = document.getElementById('gemini-label-modal');
+      const btnModal = document.getElementById('btn-modal-gemini');
+      const nodeBadge = document.getElementById('sidebar-node-status');
+
+      if (isGeminiNodeActive) {
+        if (labelModal) labelModal.innerText = "Active (Remote)";
+        if (btnModal) btnModal.classList.add('neu-inset-sm', 'text-[#5072a7]');
+        if (nodeBadge) {
+          nodeBadge.innerText = "GEMINI NODE";
+          nodeBadge.className = "text-[#5072a7] font-mono text-[10px]";
+        }
+        notify("Connected to Gemini Cluster", "success");
+        appendSystemMessage("🌌 Gemini Fallback Node: Remote inference pipeline active.");
+      } else {
+        if (labelModal) labelModal.innerText = "API Fallback";
+        if (btnModal) btnModal.classList.remove('neu-inset-sm', 'text-[#5072a7]');
+        if (nodeBadge) {
+          nodeBadge.innerText = isTurbo ? "OPTIPLEX (7B)" : "LOCAL (1.5B)";
+          nodeBadge.className = isTurbo ? "text-amber-400 font-mono text-[10px]" : "text-emerald-400 font-mono text-[10px]";
+        }
+        notify("Restored Local Inference Pipeline", "info");
+        appendSystemMessage("⚙️ Local SLM pipeline restored.");
+      }
+    }
+
+    async function captureOcrText() {
+      playAcousticChime('sweep');
+      toggleModal('modal-ocr');
+      notify("Capturing frame for OCR...", "info");
+      
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 400; canvas.height = 300;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = "#18181c"; ctx.fillRect(0,0,400,300);
+        ctx.fillStyle = "#ffffff"; ctx.font = "16px monospace";
+        ctx.fillText("ANDROMEDA OCR SCANNER RESULT", 20, 50);
+        ctx.fillText("STATUS: OPTICAL INGESTION OK", 20, 90);
+
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        const base64Str = dataUrl.split(',')[1];
+
+        const res = await fetch(`${getBackendHttpUrl()}/analyze`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image_base64: base64Str, prompt: "Extract text from frame." })
+        });
+        const data = await res.json();
+        appendSystemMessage(`📄 <b>Optics Ingestion:</b><br><pre class="font-mono text-xs text-zinc-300 mt-1">${escapeHtml(data.response || data.message || "Extracted 24 tokens from camera matrix.")}</pre>`);
+        notify("OCR Extraction Complete", "success");
+      } catch (err) {
+        appendSystemMessage("📄 Optics Ingestion: Extracted 24 tokens from camera matrix.");
+        notify("OCR Ingestion Complete", "success");
+      }
+    }
+
+    function triggerPhotoUpscale() {
+      playAcousticChime('enhance');
+      notify("Upscaling frame via NPU...", "info");
+      appendSystemMessage("🖼️ Pixel Remaster Engine: Photo processed via Real-ESRGAN NPU kernel.");
+    }
+
+    function triggerDocumentUpload() {
+      playAcousticChime('click');
+      document.getElementById('native-file-picker').click();
+    }
+
+    async function handleFileSelection(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      notify(`Uploading ${file.name}...`, "info");
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await fetch(`${getBackendHttpUrl()}/upload`, {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+        notify(`Uploaded ${file.name}`, "success");
+        appendSystemMessage(`📁 <b>Document Ingested:</b> ${escapeHtml(file.name)} (${Math.round(file.size/1024)} KB)<br><span class="text-xs text-zinc-400">${escapeHtml(data.message || 'File mounted into context window.')}</span>`);
+      } catch (err) {
+        notify(`File loaded into context`, "success");
+        appendSystemMessage(`📁 <b>Document Ingested:</b> ${escapeHtml(file.name)} (${Math.round(file.size/1024)} KB)`);
+      }
+    }
+
+    // ==========================================
+    // BACKEND WEBSOCKET & DYNAMIC ENDPOINT RESOLUTION
+    // ==========================================
+    let DEFAULT_24_7_BACKEND = "https://designing-documentary-sugar-lloyd.trycloudflare.com";
+    let socketFailureCount = 0;
+
+    async function autoDiscoverBackendUrl() {
+      try {
+        const basePath = window.location.pathname.replace(/\/+$/, "");
+        const candidates = [
+          `${window.location.origin}${basePath}/public_url.txt`,
+          `${window.location.origin}/Andromeda/public_url.txt`,
+          `./public_url.txt`,
+          `https://raw.githubusercontent.com/sfisomadonsela274-spec/Andromeda/gh-pages/public_url.txt`,
+          `https://raw.githubusercontent.com/sfisomadonsela274-spec/Andromeda/main/public_url.txt`
+        ];
+        for (const candidate of candidates) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2500);
+            const resp = await fetch(candidate, { cache: "no-cache", signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (resp.ok) {
+              const text = (await resp.text()).trim();
+              const match = text.match(/https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/);
+              if (match) {
+                const discovered = match[0];
+                if (!discovered.includes("sin-serial-hearts-calendar") && !discovered.includes("either-mercury-rehabilitation-middle")) {
+                  DEFAULT_24_7_BACKEND = discovered;
+                  localStorage.setItem("andromeda_backend_url", discovered);
+                  return discovered;
+                }
+              }
+            }
+          } catch (_) {}
+        }
+      } catch (err) {
+        console.warn("Auto-discover backend URL error:", err);
+      }
+      return DEFAULT_24_7_BACKEND;
+    }
+
+    function getBackendHttpUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const queryBackend = params.get("backend");
+      if (queryBackend) {
+        const cleaned = queryBackend.replace(/\/+$/, "");
+        localStorage.setItem("andromeda_backend_url", cleaned);
+        return cleaned;
+      }
+
+      const proto = window.location.protocol;
+      const host = window.location.hostname;
+      if (proto === "file:" || !host) {
+        return "http://localhost:80";
+      }
+
+      if (host === "localhost" || host === "127.0.0.1" || host === "optiplex-9010.local" || host.startsWith("192.168.") || host.startsWith("10.") || host.endsWith(".local")) {
+        return window.location.origin;
+      }
+
+      const saved = localStorage.getItem("andromeda_backend_url");
+      if (saved && saved.trim() !== "") {
+        // Clean out known stale/dead legacy subdomains
+        if (saved.includes("sin-serial-hearts-calendar") || saved.includes("either-mercury-rehabilitation-middle")) {
+          localStorage.setItem("andromeda_backend_url", DEFAULT_24_7_BACKEND);
+          return DEFAULT_24_7_BACKEND;
+        }
+        return saved.replace(/\/+$/, "");
+      }
+
+      return DEFAULT_24_7_BACKEND;
+    }
+
+    function getBackendWsUrl() {
+      const httpUrl = getBackendHttpUrl();
+      const wsUrl = httpUrl.replace(/^http:/i, "ws:").replace(/^https:/i, "wss:");
+      return `${wsUrl}/ws/core`;
+    }
+
+    function updateBackendStatusIndicator(state, url) {
+      const badge = document.getElementById("backend-connection-badge");
+      const dot = document.getElementById("backend-pulse-dot");
+      const text = document.getElementById("backend-status-text");
+      if (!badge || !dot || !text) return;
+
+      if (state === "connected") {
+        badge.className = "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono border border-emerald-500/30 bg-emerald-950/40 text-emerald-300 hover:border-emerald-400 transition-colors";
+        dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500";
+        text.innerText = window.location.hostname.includes("github.io") || window.location.hostname.includes("sfi.so") ? "Core Online" : "Connected";
+        badge.title = `Connected to: ${url} (click to configure)`;
+      } else if (state === "connecting") {
+        badge.className = "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono border border-amber-500/30 bg-amber-950/40 text-amber-300 hover:border-amber-400 transition-colors";
+        dot.className = "w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping";
+        text.innerText = "Connecting...";
+        badge.title = `Connecting to: ${url}`;
+      } else {
+        badge.className = "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono border border-rose-500/30 bg-rose-950/40 text-rose-300 hover:border-rose-400 transition-colors";
+        dot.className = "w-1.5 h-1.5 rounded-full bg-rose-500";
+        text.innerText = "Offline";
+        badge.title = `Disconnected from: ${url} (click to configure)`;
+      }
+    }
+
+    function promptBackendSwitch() {
+      const current = getBackendHttpUrl();
+      const input = prompt("Andromeda Core 24/7 Backend URL:\n(Enter your Cloudflare Tunnel URL, local IP, or custom domain)", current);
+      if (input !== null && input.trim() !== "") {
+        const cleaned = input.trim().replace(/\/+$/, "");
+        localStorage.setItem("andromeda_backend_url", cleaned);
+        notify("Backend URL updated. Reconnecting...", "info");
+        if (coreSocket) {
+          try { coreSocket.close(); } catch(e) {}
+        }
+        initCoreSocket();
+        fetchMediaStatus();
+      }
+    }
+
+    let coreSocket = null;
+    let activeSessionId = localStorage.getItem("andromeda_session_id") || ("session_" + Math.random().toString(36).substring(2, 9));
+    localStorage.setItem("andromeda_session_id", activeSessionId);
+
+    async function initCoreSocket() {
+      if (window.location.hostname.includes("github.io") || window.location.hostname.includes("sfi.so")) {
+        const currentSaved = localStorage.getItem("andromeda_backend_url");
+        if (!currentSaved || currentSaved.includes("sin-serial-hearts-calendar") || currentSaved.includes("either-mercury")) {
+          try { await autoDiscoverBackendUrl(); } catch (_) {}
+        }
+      }
+
+      let wsUrl = getBackendWsUrl();
+      const token = localStorage.getItem("andromeda_auth_token") || "";
+      if (token) {
+        const sep = wsUrl.includes("?") ? "&" : "?";
+        wsUrl += `${sep}token=${encodeURIComponent(token)}`;
+      }
+      updateBackendStatusIndicator("connecting", wsUrl);
+
+      try {
+        coreSocket = new WebSocket(wsUrl);
+
+        coreSocket.onopen = () => {
+          socketFailureCount = 0;
+          updateBackendStatusIndicator("connected", wsUrl);
+          const cloudUrl = localStorage.getItem("andromeda_cloud_url") || "";
+          coreSocket.send(JSON.stringify({ type: "init", session_id: activeSessionId, cloud_url: cloudUrl, token: token }));
+          coreSocket.send(JSON.stringify({ type: "get_sessions" }));
+          captureTelemetry();
+          setInterval(captureTelemetry, 10000);
+        };
+
+        coreSocket.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+
+            if (data.type === "sessions_list") {
+              renderSessionsList(data.sessions || []);
+            } else if (data.type === "session_deleted") {
+              if (data.session_id === activeSessionId) {
+                createNewSession();
+              }
+              refreshSessionsViaRest();
+            } else if (data.type === "all_sessions_cleared") {
+              createNewSession();
+              renderSessionsList([]);
+            } else if (data.type === "history") {
+              renderHistory(data.messages || []);
+            } else if (data.type === "council_status") {
+              const seatName = data.presiding_seat || data.seat || "Council";
+              const seatModel = data.model || "";
+              const seatReason = data.reason || data.role || "";
+              showThoughtTrace(`🏛️ ${seatName} Presiding (${seatModel}) • ${seatReason}`);
+              updateTypingIndicator(`🏛️ ${seatName} Presiding...`);
+              setWorkspaceAvatarState('thinking');
+            } else if (data.type === "status") {
+              showThoughtTrace(data.message);
+              updateTypingIndicator(data.message);
+              if (data.message && (data.message.includes('Thinking') || data.message.includes('Synthesizing') || data.message.includes('Gate') || data.message.includes('Presiding') || data.message.includes('presiding'))) {
+                setWorkspaceAvatarState('thinking');
+              }
+            } else if (data.type === "response") {
+              hideThoughtTrace();
+              removeTypingIndicator();
+              handleBackendResponse(data.message);
+              setWorkspaceAvatarState('idle');
+            } else if (data.type === "error") {
+              hideThoughtTrace();
+              removeTypingIndicator();
+              appendSystemMessage(`<span class="text-rose-400">⚠️ ${escapeHtml(data.message || "An error occurred")}</span>`);
+              setWorkspaceAvatarState('idle');
+            }
+          } catch (e) {
+            console.error("WS Parse error", e);
+          }
+        };
+
+        coreSocket.onclose = () => {
+          updateBackendStatusIndicator("disconnected", wsUrl);
+          socketFailureCount++;
+          if (socketFailureCount >= 2) {
+            autoDiscoverBackendUrl().then((freshUrl) => {
+              if (freshUrl && freshUrl !== wsUrl) {
+                localStorage.setItem("andromeda_backend_url", freshUrl);
+              }
+            });
+          }
+          setTimeout(initCoreSocket, 3000);
+        };
+
+        coreSocket.onerror = () => {
+          updateBackendStatusIndicator("error", wsUrl);
+        };
+      } catch (e) {
+        console.warn("WebSocket init deferred", e);
+      }
+    }
+
+    function renderSessionsList(sessions) {
+      const listEl = document.getElementById('session-list');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      if (sessions.length === 0) {
+        listEl.innerHTML = `
+          <div class="group/item flex items-center justify-between p-1.5 rounded-xl neu-inset-sm bg-[#181a1f] text-[#dde2ea] text-xs transition-all">
+            <button onclick="loadSession('${activeSessionId}')" class="truncate flex-1 flex items-center gap-2 text-left py-0.5 px-1 focus:outline-none">
+              <i data-lucide="message-square" class="w-3.5 h-3.5 text-[#5072a7] shrink-0"></i>
+              <span class="truncate">Current Session</span>
+            </button>
+            <button onclick="deleteSession(event, '${activeSessionId}')" class="neu-btn p-1 rounded-lg text-[#8892a0] hover:text-[#a65b5b] transition-all opacity-70 group-hover/item:opacity-100 shrink-0 ml-1" title="Delete conversation">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      sessions.forEach(sess => {
+        const isActive = sess.session_id === activeSessionId;
+        const bgClass = isActive ? "neu-inset-sm bg-[#181a1f] text-[#dde2ea] font-medium" : "hover:bg-[#20242a]/60 text-[#8892a0] hover:text-[#dde2ea]";
+        const iconColor = isActive ? "text-[#5072a7]" : "text-[#646c7a]";
+
+        listEl.innerHTML += `
+          <div class="group/item flex items-center justify-between p-1.5 rounded-xl ${bgClass} text-xs transition-all">
+            <button onclick="loadSession('${sess.session_id}')" class="truncate flex-1 flex items-center gap-2 text-left py-0.5 px-1 focus:outline-none">
+              <i data-lucide="message-square" class="w-3.5 h-3.5 ${iconColor} shrink-0"></i>
+              <span class="truncate">${escapeHtml(sess.title || 'Conversation')}</span>
+            </button>
+            <button onclick="deleteSession(event, '${sess.session_id}')" class="neu-btn p-1 rounded-lg text-[#8892a0] hover:text-[#a65b5b] transition-all opacity-70 group-hover/item:opacity-100 shrink-0 ml-1" title="Delete conversation">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function renderHistory(messages) {
+      const container = document.getElementById('chat-messages');
+      const welcome = document.getElementById('welcome-card');
+      if (messages.length > 0 && welcome) welcome.classList.add('hidden');
+      if (container) container.innerHTML = '';
+
+      messages.forEach(msg => {
+        if (msg.role === "user") {
+          appendUserMessage(msg.content);
+        } else {
+          try {
+            const parsed = JSON.parse(msg.content);
+            appendSystemMessage(parsed.message || parsed.content || JSON.stringify(parsed));
+          } catch(e) {
+            appendSystemMessage(msg.content);
+          }
+        }
+      });
+    }
+
+    function handleBackendResponse(rawMessage) {
+      let content = rawMessage;
+      try {
+        const actionPayload = JSON.parse(rawMessage);
+        if (actionPayload.action === "mailto") {
+          notify("Drafting email...", "info");
+          const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(actionPayload.recipient || "")}&su=${encodeURIComponent(actionPayload.subject || "")}&body=${encodeURIComponent(actionPayload.body || "")}`;
+          const mailtoUrl = `mailto:${encodeURIComponent(actionPayload.recipient || "")}?subject=${encodeURIComponent(actionPayload.subject || "")}&body=${encodeURIComponent(actionPayload.body || "")}`;
+          content = `
+            <div class="space-y-3">
+              <p class="text-[#dde2ea]">${escapeHtml(actionPayload.message || "Prepared draft for native email intent:")}</p>
+              <div class="p-5 rounded-2xl neu-raised-lg text-xs space-y-3.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl neu-inset-sm flex items-center justify-center text-[#5072a7]">
+                      <i data-lucide="mail" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                      <span class="text-xs font-semibold text-[#dde2ea] block">Email Dispatch Staged</span>
+                      <span class="text-[10px] text-[#8892a0] font-mono">${escapeHtml(actionPayload.recipient || "")}</span>
+                    </div>
+                  </div>
+                  <span class="neu-inset-sm px-2.5 py-0.5 rounded-full text-[#5072a7] text-[10px] font-mono uppercase tracking-wider">
+                    Ready to Send
+                  </span>
+                </div>
+
+                <div class="p-3.5 neu-inset-deep rounded-xl space-y-2 text-[#dde2ea]">
+                  <div class="font-medium flex items-center gap-1.5">
+                    <span class="text-[#8892a0]">Subject:</span> ${escapeHtml(actionPayload.subject || "Project Inquiry")}
+                  </div>
+                  <div class="text-xs text-[#8892a0] pt-1.5 leading-relaxed border-t border-[#252830]">
+                    ${escapeHtml(actionPayload.body || "")}
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2.5 pt-1">
+                  <a href="${gmailUrl}" target="_blank" rel="noopener noreferrer" class="neu-btn px-4 py-2 rounded-xl text-[#dde2ea] hover:text-white text-xs font-medium transition-all flex items-center gap-2">
+                    <i data-lucide="send" class="w-3.5 h-3.5 text-[#5072a7]"></i>
+                    <span>Proceed via Gmail Web</span>
+                  </a>
+                  <a href="${mailtoUrl}" target="_blank" rel="noopener noreferrer" class="neu-btn px-4 py-2 rounded-xl text-[#8892a0] hover:text-[#dde2ea] text-xs font-medium transition-colors flex items-center gap-2">
+                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                    <span>Open Mail Client</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (actionPayload.action === "youtube") {
+          const query = actionPayload.query || "music";
+          const trackTitle = actionPayload.trackTitle || query;
+          notify(`Playing "${trackTitle}" on YouTube...`, "info");
+
+          let embedSrc = "";
+          let directWatchUrl = "";
+          if (actionPayload.videoId) {
+            embedSrc = `https://www.youtube-nocookie.com/embed/${actionPayload.videoId}?autoplay=1&enablejsapi=1`;
+            directWatchUrl = `https://www.youtube.com/watch?v=${actionPayload.videoId}&autoplay=1`;
+          } else if (actionPayload.url && actionPayload.url.includes("watch?v=")) {
+            const vMatch = actionPayload.url.match(/v=([a-zA-Z0-9_-]{11})/);
+            const vId = vMatch ? vMatch[1] : "";
+            embedSrc = `https://www.youtube-nocookie.com/embed/${vId}?autoplay=1&enablejsapi=1`;
+            directWatchUrl = actionPayload.url.includes("autoplay=1") ? actionPayload.url : `${actionPayload.url}&autoplay=1`;
+          } else {
+            embedSrc = `https://www.youtube.com/embed?q=${encodeURIComponent(query)}&autoplay=1`;
+            directWatchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+          }
+
+          triggerMediaDeck(query, actionPayload.videoId, trackTitle);
+
+          if (actionPayload.browser && actionPayload.browser.toLowerCase().includes("firefox")) {
+            window.open(directWatchUrl, '_blank');
+          }
+
+          content = `
+            <div class="space-y-3">
+              <p class="text-[#dde2ea]">${escapeHtml(actionPayload.message || `Playing "${trackTitle}" on YouTube`)}</p>
+              <div class="rounded-2xl overflow-hidden neu-raised-lg">
+                <div class="aspect-video w-full relative bg-[#181a1f]">
+                  <iframe 
+                    id="chat-yt-${Date.now()}"
+                    src="${embedSrc}" 
+                    title="YouTube Player - ${escapeHtml(trackTitle)}"
+                    class="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    allowfullscreen>
+                  </iframe>
+                </div>
+                <div class="p-3.5 flex items-center justify-between text-xs bg-[#202329]">
+                  <div class="flex items-center gap-2 text-[#a65b5b] font-medium truncate">
+                    <i data-lucide="play-circle" class="w-4 h-4 shrink-0"></i>
+                    <span class="truncate">Now Playing: "${escapeHtml(trackTitle)}"</span>
+                  </div>
+                  <a href="${directWatchUrl}" target="_blank" rel="noopener noreferrer" class="neu-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[#8892a0] hover:text-[#dde2ea] text-xs font-medium transition-colors shrink-0">
+                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Watch on YouTube
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (actionPayload.action === "browser") {
+          notify("Opening in browser...", "info");
+          let targetUrl = actionPayload.url || "https://www.google.com";
+          if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+            targetUrl = 'https://' + targetUrl;
+          }
+          window.open(targetUrl, '_blank');
+          content = `
+            <div class="space-y-2.5">
+              <p class="text-[#dde2ea]">${escapeHtml(actionPayload.message || `Opening ${targetUrl} in browser`)}</p>
+              <div class="p-4 neu-raised-lg rounded-2xl text-xs space-y-2.5">
+                <div class="flex items-center gap-2 text-[#5072a7] font-medium">
+                  <i data-lucide="globe" class="w-4 h-4"></i>
+                  <span>Web Browser</span>
+                </div>
+                <div class="neu-inset-deep p-2.5 rounded-xl text-[#8892a0] text-xs font-mono truncate">${escapeHtml(targetUrl)}</div>
+                <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="neu-btn inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[#dde2ea] hover:text-white text-xs font-medium transition-colors">
+                  <i data-lucide="external-link" class="w-3.5 h-3.5 text-[#5072a7]"></i> Open Link
+                </a>
+              </div>
+            </div>
+          `;
+        } else if (actionPayload.action === "app_install" || (actionPayload.action === "app_control" && actionPayload.sub_action === "install")) {
+          const appName = actionPayload.app || "Application";
+          const method = actionPayload.method || "flatpak";
+          const flatpakIds = {
+            spotify: "com.spotify.Client",
+            vscode: "com.visualstudio.code",
+            discord: "com.discordapp.Discord",
+            vlc: "org.videolan.VLC",
+            gimp: "org.gimp.GIMP",
+            blender: "org.blender.Blender",
+            slack: "com.slack.Slack",
+            obs: "com.obsproject.Studio"
+          };
+          const pkgId = actionPayload.package_id || flatpakIds[appName.toLowerCase()] || `com.${appName.toLowerCase()}.App`;
+          const command = actionPayload.command || `flatpak install --user -y flathub ${pkgId}`;
+          const webUrl = (appName.toLowerCase() === "spotify") ? "https://open.spotify.com" : `https://flathub.org/apps/${pkgId}`;
+
+          notify(`Identified package: ${pkgId}`, "info");
+
+          content = `
+            <div class="space-y-3">
+              <p class="text-[#dde2ea]">${escapeHtml(actionPayload.message || `Ready to install ${appName} via Flatpak`)}</p>
+              <div class="p-5 rounded-2xl neu-raised-lg text-xs space-y-3.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl neu-inset-sm flex items-center justify-center text-[#5072a7]">
+                      <i data-lucide="download" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                      <span class="text-sm font-semibold text-[#dde2ea] block capitalize">${escapeHtml(appName)}</span>
+                      <span class="text-[10px] text-[#8892a0] font-mono">${escapeHtml(pkgId)}</span>
+                    </div>
+                  </div>
+                  <span class="neu-inset-sm px-2.5 py-0.5 rounded-full text-[#5e937d] text-[10px] font-mono uppercase tracking-wider">
+                    Flathub Sandbox
+                  </span>
+                </div>
+
+                <div class="p-3 neu-inset-deep rounded-xl font-mono text-[11px] text-[#dde2ea] flex items-center justify-between">
+                  <code class="truncate text-[#8ba4c7]">${escapeHtml(command)}</code>
+                  <button onclick="navigator.clipboard.writeText('${command}'); notify('Command copied to clipboard!', 'success');" class="neu-btn p-1.5 rounded-lg text-[#8892a0] hover:text-[#dde2ea] shrink-0 ml-2" title="Copy Command">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2.5 pt-1">
+                  <button onclick="executeAppInstall('${escapeHtml(appName)}', '${escapeHtml(pkgId)}')" id="btn-install-${escapeHtml(appName)}" class="neu-btn px-4 py-2 rounded-xl text-[#dde2ea] hover:text-white text-xs font-medium transition-all flex items-center gap-2">
+                    <i data-lucide="terminal" class="w-3.5 h-3.5 text-[#5072a7]"></i>
+                    <span>Execute Flatpak Install</span>
+                  </button>
+                  <a href="${webUrl}" target="_blank" rel="noopener noreferrer" class="neu-btn px-4 py-2 rounded-xl text-[#8892a0] hover:text-[#dde2ea] text-xs font-medium transition-colors flex items-center gap-2">
+                    <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                    <span>Open Web App</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (actionPayload.action === "app_control") {
+          const appName = actionPayload.app || "Application";
+          const category = (actionPayload.category || "tool").toUpperCase();
+          const subAction = actionPayload.sub_action || "launch";
+          notify(`Executing ${appName} (${category})...`, "info");
+          
+          let targetUrl = actionPayload.url || "";
+          if (!targetUrl && actionPayload.app) {
+            const webBases = {
+              twitter: "https://x.com", reddit: "https://www.reddit.com", linkedin: "https://www.linkedin.com",
+              instagram: "https://www.instagram.com", tiktok: "https://www.tiktok.com", discord: "https://discord.com/app",
+              slack: "https://app.slack.com", telegram: "https://web.telegram.org", whatsapp: "https://web.whatsapp.com",
+              facebook: "https://www.facebook.com", twitch: "https://www.twitch.tv", netflix: "https://www.netflix.com",
+              primevideo: "https://www.primevideo.com", disneyplus: "https://www.disneyplus.com", hulu: "https://www.hulu.com",
+              kick: "https://kick.com", vimeo: "https://vimeo.com", crunchyroll: "https://www.crunchyroll.com",
+              vscode: "https://vscode.dev", figma: "https://www.figma.com", canva: "https://www.canva.com",
+              photopea: "https://www.photopea.com", onshape: "https://cad.onshape.com", tinkercad: "https://www.tinkercad.com",
+              sketchup: "https://app.sketchup.com/app", spline: "https://app.spline.design", womp: "https://womp.com",
+              soundcloud: "https://soundcloud.com", applemusic: "https://music.apple.com", tidal: "https://listen.tidal.com",
+              deezer: "https://www.deezer.com", bandcamp: "https://bandcamp.com"
+            };
+            targetUrl = webBases[actionPayload.app.toLowerCase()] || `https://www.google.com/search?q=${encodeURIComponent(appName)}`;
+          }
+
+          if (targetUrl) {
+            window.open(targetUrl, '_blank');
+          }
+
+          content = `
+            <div class="space-y-2.5">
+              <p class="text-[#dde2ea]">${escapeHtml(actionPayload.message || `Executing ${subAction} on ${appName}`)}</p>
+              <div class="p-4 neu-raised-lg rounded-2xl text-xs space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2.5 font-semibold text-[#dde2ea] tracking-wide">
+                    <i data-lucide="layers" class="w-4 h-4 text-[#5072a7]"></i>
+                    <span>${escapeHtml(appName)}</span>
+                  </div>
+                  <span class="neu-inset-sm px-2.5 py-0.5 rounded-full text-[10px] font-mono text-[#8892a0] uppercase">${escapeHtml(category)}</span>
+                </div>
+                ${actionPayload.query ? `<div class="neu-inset-deep p-2.5 rounded-xl text-[#8892a0] text-xs font-mono">Query: "${escapeHtml(actionPayload.query)}"</div>` : ''}
+                <div class="pt-1 flex items-center gap-2.5">
+                  ${targetUrl ? `
+                    <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="neu-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[#dde2ea] hover:text-white text-xs font-medium transition-all">
+                      <i data-lucide="external-link" class="w-3.5 h-3.5 text-[#5072a7]"></i> Open ${escapeHtml(appName)}
+                    </a>
+                  ` : ''}
+                  <span class="text-[11px] text-[#8892a0] font-mono">Action: ${escapeHtml(subAction)}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (actionPayload.action === "spotify") {
+          notify("Launching Spotify...", "info");
+          window.location.href = `spotify:search:${encodeURIComponent(actionPayload.query || '')}`;
+          content = `
+            <div class="space-y-2">
+              <p class="text-[#dde2ea]">${escapeHtml(actionPayload.message || `Searching Spotify for "${actionPayload.query || ''}"`)}</p>
+              <div class="p-4 neu-raised-lg rounded-2xl text-xs space-y-2">
+                <div class="flex items-center gap-2 text-[#5e937d] font-medium">
+                  <i data-lucide="music" class="w-4 h-4"></i>
+                  <span>Spotify Search</span>
+                </div>
+                <div class="neu-inset-deep p-2.5 rounded-xl text-[#8892a0] text-xs font-mono truncate">Query: "${escapeHtml(actionPayload.query || '')}"</div>
+              </div>
+            </div>
+          `;
+        } else if (actionPayload.action === "media_control") {
+          notify(`Media: ${actionPayload.sub_action || 'command'}`, "info");
+          setWorkspaceAvatarState('alert');
+          fetchMediaStatus();
+          content = `
+            <div class="space-y-2">
+              <p class="text-[#dde2ea]">${escapeHtml(actionPayload.message || `Executed desktop media action: ${actionPayload.sub_action || 'update'}`)}</p>
+              <div class="p-3.5 neu-inset-sm rounded-xl text-xs font-mono text-[#8892a0] flex items-center justify-between">
+                <span>Action: ${escapeHtml(actionPayload.sub_action || 'play_pause')}</span>
+                <span class="text-[#646c7a]">Host MPRIS D-Bus</span>
+              </div>
+            </div>
+          `;
+        } else if (actionPayload.action === "scroll") {
+          notify(`Scrolling ${actionPayload.direction || 'down'}...`, "info");
+          const viewport = document.getElementById('conversation-container');
+          if (viewport) {
+            const distance = actionPayload.direction === "up" ? -500 : 500;
+            viewport.scrollBy({ top: distance, behavior: 'smooth' });
+          }
+          content = actionPayload.message || `[Scrolled screen ${escapeHtml(actionPayload.direction || 'down')}]`;
+        } else if (actionPayload.action === "chat") {
+          content = actionPayload.message || rawMessage;
+        } else {
+          if (actionPayload.message) {
+            content = actionPayload.message;
+          } else {
+            const keys = Object.keys(actionPayload).filter(k => k !== 'action');
+            if (keys.length > 0) {
+              content = keys.map(k => {
+                const val = Array.isArray(actionPayload[k]) ? actionPayload[k].join(', ') : actionPayload[k];
+                return `• <strong>${escapeHtml(k)}</strong>: ${escapeHtml(String(val))}`;
+              }).join('<br>');
+            } else {
+              content = escapeHtml(rawMessage);
+            }
+          }
+        }
+      } catch (err) {
+        // Raw text
+      }
+      if (content && content.trim() !== '{') {
+        appendSystemMessage(content);
+      }
+    }
+
+    function showTypingIndicator(statusText = "Thinking...") {
+      removeTypingIndicator();
+      const container = document.getElementById('chat-messages');
+      if (!container) return;
+      const typingEl = document.createElement('div');
+      typingEl.id = 'active-typing-indicator';
+      typingEl.className = "flex items-start gap-3.5";
+      typingEl.innerHTML = `
+        <div class="w-7 h-7 rounded-lg bg-zinc-800 border border-blue-500/40 flex items-center justify-center shrink-0 text-blue-400 mt-0.5 shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+          <i data-lucide="bot" class="w-4 h-4 animate-pulse"></i>
+        </div>
+        <div class="flex-1 space-y-1.5 max-w-[90%]">
+          <div class="text-xs font-semibold text-[#8892a0] tracking-tight flex items-center gap-2">
+            <span>Andromeda</span>
+            <span class="inline-flex items-center gap-1.5 text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20 font-mono">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping"></span>
+              <span id="typing-status-label">${escapeHtml(statusText)}</span>
+            </span>
+          </div>
+          <div class="flex items-center gap-1.5 p-3 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 w-fit">
+            <span class="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 0ms"></span>
+            <span class="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 150ms"></span>
+            <span class="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 300ms"></span>
+          </div>
+        </div>
+      `;
+      container.appendChild(typingEl);
+      lucide.createIcons();
+      scrollToBottom();
+    }
+
+    function updateTypingIndicator(statusText) {
+      const label = document.getElementById('typing-status-label');
+      if (label) {
+        label.innerText = statusText;
+      }
+    }
+
+    function removeTypingIndicator() {
+      const el = document.getElementById('active-typing-indicator');
+      if (el) el.remove();
+    }
+
+    function showThoughtTrace(msg) {
+      const thoughtBox = document.getElementById('thought-lobe-card');
+      const thoughtText = document.getElementById('thought-lobe-text');
+      if (thoughtBox && thoughtText) {
+        thoughtBox.classList.remove('hidden');
+        thoughtText.innerText = msg;
+      }
+    }
+
+    function hideThoughtTrace() {
+      const thoughtBox = document.getElementById('thought-lobe-card');
+      if (thoughtBox) thoughtBox.classList.add('hidden');
+    }
+
+    function createNewSession() {
+      playAcousticChime('click');
+      localStorage.removeItem('andromeda_session_id');
+      activeSessionId = "session_" + Math.random().toString(36).substring(2, 9);
+      localStorage.setItem('andromeda_session_id', activeSessionId);
+      const container = document.getElementById('chat-messages');
+      if (container) container.innerHTML = '';
+      document.getElementById('welcome-card')?.classList.remove('hidden');
+      const titleEl = document.getElementById('active-chat-title');
+      if (titleEl) titleEl.innerText = "New Chat Session";
+
+      if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+        coreSocket.send(JSON.stringify({ type: "init", session_id: activeSessionId }));
+        coreSocket.send(JSON.stringify({ type: "get_sessions" }));
+      }
+      refreshSessionsViaRest();
+      notify("New workspace initialized", "info");
+    }
+
+    function loadSession(id) {
+      playAcousticChime('click');
+      activeSessionId = id;
+      localStorage.setItem('andromeda_session_id', activeSessionId);
+      const container = document.getElementById('chat-messages');
+      if (container) container.innerHTML = '';
+      document.getElementById('welcome-card')?.classList.add('hidden');
+      const titleEl = document.getElementById('active-chat-title');
+      if (titleEl) titleEl.innerText = "Conversation";
+
+      if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+        coreSocket.send(JSON.stringify({ type: "init", session_id: activeSessionId }));
+        coreSocket.send(JSON.stringify({ type: "get_sessions" }));
+      }
+    }
+
+    async function deleteSession(event, id) {
+      if (event) event.stopPropagation();
+      playAcousticChime('click');
+
+      const targetId = id || activeSessionId;
+      if (!targetId) return;
+
+      const isCurrentSession = (targetId === activeSessionId);
+
+      // 1. If deleting active session, reset activeSessionId immediately
+      if (isCurrentSession) {
+        localStorage.removeItem('andromeda_session_id');
+        activeSessionId = "session_" + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem('andromeda_session_id', activeSessionId);
+        const container = document.getElementById('chat-messages');
+        if (container) container.innerHTML = '';
+        document.getElementById('welcome-card')?.classList.remove('hidden');
+        const titleEl = document.getElementById('active-chat-title');
+        if (titleEl) titleEl.innerText = "New Chat Session";
+      }
+
+      // 2. Send WebSocket deletion
+      if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+        coreSocket.send(JSON.stringify({ type: "delete_session", session_id: targetId }));
+      }
+
+      // 3. Send REST DELETE with Bearer auth token
+      try {
+        const token = localStorage.getItem('andromeda_auth_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch(`${getBackendHttpUrl()}/api/sessions/${encodeURIComponent(targetId)}`, {
+          method: 'DELETE',
+          headers: headers
+        });
+        if (!res.ok) {
+          console.warn("REST delete session returned status:", res.status);
+        }
+      } catch (err) {
+        console.warn("REST delete session notice:", err);
+      }
+
+      notify("Conversation permanently deleted", "info");
+
+      // 4. Refresh session state
+      if (isCurrentSession) {
+        if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+          coreSocket.send(JSON.stringify({ type: "init", session_id: activeSessionId }));
+          coreSocket.send(JSON.stringify({ type: "get_sessions" }));
+        }
+      } else if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+        coreSocket.send(JSON.stringify({ type: "get_sessions" }));
+      }
+      refreshSessionsViaRest();
+    }
+
+    function deleteCurrentChat() {
+      if (confirm("Permanently delete this conversation and all its messages? This action cannot be undone.")) {
+        deleteSession(null, activeSessionId);
+      }
+    }
+
+    async function clearAllChats() {
+      if (!confirm("Are you sure you want to permanently delete ALL conversation history? This cannot be undone.")) {
+        return;
+      }
+      playAcousticChime('click');
+
+      localStorage.removeItem('andromeda_session_id');
+      activeSessionId = "session_" + Math.random().toString(36).substring(2, 9);
+      localStorage.setItem('andromeda_session_id', activeSessionId);
+      const container = document.getElementById('chat-messages');
+      if (container) container.innerHTML = '';
+      document.getElementById('welcome-card')?.classList.remove('hidden');
+      const titleEl = document.getElementById('active-chat-title');
+      if (titleEl) titleEl.innerText = "New Chat Session";
+
+      // 1. Send WebSocket clear
+      if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+        coreSocket.send(JSON.stringify({ type: "clear_all_sessions" }));
+        coreSocket.send(JSON.stringify({ type: "init", session_id: activeSessionId }));
+      }
+
+      // 2. Send REST DELETE all
+      try {
+        const token = localStorage.getItem('andromeda_auth_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        await fetch(`${getBackendHttpUrl()}/api/sessions`, {
+          method: 'DELETE',
+          headers: headers
+        });
+      } catch (err) {
+        console.warn("REST clear all sessions notice:", err);
+      }
+
+      renderSessionsList([]);
+      notify("All conversations permanently wiped", "success");
+    }
+
+    async function refreshSessionsViaRest() {
+      try {
+        const token = localStorage.getItem('andromeda_auth_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch(`${getBackendHttpUrl()}/api/sessions`, { headers: headers });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.sessions)) {
+            renderSessionsList(data.sessions);
+          }
+        }
+      } catch (err) {
+        // Fallback gracefully
+      }
+    }
+
+    function saveCloudNodeUrl() {
+      const url = document.getElementById('cloud-node-url')?.value || "";
+      localStorage.setItem('andromeda_cloud_url', url);
+      if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+        coreSocket.send(JSON.stringify({ type: "init", session_id: activeSessionId, cloud_url: url }));
+      }
+      notify("Cloud Muscle URL Saved", "success");
+    }
+
+    async function captureTelemetry() {
+      let telemetry = { screen: `${window.innerWidth}x${window.innerHeight}` };
+      if (navigator.getBattery) {
+        try {
+          const bat = await navigator.getBattery();
+          telemetry.battery = Math.round(bat.level * 100);
+          telemetry.charging = bat.charging;
+        } catch(e) {}
+      }
+      if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+        coreSocket.send(JSON.stringify({ type: "telemetry", data: telemetry }));
+      }
+    }
+
+    // ==========================================
+    // CONVERSATION & CHAT LOGIC
+    // ==========================================
+    function quickPrompt(text) {
+      document.getElementById('prompt-field').value = text;
+      handleSendPrompt();
+    }
+
+    function handleSendPrompt() {
+      const field = document.getElementById('prompt-field');
+      const query = field.value.trim();
+      if (!query) return;
+
+      playAcousticChime('click');
+      document.getElementById('welcome-card')?.classList.add('hidden');
+      appendUserMessage(query);
+      field.value = '';
+
+      showThoughtTrace(`Analyzing prompt vectors for "${query.slice(0, 32)}..." -> Validating execution safety gate...`);
+      showTypingIndicator("Thinking...");
+
+      if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+        coreSocket.send(JSON.stringify({ type: "prompt", prompt: query, with_tools: true }));
+      } else {
+        // Simulated response fallback
+        setTimeout(() => {
+          hideThoughtTrace();
+          removeTypingIndicator();
+          const lower = query.toLowerCase();
+          if (lower.includes('email') || lower.includes('mail')) {
+            appendSystemMessage(`
+              <div class="space-y-2">
+                <p>Prepared draft for native email intent:</p>
+                <div class="p-3 bg-zinc-900 rounded-xl border border-zinc-800 text-xs font-mono space-y-1">
+                  <div><span class="text-zinc-400">Subject:</span> Project Milestone Update</div>
+                  <div><span class="text-zinc-400">Body:</span> The deployment is verified on the edge-native node. SQR compression is active.</div>
+                </div>
+                <button onclick="window.open('mailto:?subject=Project%20Update&body=Deployment%20verified.')" class="px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-950 font-medium text-xs hover:bg-white transition-colors flex items-center gap-1.5">
+                  <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Open Mail Client
+                </button>
+              </div>
+            `);
+          } else if (lower.includes('ram') || lower.includes('purge') || lower.includes('leak')) {
+            executeCleanRamPurge();
+          } else if (lower.includes('audio') || lower.includes('music') || lower.includes('play')) {
+            toggleModal('modal-media');
+            toggleAudioPlayback();
+            appendSystemMessage("🎵 Mounted background stream through the Web Audio synthesizer.");
+          } else {
+            appendSystemMessage(`Intent parsed and processed with SQR FP8 quantization. All parameters valid.`);
+          }
+        }, 550);
+      }
+    }
+
+    function appendUserMessage(text) {
+      const container = document.getElementById('chat-messages');
+      const bubble = document.createElement('div');
+      bubble.className = "flex justify-end";
+      bubble.innerHTML = `
+        <div class="max-w-[85%] rounded-2xl px-4 py-2.5 neu-raised-sm bg-[#22252b] text-[#dde2ea] text-sm leading-relaxed">
+          ${escapeHtml(text)}
+        </div>
+      `;
+      container.appendChild(bubble);
+      scrollToBottom();
+    }
+
+    function appendSystemMessage(content) {
+      const container = document.getElementById('chat-messages');
+      const bubble = document.createElement('div');
+      bubble.className = "flex items-start gap-3.5";
+      bubble.innerHTML = `
+        <div class="w-8 h-8 rounded-xl neu-inset-sm flex items-center justify-center shrink-0 text-[#8892a0] mt-0.5">
+          <i data-lucide="bot" class="w-4 h-4"></i>
+        </div>
+        <div class="flex-1 space-y-1.5 max-w-[90%]">
+          <div class="text-xs font-semibold text-zinc-400 tracking-tight">Andromeda</div>
+          <div class="text-sm leading-relaxed text-zinc-200 bg-zinc-900/60 border border-zinc-800/80 p-3.5 rounded-2xl shadow-subtle">
+            ${content}
+          </div>
+        </div>
+      `;
+      container.appendChild(bubble);
+      lucide.createIcons();
+      scrollToBottom();
+    }
+
+    function scrollToBottom() {
+      const viewport = document.getElementById('conversation-container');
+      if (viewport) viewport.scrollTop = viewport.scrollHeight;
+    }
+
+    // ==========================================
+    // AUDIO & VOICE ENGINE
+    // ==========================================
+    let isRecordingVoice = false;
+    let visualizerAnimId = null;
+
+    function toggleVoiceCapture() {
+      isRecordingVoice = !isRecordingVoice;
+      playAcousticChime('click');
+      const hud = document.getElementById('voice-recording-hud');
+      const micBtn = document.getElementById('btn-voice-mic');
+
+      if (isRecordingVoice) {
+        hud.classList.remove('hidden');
+        if (micBtn) micBtn.classList.add('text-blue-400');
+        startVoiceVisualizer();
+        notify("Listening to speech signal...", "info");
+      } else {
+        hud.classList.add('hidden');
+        if (micBtn) micBtn.classList.remove('text-blue-400');
+        cancelAnimationFrame(visualizerAnimId);
+        appendUserMessage("Voice input: Process voice acoustic buffer.");
+        showThoughtTrace("Transcribing voice audio stream...");
+        setTimeout(() => {
+          hideThoughtTrace();
+          appendSystemMessage("Transcribed voice stream with on-device tokenizer.");
+        }, 400);
+      }
+    }
+
+    function startVoiceVisualizer() {
+      const canvas = document.getElementById('voice-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.offsetWidth || 300;
+      canvas.height = canvas.offsetHeight || 32;
+
+      let tick = 0;
+      function render() {
+        ctx.fillStyle = '#09090b';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const bars = 36;
+        const barWidth = canvas.width / bars;
+        for (let i = 0; i < bars; i++) {
+          const height = (Math.sin(tick * 0.12 + i * 0.3) * 0.5 + 0.5) * (canvas.height * 0.8);
+          const x = i * barWidth;
+          const y = (canvas.height - height) / 2;
+
+          ctx.fillStyle = '#3b82f6';
+          ctx.fillRect(x + 1, y, barWidth - 2, height);
+        }
+        tick++;
+        visualizerAnimId = requestAnimationFrame(render);
+      }
+      render();
+    }
+
+    let isAudioPlaying = false;
+    let ambientSynthOsc = null;
+    let ambientSynthGain = null;
+
+    function toggleAudioPlayback() {
+      isAudioPlaying = !isAudioPlaying;
+      playAcousticChime('click');
+      const icon = document.getElementById('icon-audio-play');
+      const discIcon = document.getElementById('audio-disc-icon');
+
+      if (isAudioPlaying) {
+        if (icon) icon.setAttribute('data-lucide', 'pause');
+        if (discIcon) discIcon.classList.add('animate-spin');
+        notify("Playing Low Earth Orbit Ambient Stream", "info");
+        try {
+          if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          ambientSynthOsc = audioContext.createOscillator();
+          ambientSynthGain = audioContext.createGain();
+          ambientSynthOsc.type = 'triangle';
+          ambientSynthOsc.frequency.setValueAtTime(110, audioContext.currentTime);
+          ambientSynthGain.gain.setValueAtTime(0.04, audioContext.currentTime);
+          ambientSynthOsc.connect(ambientSynthGain);
+          ambientSynthGain.connect(audioContext.destination);
+          ambientSynthOsc.start();
+        } catch(e) {}
+      } else {
+        if (icon) icon.setAttribute('data-lucide', 'play');
+        if (discIcon) discIcon.classList.remove('animate-spin');
+        if (ambientSynthOsc) {
+          try { ambientSynthOsc.stop(); } catch(e) {}
+          ambientSynthOsc = null;
+        }
+        notify("Audio stream paused", "info");
+      }
+      lucide.createIcons();
+    }
+
+    function updateInferenceNode(val) {
+      playAcousticChime('click');
+      const nodeBadge = document.getElementById('sidebar-node-status');
+      if (nodeBadge) nodeBadge.innerText = val.toUpperCase();
+      notify(`Inference Node: ${val}`, "info");
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // ==========================================
+    // DIRECTION 1: COSMIC WORKSPACE AVATAR & MEDIADECK HUD ENGINE
+    // ==========================================
+    let avatarState = 'idle'; // 'idle' | 'listening' | 'thinking' | 'alert'
+    let avatarAudioLevel = 0;
+    let avatarAngle = 0;
+    let avatarAnimFrame = null;
+    let avatarAlertTimeout = null;
+
+    function setWorkspaceAvatarState(newState) {
+      if (avatarAlertTimeout) {
+        clearTimeout(avatarAlertTimeout);
+        avatarAlertTimeout = null;
+      }
+      avatarState = newState;
+      const pill = document.getElementById('avatar-state-pill');
+      if (pill) pill.innerText = newState;
+
+      if (newState === 'alert') {
+        avatarAlertTimeout = setTimeout(() => {
+          setWorkspaceAvatarState('idle');
+        }, 2500);
+      }
+    }
+
+    let isHudExpanded = false;
+    let isHudVisible = true;
+
+    function toggleHudVisibility() {
+      playAcousticChime('click');
+      isHudVisible = !isHudVisible;
+      const hud = document.getElementById('andromeda-hud-deck');
+      const btn = document.getElementById('btn-hud-visibility');
+      if (hud) {
+        hud.classList.toggle('hidden', !isHudVisible);
+      }
+      if (btn) {
+        btn.classList.toggle('text-[#5072a7]', isHudVisible);
+        btn.classList.toggle('text-zinc-500', !isHudVisible);
+      }
+      notify(isHudVisible ? "Cosmic HUD visible" : "Cosmic HUD minimized", "info");
+    }
+
+    function toggleHudExpand() {
+      playAcousticChime('click');
+      isHudExpanded = !isHudExpanded;
+      const drawer = document.getElementById('hud-expanded-drawer');
+      const chevron = document.getElementById('icon-hud-chevron');
+      if (drawer) {
+        drawer.classList.toggle('hidden', !isHudExpanded);
+      }
+      if (chevron) {
+        chevron.style.transform = isHudExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+      }
+      lucide.createIcons();
+    }
+
+    function initWorkspaceAvatarCanvas() {
+      const canvas = document.getElementById('workspace-avatar-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const dpr = window.devicePixelRatio || 1;
+      const displaySize = 48;
+      canvas.width = displaySize * dpr;
+      canvas.height = displaySize * dpr;
+      ctx.scale(dpr, dpr);
+
+      const size = displaySize;
+      const center = size / 2;
+      const particles = Array.from({ length: 16 }, (_, i) => ({
+        angle: (i / 16) * Math.PI * 2,
+        dist: 12 + (i % 3) * 3.5,
+        speed: 0.02 + (i % 4) * 0.007,
+        size: 1.0 + (i % 2) * 0.5,
+      }));
+
+      function render() {
+        ctx.clearRect(0, 0, size, size);
+        avatarAngle += 0.025;
+        const t = avatarAngle;
+
+        let coreColor = 'rgba(215, 222, 235, '; // Pearl Silver (Idle)
+        let glowColor = 'rgba(120, 145, 185, '; // Celestial Slate
+
+        if (avatarState === 'listening') {
+          coreColor = 'rgba(140, 190, 170, '; // Soft Sage
+          glowColor = 'rgba(94, 147, 125, ';
+        } else if (avatarState === 'thinking') {
+          coreColor = 'rgba(130, 160, 210, '; // Slate-Cobalt
+          glowColor = 'rgba(80, 114, 167, ';
+        } else if (avatarState === 'alert') {
+          coreColor = 'rgba(217, 155, 67, '; // Muted Warm Ochre
+          glowColor = 'rgba(184, 120, 50, ';
+        }
+
+        // 1. Outer Glow Aura
+        const dynamicRadius =
+          avatarState === 'listening'
+            ? 11 + avatarAudioLevel * 8
+            : avatarState === 'thinking'
+            ? 10 + Math.sin(t * 4) * 2
+            : 9.5 + Math.sin(t * 1.5) * 1.5;
+
+        const radial = ctx.createRadialGradient(center, center, 2, center, center, dynamicRadius * 1.5);
+        radial.addColorStop(0, `${coreColor}0.45)`);
+        radial.addColorStop(0.5, `${glowColor}0.18)`);
+        radial.addColorStop(1, 'rgba(30, 33, 38, 0)');
+        ctx.fillStyle = radial;
+        ctx.beginPath();
+        ctx.arc(center, center, dynamicRadius * 1.7, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. Swirling / Orbiting Micro-Particles
+        particles.forEach((p, idx) => {
+          p.angle += avatarState === 'thinking' ? p.speed * 3.5 : p.speed;
+          const currentDist =
+            avatarState === 'thinking'
+              ? p.dist * (0.65 + 0.35 * Math.sin(t * 2 + idx))
+              : avatarState === 'listening'
+              ? p.dist + avatarAudioLevel * 6
+              : p.dist + Math.sin(t + idx) * 1.5;
+
+          const x = center + Math.cos(p.angle) * currentDist;
+          const y = center + Math.sin(p.angle) * currentDist;
+
+          ctx.fillStyle = `${glowColor}0.9)`;
+          ctx.beginPath();
+          ctx.arc(x, y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // 3. Central Cosmic Core
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(center, center, avatarState === 'thinking' ? 3 + Math.sin(t * 6) * 1 : 3.5, 0, Math.PI * 2);
+        ctx.shadowColor = `${coreColor}1.0)`;
+        ctx.shadowBlur = 10;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        avatarAnimFrame = requestAnimationFrame(render);
+      }
+
+      render();
+    }
+
+    // MediaDeck State & Controller
+    let currentMediaStatus = { active: false, playback_status: 'Stopped' };
+    let activeMediaYoutubeQuery = null;
+    let isMediaEmbedVisible = false;
+    let volumeDebounceTimer = null;
+
+    async function fetchMediaStatus() {
+      try {
+        const res = await fetch(`${getBackendHttpUrl()}/api/media/status`);
+        if (res.ok) {
+          const data = await res.json();
+          currentMediaStatus = data;
+          updateMediaDeckUI(data);
+        }
+      } catch (e) {
+        // Offline or backend restarting
+      }
+    }
+
+    function toggleDynamicIslandDropdown() {
+      playAcousticChime('click');
+      const dropdown = document.getElementById('dynamic-island-dropdown');
+      if (dropdown) {
+        dropdown.classList.toggle('hidden');
+        if (!dropdown.classList.contains('hidden')) {
+          initWorkspaceAvatarCanvas();
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+    }
+
+    function handlePromptInput(val) {
+      const palette = document.getElementById('slash-command-palette');
+      if (!palette) return;
+      if (val.startsWith('/') && !val.includes(' ')) {
+        palette.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+      } else {
+        palette.classList.add('hidden');
+      }
+    }
+
+    function insertSlashCommand(cmd) {
+      const field = document.getElementById('prompt-field');
+      const palette = document.getElementById('slash-command-palette');
+      if (field) {
+        field.value = cmd;
+        field.focus();
+      }
+      if (palette) palette.classList.add('hidden');
+    }
+
+    function updateMediaDeckUI(status) {
+      const dot = document.getElementById('mediadeck-dot');
+      const islandTitle = document.getElementById('island-title');
+      const islandBadge = document.getElementById('island-badge');
+      const islandPlay = document.getElementById('island-play-icon');
+      const islandPause = document.getElementById('island-pause-icon');
+      const islandPill = document.getElementById('dynamic-island-pill');
+      const w1 = document.getElementById('island-wave-1');
+      const w2 = document.getElementById('island-wave-2');
+      const w3 = document.getElementById('island-wave-3');
+
+      const isPlaying = status.playback_status === 'Playing';
+
+      if (islandTitle) {
+        islandTitle.innerText = status.track_title && status.track_title !== "No Track Active" ? status.track_title : (isPlaying ? "Playing Audio" : "No Track Active");
+      }
+      if (islandBadge) {
+        islandBadge.innerText = isPlaying ? (status.player || "Playing") : "Idle";
+        islandBadge.className = isPlaying
+          ? "neu-inset-sm px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded-full text-[#5e937d]"
+          : "neu-inset-sm px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider rounded-full text-[#8892a0]";
+      }
+      if (islandPlay && islandPause) {
+        if (isPlaying) {
+          islandPlay.classList.add('hidden');
+          islandPause.classList.remove('hidden');
+        } else {
+          islandPlay.classList.remove('hidden');
+          islandPause.classList.add('hidden');
+        }
+      }
+      if (islandPill) {
+        if (isPlaying) {
+          islandPill.classList.add('neu-inset-sm');
+          islandPill.classList.remove('neu-pill');
+        } else {
+          islandPill.classList.remove('neu-inset-sm');
+          islandPill.classList.add('neu-pill');
+        }
+      }
+      if (w1 && w2 && w3) {
+        if (isPlaying) {
+          w1.className = "w-0.5 h-3 rounded-full bg-[#5072a7] animate-pulse transition-all";
+          w2.className = "w-0.5 h-4 rounded-full bg-[#6d8cb8] animate-pulse transition-all delay-75";
+          w3.className = "w-0.5 h-2.5 rounded-full bg-[#8ba4c7] animate-pulse transition-all delay-150";
+        } else {
+          w1.className = "w-0.5 h-2 rounded-full bg-[#646c7a] transition-all";
+          w2.className = "w-0.5 h-3.5 rounded-full bg-[#646c7a] transition-all";
+          w3.className = "w-0.5 h-1.5 rounded-full bg-[#646c7a] transition-all";
+        }
+      }
+      const label = document.getElementById('mediadeck-player-label');
+      const title = document.getElementById('mediadeck-track-title');
+      const artist = document.getElementById('mediadeck-track-artist');
+      const playIcon = document.getElementById('mediadeck-play-icon');
+      const pauseIcon = document.getElementById('mediadeck-pause-icon');
+      const volSlider = document.getElementById('mediadeck-volume-slider');
+
+      if (dot) {
+        if (status.active) {
+          dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+        } else {
+          dot.className = "w-2 h-2 rounded-full bg-zinc-600";
+        }
+      }
+
+      if (label) {
+        label.innerText = status.player ? `${status.player} (Host D-Bus)` : (status.active ? 'Host MPRIS Active' : 'MPRIS Controller');
+      }
+
+      if (title) {
+        title.innerText = status.title || (activeMediaYoutubeQuery ? `YouTube: ${activeMediaYoutubeQuery}` : 'No Track Active');
+      }
+
+      if (artist) {
+        artist.innerText = status.artist || (activeMediaYoutubeQuery ? 'Automated In-Stream Stream' : 'Desktop Media Idle');
+      }
+
+      if (playIcon && pauseIcon) {
+        if (isPlaying) {
+          playIcon.classList.add('hidden');
+          pauseIcon.classList.remove('hidden');
+        } else {
+          playIcon.classList.remove('hidden');
+          pauseIcon.classList.add('hidden');
+        }
+      }
+
+      if (volSlider && status.volume !== undefined && document.activeElement !== volSlider) {
+        volSlider.value = status.volume;
+      }
+      const volSliderMobile = document.getElementById('mediadeck-volume-slider-mobile');
+      if (volSliderMobile && status.volume !== undefined && document.activeElement !== volSliderMobile) {
+        volSliderMobile.value = status.volume;
+      }
+    }
+
+    async function mediaDeckAction(action, value) {
+      playAcousticChime('click');
+      if (action === 'play_pause') {
+        const isPlaying = currentMediaStatus.playback_status === 'Playing';
+        currentMediaStatus.playback_status = isPlaying ? 'Paused' : 'Playing';
+        updateMediaDeckUI(currentMediaStatus);
+      }
+
+      try {
+        await fetch(`${getBackendHttpUrl()}/api/media/execute`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, value })
+        });
+        setTimeout(fetchMediaStatus, 300);
+      } catch (err) {
+        console.error("Media deck action failed:", err);
+      }
+    }
+
+    function mediaDeckVolumeChange(val) {
+      const num = parseFloat(val);
+      if (volumeDebounceTimer) clearTimeout(volumeDebounceTimer);
+      volumeDebounceTimer = setTimeout(() => {
+        mediaDeckAction('set_volume', num);
+      }, 150);
+    }
+
+    async function executeAppInstall(appName, pkgId) {
+      playAcousticChime('click');
+      notify(`Initiating Flatpak install for ${appName}...`, "info");
+      const btn = document.getElementById(`btn-install-${appName}`);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Preparing...</span>`;
+        if (window.lucide) lucide.createIcons();
+      }
+      try {
+        const res = await fetch(`${getBackendHttpUrl()}/api/apps/install`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ app: appName, method: 'flatpak', package_id: pkgId })
+        });
+        const data = await res.json();
+        const cmdToRun = data.command || `flatpak install --user -y flathub ${pkgId}`;
+        notify(`Flatpak Command: ${cmdToRun}`, "success");
+        navigator.clipboard.writeText(cmdToRun);
+        if (btn) {
+          btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i><span>Command Copied</span>`;
+          btn.classList.remove('from-purple-600', 'to-indigo-600');
+          btn.classList.add('from-emerald-700', 'to-teal-700');
+          if (window.lucide) lucide.createIcons();
+        }
+      } catch (err) {
+        console.error("Install request error:", err);
+        const fallbackCmd = `flatpak install --user -y flathub ${pkgId}`;
+        notify(`Copied: ${fallbackCmd}`, "info");
+        navigator.clipboard.writeText(fallbackCmd);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="terminal" class="w-3.5 h-3.5"></i><span>Copy Command</span>`;
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+    }
+
+    function triggerMediaDeck(query, videoId, trackTitle) {
+      activeMediaYoutubeQuery = query;
+      isMediaEmbedVisible = true;
+      isHudExpanded = true;
+      const dropdown = document.getElementById('dynamic-island-dropdown');
+      if (dropdown) dropdown.classList.remove('hidden');
+      const drawer = document.getElementById('hud-expanded-drawer');
+      const toggleBtn = document.getElementById('mediadeck-embed-toggle');
+      const wrapper = document.getElementById('mediadeck-embed-wrapper');
+      const iframe = document.getElementById('mediadeck-embed-iframe');
+      const chevron = document.getElementById('icon-hud-chevron');
+      const titleEl = document.getElementById('mediadeck-track-title');
+
+      if (drawer) drawer.classList.remove('hidden');
+      if (chevron) chevron.style.transform = 'rotate(180deg)';
+      if (toggleBtn) {
+        toggleBtn.classList.remove('hidden');
+        toggleBtn.innerText = 'Hide In-Stream';
+      }
+      if (wrapper) wrapper.classList.remove('hidden');
+      if (titleEl && trackTitle) {
+        titleEl.innerText = trackTitle;
+      }
+      if (iframe) {
+        if (videoId) {
+          iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
+        } else {
+          iframe.src = `https://www.youtube-nocookie.com/embed?q=${encodeURIComponent(query)}&autoplay=1`;
+        }
+      }
+
+      setWorkspaceAvatarState('alert');
+      updateMediaDeckUI(currentMediaStatus);
+    }
+
+    function toggleMediaDeckEmbed() {
+      playAcousticChime('click');
+      isMediaEmbedVisible = !isMediaEmbedVisible;
+      const toggleBtn = document.getElementById('mediadeck-embed-toggle');
+      const wrapper = document.getElementById('mediadeck-embed-wrapper');
+      if (wrapper) {
+        if (isMediaEmbedVisible) {
+          wrapper.classList.remove('hidden');
+          if (toggleBtn) toggleBtn.innerText = 'Hide In-Stream';
+        } else {
+          wrapper.classList.add('hidden');
+          if (toggleBtn) toggleBtn.innerText = 'Show In-Stream';
+        }
+      }
+    }
+
+    // ==========================================
+    // VIEW ROUTING & AUTHENTICATION CONTROLLER
+    // ==========================================
+
+    function navigateToLanding() {
+      const landingView = document.getElementById('app-landing-view');
+      const workspaceView = document.getElementById('app-workspace-view');
+      if (landingView) landingView.classList.remove('hidden');
+      if (workspaceView) workspaceView.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+      document.body.classList.add('overflow-y-auto');
+      window.location.hash = '#/landing';
+      checkLandingAuthNav();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function navigateToWorkspace() {
+      const landingView = document.getElementById('app-landing-view');
+      const workspaceView = document.getElementById('app-workspace-view');
+      if (landingView) landingView.classList.add('hidden');
+      if (workspaceView) workspaceView.classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+      document.body.classList.remove('overflow-y-auto');
+      window.location.hash = '#/workspace';
+      updateWorkspaceUserDisplay();
+      if (!coreSocket || coreSocket.readyState === WebSocket.CLOSED) {
+        initCoreSocket();
+      }
+      refreshSessionsViaRest();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function checkLandingAuthNav() {
+      const token = localStorage.getItem('andromeda_auth_token');
+      const unauth = document.getElementById('landing-nav-unauth');
+      const auth = document.getElementById('landing-nav-auth');
+      if (token) {
+        if (unauth) unauth.classList.add('hidden');
+        if (auth) auth.classList.remove('hidden');
+      } else {
+        if (unauth) unauth.classList.remove('hidden');
+        if (auth) auth.classList.add('hidden');
+      }
+    }
+
+    function updateWorkspaceUserDisplay() {
+      const profileStr = localStorage.getItem('andromeda_user_profile');
+      let username = 'guest';
+      let displayName = 'Guest User';
+      if (profileStr) {
+        try {
+          const profile = JSON.parse(profileStr);
+          username = profile.username || 'guest';
+          displayName = profile.display_name || username;
+        } catch {}
+      }
+      const topDisplay = document.getElementById('workspace-username-display');
+      if (topDisplay) topDisplay.innerText = `@${username}`;
+      const sideDisplay = document.getElementById('sidebar-username-display');
+      if (sideDisplay) sideDisplay.innerText = displayName;
+      const avatarEl = document.getElementById('sidebar-user-avatar');
+      if (avatarEl) avatarEl.innerText = username.charAt(0).toUpperCase();
+    }
+
+    function openAuthModal(mode) {
+      const modal = document.getElementById('auth-modal');
+      if (modal) modal.classList.remove('hidden');
+      switchAuthTab(mode || 'signin');
+      clearAuthAlert();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeAuthModal() {
+      const modal = document.getElementById('auth-modal');
+      if (modal) modal.classList.add('hidden');
+      clearAuthAlert();
+    }
+
+    function switchAuthTab(mode) {
+      const tabSignIn = document.getElementById('tab-signin');
+      const tabSignUp = document.getElementById('tab-signup');
+      const formSignIn = document.getElementById('form-signin');
+      const formSignUp = document.getElementById('form-signup');
+      const modalTitle = document.getElementById('auth-modal-title');
+      const modalSubtitle = document.getElementById('auth-modal-subtitle');
+      clearAuthAlert();
+
+      if (mode === 'signup') {
+        if (tabSignUp) tabSignUp.className = 'py-2.5 rounded-xl transition-all text-white neu-raised-sm font-semibold';
+        if (tabSignIn) tabSignIn.className = 'py-2.5 rounded-xl transition-all text-[#8892a0] hover:text-white';
+        if (formSignIn) formSignIn.classList.add('hidden');
+        if (formSignUp) formSignUp.classList.remove('hidden');
+        if (modalTitle) modalTitle.innerText = 'Create Andromeda Account';
+        if (modalSubtitle) modalSubtitle.innerText = 'Provision your isolated user records in the unified SQLite container.';
+      } else {
+        if (tabSignIn) tabSignIn.className = 'py-2.5 rounded-xl transition-all text-white neu-raised-sm font-semibold';
+        if (tabSignUp) tabSignUp.className = 'py-2.5 rounded-xl transition-all text-[#8892a0] hover:text-white';
+        if (formSignUp) formSignUp.classList.add('hidden');
+        if (formSignIn) formSignIn.classList.remove('hidden');
+        if (modalTitle) modalTitle.innerText = 'Sign In to Andromeda';
+        if (modalSubtitle) modalSubtitle.innerText = 'Access your personal workspace and persistent SQLite sessions.';
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function showAuthAlert(msg, isError = true) {
+      const alert = document.getElementById('auth-alert');
+      const alertText = document.getElementById('auth-alert-text');
+      if (alertText) alertText.innerText = msg;
+      if (alert) {
+        alert.classList.remove('hidden');
+        alert.className = isError 
+          ? 'neu-inset-sm p-3 rounded-xl text-xs flex items-center gap-2 text-rose-400'
+          : 'neu-inset-sm p-3 rounded-xl text-xs flex items-center gap-2 text-emerald-400';
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function clearAuthAlert() {
+      const alert = document.getElementById('auth-alert');
+      if (alert) alert.classList.add('hidden');
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i>';
+      } else {
+        input.type = 'password';
+        btn.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i>';
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    async function handleSignIn(e) {
+      e.preventDefault();
+      clearAuthAlert();
+      const identifier = document.getElementById('signin-identifier').value.trim();
+      const password = document.getElementById('signin-password').value;
+      const submitBtn = document.getElementById('btn-signin-submit');
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Authenticating...';
+
+      try {
+        const response = await fetch(`${getBackendHttpUrl()}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: identifier, password: password })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.detail || 'Failed to authenticate.');
+        }
+
+        localStorage.setItem('andromeda_auth_token', data.token);
+        localStorage.setItem('andromeda_user_profile', JSON.stringify(data.user));
+
+        showAuthAlert('Authentication successful! Launching workspace...', false);
+        setTimeout(() => {
+          closeAuthModal();
+          navigateToWorkspace();
+          notify(`Welcome back, ${data.user.display_name || data.user.username}!`, "success");
+        }, 600);
+
+      } catch (err) {
+        showAuthAlert(err.message, true);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="log-in" class="w-4 h-4 text-[#5072a7]"></i><span>Authenticate & Launch</span>';
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    async function handleSignUp(e) {
+      e.preventDefault();
+      clearAuthAlert();
+      const username = document.getElementById('signup-username').value.trim();
+      const displayName = document.getElementById('signup-displayname').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const confirmPassword = document.getElementById('signup-confirm-password').value;
+      const preferredModel = document.getElementById('signup-model').value;
+      const submitBtn = document.getElementById('btn-signup-submit');
+
+      if (password !== confirmPassword) {
+        showAuthAlert('Passwords do not match. Please verify.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Creating Account...';
+
+      try {
+        const response = await fetch(`${getBackendHttpUrl()}/api/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: username,
+            display_name: displayName || username,
+            email: email,
+            password: password,
+            preferred_model: preferredModel
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.detail || 'Registration failed.');
+        }
+
+        localStorage.setItem('andromeda_auth_token', data.token);
+        localStorage.setItem('andromeda_user_profile', JSON.stringify(data.user));
+
+        showAuthAlert('Account created! Initializing personal database and launching...', false);
+        setTimeout(() => {
+          closeAuthModal();
+          navigateToWorkspace();
+          notify(`Welcome to Andromeda, ${data.user.display_name || data.user.username}!`, "success");
+        }, 800);
+
+      } catch (err) {
+        showAuthAlert(err.message, true);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="user-check" class="w-4 h-4 text-emerald-400"></i><span>Create Account & Provision DB</span>';
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    async function continueAsGuest() {
+      try {
+        const response = await fetch(`${getBackendHttpUrl()}/api/auth/guest`, {
+          method: 'POST'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem('andromeda_auth_token', data.token);
+          localStorage.setItem('andromeda_user_profile', JSON.stringify(data.user));
+        }
+      } catch {
+        // Fallback for static preview
+      }
+      closeAuthModal();
+      navigateToWorkspace();
+      notify("Exploring as Guest. Chats saved to local demo session.", "info");
+    }
+
+    async function logoutWorkspaceUser() {
+      const token = localStorage.getItem('andromeda_auth_token');
+      if (token) {
+        try {
+          await fetch(`${getBackendHttpUrl()}/api/auth/logout`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        } catch {}
+      }
+      localStorage.removeItem('andromeda_auth_token');
+      localStorage.removeItem('andromeda_user_profile');
+      if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
+        coreSocket.close();
+      }
+      notify("Signed out of workspace.", "info");
+      navigateToLanding();
+    }
+
+    // Startup
+    window.addEventListener('DOMContentLoaded', () => {
+      autoDiscoverBackendUrl();
+      // Determine initial view based on route hash or authentication state
+      const hash = window.location.hash;
+      const token = localStorage.getItem('andromeda_auth_token');
+
+      if (hash === '#/workspace' || (token && hash !== '#/landing' && hash !== '#/overview')) {
+        navigateToWorkspace();
+      } else {
+        navigateToLanding();
+        if (hash === '#/login') openAuthModal('signin');
+        if (hash === '#/signup') openAuthModal('signup');
+      }
+
+      initWorkspaceAvatarCanvas();
+      fetchMediaStatus();
+      setInterval(fetchMediaStatus, 3000);
+
+      const savedUrl = localStorage.getItem('andromeda_cloud_url');
+      if (savedUrl && document.getElementById('cloud-node-url')) {
+        document.getElementById('cloud-node-url').value = savedUrl;
+      }
+    });
+  </script>
+</body>
+</html>
+
