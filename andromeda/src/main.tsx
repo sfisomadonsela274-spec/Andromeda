@@ -43,8 +43,6 @@ export function hideReactCosmicDeck() {
 (window as any).showReactCosmicDeck = showReactCosmicDeck;
 (window as any).hideReactCosmicDeck = hideReactCosmicDeck;
 
-if (window.location.hash === '#/cosmic-deck' || window.location.hash === '#/react') {
-  showReactCosmicDeck();
-}
+// Cosmic Deck prototype temporarily deferred until complete
 
 console.log('Andromeda React Cosmic Core mounted.');
