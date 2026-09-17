@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend source and host controller modules
 COPY andromeda/backend /app/andromeda/backend
-COPY media_controller.py /app/media_controller.py
+COPY andromeda/backend/media_controller.py /app/media_controller.py
 
 
 # Create persistent data directory

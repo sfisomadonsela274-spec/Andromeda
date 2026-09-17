@@ -6,10 +6,12 @@
 Combines synergistic image processing and hardware intelligence:
   1. Camera & EXIF Extraction: Origin Phone, Camera Sensor, ISO, Aperture, Lens.
   2. Screen Size & DPI Maximizer: Adapts upscaling factor to native viewport.
-  3. Sensor-Aware Denoising: Bilateral filtering tailored to smartphone grain.
-  4. Dynamic Range Balance: OpenCV CLAHE in LAB Color Space (L-channel).
-  5. Neural Super-Resolution: Real-ESRGAN NCNN Vulkan binary acceleration.
-  6. Visual Critique: Moondream (The Sentinel) hardware-calibrated critique.
+  3. Pre-Scaling Aspect Ratio Crop: Discards redundant pixels before shaders.
+  4. Sensor-Aware Denoising: Bilateral filtering tailored to smartphone grain.
+  5. Dynamic Range Balance: OpenCV CLAHE strictly on LAB L-channel.
+  6. Neural Super-Resolution: Real-ESRGAN NCNN Vulkan binary (tiled -t 400, -j 1:2:2).
+  7. Fit-to-Display Downsampling: Lanczos4 WebP (Q88) preventing browser VRAM crashes.
+  8. Visual Critique: Moondream (The Sentinel) via INT4 GGUF on downscaled 512px thumbnail.
 =============================================================================
 """
 
@@ -20,6 +22,7 @@ import time
 import base64
 import shutil
 import argparse
+import threading
 import subprocess
 import urllib.request
 import urllib.error
@@ -36,6 +39,9 @@ DEFAULT_MODELS_DIR = os.path.expanduser("/home/sfiso/ai-agent/bin/realesrgan/mod
 DEFAULT_OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
 
 SUPPORTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff"}
+
+# Process-wide GPU mutex to prevent concurrent compute shader collisions on GTX 1070
+_ESRGAN_GPU_LOCK = threading.Lock()
 
 
 # =============================================================================
@@ -206,12 +212,74 @@ def calculate_adaptive_params(
                 "fit_scale_factor": round(factor, 2)
             }
             tuning["reasons"].append(
-                f"Target Screen Maximizer: {effective_tw}x{effective_th} ({dpr}x DPR) &rarr; Selected {calc_scale}x super-resolution."
+                f"Target Screen Maximizer: {effective_tw}x{effective_th} ({dpr}x DPR) → Selected {calc_scale}x super-resolution."
             )
         except Exception:
             pass
 
     return tuning
+
+
+def crop_to_aspect_ratio(
+    image: np.ndarray,
+    target_aspect: Optional[str] = "16:9"
+) -> Tuple[np.ndarray, Dict[str, Any]]:
+    """
+    Center-crops an image to target aspect ratio (e.g. '16:9', '20:9', '9:16', '4:3', '1:1')
+    before neural super-resolution. This discards ~25% of useless pixels before they hit
+    the compute shader pipeline, speeding up inference and reducing VRAM usage.
+    """
+    if image is None or image.size == 0 or not target_aspect or str(target_aspect).lower() in ("original", "none", "auto", ""):
+        return image, {"applied": False}
+
+    h, w = image.shape[:2]
+    aspect_map = {
+        "16:9": 16.0 / 9.0,
+        "20:9": 20.0 / 9.0,
+        "19.5:9": 19.5 / 9.0,
+        "9:16": 9.0 / 16.0,
+        "9:20": 9.0 / 20.0,
+        "4:3": 4.0 / 3.0,
+        "3:4": 3.0 / 4.0,
+        "1:1": 1.0,
+    }
+
+    target_ratio = aspect_map.get(str(target_aspect).strip())
+    if target_ratio is None:
+        try:
+            parts = str(target_aspect).split(":")
+            if len(parts) == 2:
+                target_ratio = float(parts[0]) / float(parts[1])
+            else:
+                return image, {"applied": False}
+        except Exception:
+            return image, {"applied": False}
+
+    current_ratio = w / h
+    if abs(current_ratio - target_ratio) < 0.01:
+        return image, {"applied": False, "target_aspect": target_aspect}
+
+    if current_ratio > target_ratio:
+        # Too wide: crop left & right
+        new_w = int(h * target_ratio)
+        offset_x = (w - new_w) // 2
+        cropped = image[:, offset_x:offset_x + new_w]
+    else:
+        # Too tall: crop top & bottom
+        new_h = int(w / target_ratio)
+        offset_y = (h - new_h) // 2
+        cropped = image[offset_y:offset_y + new_h, :]
+
+    new_h, new_w = cropped.shape[:2]
+    discarded_pct = round((1.0 - (new_w * new_h) / (w * h)) * 100, 1)
+
+    return cropped, {
+        "applied": True,
+        "target_aspect": target_aspect,
+        "original_dimensions": [w, h],
+        "cropped_dimensions": [new_w, new_h],
+        "pixels_discarded_percent": discarded_pct
+    }
 
 
 def apply_bilateral_denoise(image: np.ndarray, sigma_color: int = 35, sigma_space: int = 15) -> np.ndarray:
@@ -225,33 +293,41 @@ def apply_bilateral_denoise(image: np.ndarray, sigma_color: int = 35, sigma_spac
 
 
 # =============================================================================
-# 🎨 STEP 2: OPENCV CLAHE IN LAB COLOR SPACE
+# 🎨 STEP 2: OPENCV CLAHE STRICTLY IN LAB LIGHTNESS CHANNEL
 # =============================================================================
 
-def apply_clahe_lab(
-    image: np.ndarray,
+def apply_lab_clahe(
+    bgr_image: np.ndarray,
     clip_limit: float = 2.0,
     tile_grid_size: Tuple[int, int] = (8, 8)
 ) -> np.ndarray:
     """
-    Applies Contrast Limited Adaptive Histogram Equalization (CLAHE)
-    to the Lightness (L) channel in LAB color space.
+    Contrast-Limited Adaptive Histogram Equalization strictly on the L (Lightness)
+    channel in LAB color space. Color channels (a, b) remain completely untouched,
+    preventing chromatic noise distortion and color shifting.
     """
-    if image is None or image.size == 0:
-        raise ValueError("Invalid or empty image array passed to apply_clahe_lab.")
+    if bgr_image is None or bgr_image.size == 0:
+        raise ValueError("Invalid or empty image array passed to apply_lab_clahe.")
 
-    lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-    l_channel, a_channel, b_channel = cv2.split(lab)
+    # Convert BGR to LAB
+    lab = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
 
+    # Apply CLAHE strictly to the Lightness channel
     clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
-    cl = clahe.apply(l_channel)
+    cl = clahe.apply(l)
 
-    balanced_lab = cv2.merge((cl, a_channel, b_channel))
-    return cv2.cvtColor(balanced_lab, cv2.COLOR_LAB2BGR)
+    # Merge channels back
+    limg = cv2.merge((cl, a, b))
+    return cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+
+
+# Alias for backward compatibility
+apply_clahe_lab = apply_lab_clahe
 
 
 # =============================================================================
-# 🚀 STEP 3: REAL-ESRGAN NCNN VULKAN SUPER-RESOLUTION
+# 🚀 STEP 3: REAL-ESRGAN NCNN VULKAN SUPER-RESOLUTION (TILED & THREADED)
 # =============================================================================
 
 def resolve_binary_and_models(binary_path: str = DEFAULT_BINARY_PATH, models_dir: str = DEFAULT_MODELS_DIR) -> Tuple[Optional[str], Optional[str]]:
@@ -279,9 +355,16 @@ def run_realesrgan(
     output_path: str,
     scale: int = 4,
     model_name: str = "realesrgan-x4plus",
+    tile_size: int = 400,
+    threads: str = "1:2:2",
     binary_path: str = DEFAULT_BINARY_PATH,
     models_dir: str = DEFAULT_MODELS_DIR
 ) -> Dict[str, Any]:
+    """
+    Executes Real-ESRGAN NCNN Vulkan binary with shader tile constraints (-t 400/512)
+    and load:proc:save thread allocation (-j 1:2:2).
+    Serialized with _ESRGAN_GPU_LOCK to avoid GPU driver timeouts (TDR) and VRAM exhaustion.
+    """
     resolved_bin, resolved_models = resolve_binary_and_models(binary_path, models_dir)
 
     if resolved_bin and resolved_models:
@@ -290,11 +373,14 @@ def run_realesrgan(
             "-i", str(input_path),
             "-o", str(output_path),
             "-s", str(scale),
+            "-t", str(tile_size),
+            "-j", str(threads),
             "-m", str(resolved_models),
             "-n", str(model_name)
         ]
         start_t = time.time()
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        with _ESRGAN_GPU_LOCK:
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         elapsed_ms = round((time.time() - start_t) * 1000, 2)
 
         if result.returncode == 0 and os.path.exists(output_path):
@@ -303,6 +389,8 @@ def run_realesrgan(
                 "scale": scale,
                 "model": model_name,
                 "engine": "Real-ESRGAN NCNN Vulkan",
+                "tile_size": tile_size,
+                "threads": threads,
                 "elapsed_ms": elapsed_ms,
                 "output_path": output_path
             }
@@ -329,7 +417,103 @@ def run_realesrgan(
 
 
 # =============================================================================
-# 👁️ STEP 4: MOONDREAM (THE SENTINEL) HARDWARE-AWARE CRITIQUE
+# 🖼️ STEP 4: FIT-TO-DISPLAY DOWNSAMPLING & TILED DEEP-ZOOM
+# =============================================================================
+
+def generate_fit_to_display(
+    master_image_path: str,
+    display_output_path: str,
+    target_width: Optional[int] = None,
+    target_height: Optional[int] = None,
+    device_pixel_ratio: float = 1.0,
+    max_dimension: int = 2560,
+    webp_quality: int = 88,
+    apply_display_clahe: bool = True,
+    clahe_clip_limit: float = 1.8
+) -> Dict[str, Any]:
+    """
+    Downsamples the 128 MP master render via Lanczos-4 interpolation to client's native
+    viewport resolution, compressing as WebP (Quality 85-90).
+    Cuts network payload to under 2 MB and keeps browser decoded VRAM under 15 MB,
+    completely preventing browser GPU texture allocation crashes.
+    """
+    img = cv2.imread(str(master_image_path))
+    if img is None:
+        raise ValueError(f"Could not load master render image: {master_image_path}")
+
+    h, w = img.shape[:2]
+
+    if target_width and target_height:
+        eff_w = int(target_width * max(device_pixel_ratio, 1.0))
+        eff_h = int(target_height * max(device_pixel_ratio, 1.0))
+        scale_f = min(eff_w / w, eff_h / h, 1.0)
+        dw, dh = max(1, int(w * scale_f)), max(1, int(h * scale_f))
+    else:
+        scale_f = min(max_dimension / max(w, h), 1.0)
+        dw, dh = max(1, int(w * scale_f)), max(1, int(h * scale_f))
+
+    # Clamp to max_dimension for canvas texture safety
+    if max(dw, dh) > max_dimension:
+        cap = max_dimension / max(dw, dh)
+        dw, dh = max(1, int(dw * cap)), max(1, int(dh * cap))
+
+    # Lanczos-4 downsampling
+    downscaled = cv2.resize(img, (dw, dh), interpolation=cv2.INTER_LANCZOS4)
+
+    # Post-upscale LAB CLAHE strictly on L-channel for vibrant display dynamics
+    if apply_display_clahe and clahe_clip_limit > 0:
+        downscaled = apply_lab_clahe(downscaled, clip_limit=clahe_clip_limit)
+
+    Path(display_output_path).parent.mkdir(parents=True, exist_ok=True)
+    cv2.imwrite(
+        str(display_output_path),
+        downscaled,
+        [cv2.IMWRITE_WEBP_QUALITY, int(webp_quality)]
+    )
+
+    file_size = Path(display_output_path).stat().st_size
+    estimated_vram_mb = round((dw * dh * 4) / (1024 * 1024), 2)
+
+    return {
+        "path": str(display_output_path),
+        "filename": Path(display_output_path).name,
+        "dimensions": [dw, dh],
+        "file_size_bytes": file_size,
+        "estimated_vram_mb": estimated_vram_mb,
+        "webp_quality": webp_quality
+    }
+
+
+def extract_deep_zoom_tile(
+    master_image_path: str,
+    tile_x: int,
+    tile_y: int,
+    tile_size: int = 512,
+    webp_quality: int = 88
+) -> bytes:
+    """
+    Extracts an on-demand 512x512 tile from the 128 MP master render on disk,
+    encoding it directly into WebP bytes for deep-zoom client viewports.
+    """
+    with Image.open(master_image_path) as img:
+        w, h = img.size
+        left = tile_x * tile_size
+        top = tile_y * tile_size
+        right = min(left + tile_size, w)
+        bottom = min(top + tile_size, h)
+
+        if left >= w or top >= h or left < 0 or top < 0:
+            raise ValueError(f"Tile coordinates ({tile_x}, {tile_y}) out of bounds for image {w}x{h}")
+
+        cropped = img.crop((left, top, right, bottom))
+        import io
+        buf = io.BytesIO()
+        cropped.save(buf, format="WEBP", quality=webp_quality)
+        return buf.getvalue()
+
+
+# =============================================================================
+# 👁️ STEP 5: MOONDREAM (THE SENTINEL) INT4 HARDWARE-AWARE CRITIQUE
 # =============================================================================
 
 def critique_with_sentinel(
@@ -342,14 +526,33 @@ def critique_with_sentinel(
     """
     Calls Moondream (The Sentinel) via Ollama with keep_alive='2m' to review
     the enhanced image, factoring origin camera hardware context into its critique.
+    Downscales a lightweight 512px thumbnail to feed into the vision encoder (never raw 8MP/128MP).
     """
     host = (ollama_host or DEFAULT_OLLAMA_HOST).rstrip("/")
 
     if not os.path.exists(image_path):
         return {"status": "error", "error": f"Image file not found: {image_path}"}
 
-    with open(image_path, "rb") as f:
-        b64_image = base64.b64encode(f.read()).decode("utf-8")
+    # Downscale thumbnail for Moondream vision encoder (receptive field ~378x378 or 756x756)
+    # Never pass the raw 8 MP or 128 MP image directly into the vision encoder!
+    b64_image = None
+    try:
+        img = cv2.imread(str(image_path))
+        if img is not None and img.size > 0:
+            h, w = img.shape[:2]
+            max_dim = 512
+            scale_f = min(max_dim / max(w, h), 1.0)
+            tw, th = max(1, int(w * scale_f)), max(1, int(h * scale_f))
+            thumb = cv2.resize(img, (tw, th), interpolation=cv2.INTER_AREA)
+            ok, buf = cv2.imencode(".jpg", thumb, [cv2.IMWRITE_JPEG_QUALITY, 85])
+            if ok:
+                b64_image = base64.b64encode(buf).decode("utf-8")
+    except Exception:
+        pass
+
+    if not b64_image:
+        with open(image_path, "rb") as f:
+            b64_image = base64.b64encode(f.read()).decode("utf-8")
 
     # Build context-aware prompt based on camera metadata
     cam_str = ""
@@ -384,7 +587,11 @@ def critique_with_sentinel(
         "prompt": query_prompt,
         "images": [b64_image],
         "stream": False,
-        "keep_alive": "2m"
+        "keep_alive": "2m",
+        "options": {
+            "num_predict": 256,
+            "temperature": 0.3
+        }
     }
 
     start_t = time.time()
@@ -433,12 +640,23 @@ def spice_image(
     enable_critique: bool = True,
     target_screen: Optional[Dict[str, Any]] = None,
     auto_adaptive: bool = True,
+    tile_size: int = 400,
+    threads: str = "1:2:2",
+    crop_aspect: Optional[str] = None,
+    generate_display_webp: bool = True,
     binary_path: str = DEFAULT_BINARY_PATH,
     models_dir: str = DEFAULT_MODELS_DIR,
     ollama_host: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Executes the metadata-aware Andromeda Pixel Spicer pipeline.
+    Executes the metadata-aware Andromeda Pixel Spicer pipeline:
+      - Reads camera EXIF & target screen viewport.
+      - Optional pre-scaling aspect crop (discards ~25% useless pixels before shader).
+      - Bilateral denoising for smartphone sensor grain.
+      - Gentle pre-upscale CLAHE (clip_limit <= 1.4) to avoid amplifying sensor noise.
+      - Real-ESRGAN Vulkan NCNN with -t 400 tiling and -j 1:2:2 threading.
+      - Fit-to-Display downsampling via Lanczos4 WebP (Q88) preventing browser crashes.
+      - Moondream Sentinel critique with 512px thumbnail downscaling.
     """
     total_start = time.time()
     input_file = Path(input_path).resolve()
@@ -465,7 +683,7 @@ def spice_image(
         actual_scale = adaptive_info["optimal_scale"]
         apply_denoise = adaptive_info["apply_denoise"]
 
-    # Determine output path
+    # Determine master output path
     if not output_path:
         out_stem = f"{input_file.stem}_spiced"
         output_path = str(input_file.parent / f"{out_stem}{input_file.suffix}")
@@ -477,6 +695,15 @@ def spice_image(
     orig_img = cv2.imread(str(input_file))
     if orig_img is None:
         raise ValueError(f"Could not decode image from file: {input_file}")
+
+    # Pre-scaling crop to discard useless pixels before shader pipeline
+    crop_metrics = {"applied": False}
+    if crop_aspect:
+        orig_img, crop_metrics = crop_to_aspect_ratio(orig_img, target_aspect=crop_aspect)
+        if crop_metrics.get("applied"):
+            adaptive_info.setdefault("reasons", []).append(
+                f"Pre-scaling Crop ({crop_aspect}): Discarded {crop_metrics.get('pixels_discarded_percent')}% useless pixels before shader pipeline."
+            )
 
     orig_h, orig_w, orig_c = orig_img.shape
     orig_size_bytes = input_file.stat().st_size
@@ -494,31 +721,35 @@ def spice_image(
             "duration_ms": den_elapsed_ms
         }
 
-    # 5. CLAHE Dynamic Range Balance
+    # 5. LAB CLAHE Dynamic Range Balance
+    # Pre-upscale CLAHE is clamped to gentle <= 1.4 to prevent amplifying raw sensor noise
+    # into false edges that Real-ESRGAN would mistake for edge detail.
     clahe_metrics = {"applied": False}
     temp_clahe_path = output_file.parent / f".tmp_clahe_{input_file.name}"
+    pre_clip_limit = min(effective_clip_limit, 1.4) if enable_clahe else 0.0
 
-    if enable_clahe:
+    if enable_clahe and pre_clip_limit > 0:
         t_clahe_start = time.time()
-        balanced_img = apply_clahe_lab(processed_img, clip_limit=effective_clip_limit, tile_grid_size=tile_grid_size)
+        balanced_img = apply_lab_clahe(processed_img, clip_limit=pre_clip_limit, tile_grid_size=tile_grid_size)
         cv2.imwrite(str(temp_clahe_path), balanced_img)
         clahe_elapsed_ms = round((time.time() - t_clahe_start) * 1000, 2)
         clahe_metrics = {
             "applied": True,
-            "color_space": "LAB",
-            "clip_limit": effective_clip_limit,
+            "color_space": "LAB (L-Channel strictly)",
+            "pre_clip_limit": pre_clip_limit,
+            "display_clip_limit": effective_clip_limit,
             "tile_grid_size": list(tile_grid_size),
             "duration_ms": clahe_elapsed_ms
         }
         upscale_source = str(temp_clahe_path)
     else:
-        if apply_denoise:
+        if crop_metrics.get("applied") or apply_denoise:
             cv2.imwrite(str(temp_clahe_path), processed_img)
             upscale_source = str(temp_clahe_path)
         else:
             upscale_source = str(input_file)
 
-    # 6. Super-Resolution via Real-ESRGAN
+    # 6. Super-Resolution via Real-ESRGAN Vulkan (Tiled & Mutex-Protected)
     esrgan_metrics = {"applied": False}
     try:
         if enable_upscale:
@@ -527,6 +758,8 @@ def spice_image(
                 output_path=str(output_file),
                 scale=actual_scale,
                 model_name=model_name,
+                tile_size=tile_size,
+                threads=threads,
                 binary_path=binary_path,
                 models_dir=models_dir
             )
@@ -534,6 +767,8 @@ def spice_image(
                 "applied": True,
                 "scale": actual_scale,
                 "model": model_name,
+                "tile_size": tile_size,
+                "threads": threads,
                 "duration_ms": esrgan_result["elapsed_ms"]
             }
         else:
@@ -545,16 +780,35 @@ def spice_image(
             except Exception:
                 pass
 
-    # Inspect enhanced output
+    # Inspect master enhanced output
     enhanced_img = cv2.imread(str(output_file))
     enh_h, enh_w = (enhanced_img.shape[0], enhanced_img.shape[1]) if enhanced_img is not None else (orig_h * actual_scale, orig_w * actual_scale)
     enh_size_bytes = output_file.stat().st_size if output_file.exists() else 0
 
-    # 7. Moondream Sentinel Visual Critique with hardware context
+    # 7. Fit-to-Display Downsampling (Lanczos-4 WebP Q88) to prevent browser texture crash
+    display_info = {}
+    display_file = output_file.parent / f"{output_file.stem}_display.webp"
+    if generate_display_webp and output_file.exists():
+        disp_tw = target_screen.get("width") if target_screen else None
+        disp_th = target_screen.get("height") if target_screen else None
+        disp_dpr = float(target_screen.get("device_pixel_ratio", 1.0)) if target_screen else 1.0
+        display_info = generate_fit_to_display(
+            master_image_path=str(output_file),
+            display_output_path=str(display_file),
+            target_width=disp_tw,
+            target_height=disp_th,
+            device_pixel_ratio=disp_dpr,
+            max_dimension=2560,
+            webp_quality=88,
+            apply_display_clahe=enable_clahe,
+            clahe_clip_limit=effective_clip_limit
+        )
+
+    # 8. Moondream Sentinel Visual Critique with hardware context & 512px thumbnail downscaling
     sentinel_critique = {}
     if enable_critique:
         sentinel_critique = critique_with_sentinel(
-            image_path=str(output_file),
+            image_path=str(display_file if display_file.exists() else output_file),
             camera_metadata=metadata,
             target_screen=target_screen,
             ollama_host=ollama_host
@@ -562,23 +816,27 @@ def spice_image(
 
     total_duration_ms = round((time.time() - total_start) * 1000, 2)
 
-    # 8. Compile Complete Response Dictionary
+    # 9. Compile Complete Response Dictionary
     result_dict: Dict[str, Any] = {
         "status": "success",
         "input": {
             "path": str(input_file),
             "filename": input_file.name,
-            "dimensions": f"{orig_w}x{orig_h}",
+            "dimensions": [orig_w, orig_h],
             "size_bytes": orig_size_bytes
         },
         "output": {
             "path": str(output_file),
             "filename": output_file.name,
-            "dimensions": f"{enh_w}x{enh_h}",
+            "dimensions": [enh_w, enh_h],
             "size_bytes": enh_size_bytes
         },
+        "display": display_info,
+        "output_image": str(output_file),
+        "display_image": str(display_file) if display_file.exists() else str(output_file),
         "camera_metadata": metadata,
         "adaptive_tuning": adaptive_info,
+        "aspect_crop": crop_metrics,
         "denoise": denoise_metrics,
         "clahe": clahe_metrics,
         "super_resolution": esrgan_metrics,
@@ -605,6 +863,10 @@ class PixelSpicer:
     extract_image_metadata = staticmethod(extract_image_metadata)
     calculate_adaptive_params = staticmethod(calculate_adaptive_params)
     apply_clahe_lab = staticmethod(apply_clahe_lab)
+    apply_lab_clahe = staticmethod(apply_lab_clahe)
+    crop_to_aspect_ratio = staticmethod(crop_to_aspect_ratio)
+    generate_fit_to_display = staticmethod(generate_fit_to_display)
+    extract_deep_zoom_tile = staticmethod(extract_deep_zoom_tile)
     run_realesrgan = staticmethod(run_realesrgan)
     critique_with_sentinel = staticmethod(critique_with_sentinel)
 
@@ -622,6 +884,9 @@ def main():
     parser.add_argument("-o", "--output", help="Path to output enhanced image")
     parser.add_argument("-s", "--scale", type=int, default=4, choices=[2, 3, 4], help="Upscale factor (default: 4)")
     parser.add_argument("-m", "--model", default="realesrgan-x4plus", help="Real-ESRGAN model name (default: realesrgan-x4plus)")
+    parser.add_argument("-t", "--tile-size", type=int, default=400, help="Tile size for Vulkan compute shaders (default: 400)")
+    parser.add_argument("-j", "--threads", default="1:2:2", help="Thread count for load:proc:save (default: 1:2:2)")
+    parser.add_argument("--crop-aspect", default=None, help="Target aspect ratio to pre-crop (e.g. 16:9, 20:9, 9:16)")
     parser.add_argument("--clip-limit", type=float, default=2.0, help="CLAHE clip limit (default: 2.0)")
     parser.add_argument("--screen-w", type=int, default=None, help="Target screen width (e.g. 1920, 3840)")
     parser.add_argument("--screen-h", type=int, default=None, help="Target screen height (e.g. 1080, 2160)")
@@ -643,6 +908,9 @@ def main():
             output_path=args.output,
             scale=args.scale,
             model_name=args.model,
+            tile_size=args.tile_size,
+            threads=args.threads,
+            crop_aspect=args.crop_aspect,
             clip_limit=args.clip_limit,
             target_screen=target_screen,
             auto_adaptive=not args.no_adaptive,
@@ -659,8 +927,10 @@ def main():
         if cam.get("iso"):
             print(f"⚙️  Optical Specs:  ISO {cam.get('iso')} • f/{cam.get('f_number')} • {cam.get('focal_length')}mm • {cam.get('exposure_time')}")
         print(f"📁 Source:         {res['input']['path']} ({res['input']['dimensions']})")
-        print(f"✨ Enhanced:       {res['output']['path']} ({res['output']['dimensions']})")
-        print(f"🚀 Neural Upscale: {res['super_resolution']['duration_ms']} ms ({res['super_resolution']['scale']}x)")
+        print(f"✨ Master Render:  {res['output']['path']} ({res['output']['dimensions']})")
+        if res.get("display", {}).get("path"):
+            print(f"🖥️ Fit-to-Display: {res['display']['path']} ({res['display']['dimensions']}) ~{res['display'].get('estimated_vram_mb')} MB VRAM")
+        print(f"🚀 Neural Upscale: {res['super_resolution'].get('duration_ms', 0)} ms ({res['super_resolution'].get('scale', args.scale)}x)")
         print(f"⏱️ Total Time:     {res['total_duration_ms']} ms")
         if res.get("adaptive_tuning", {}).get("reasons"):
             print("-" * 70)

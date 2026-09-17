@@ -35,11 +35,29 @@ interface AdaptiveTuning {
 interface EnhanceResponse {
   status: string;
   output_file?: string;
+  output_image?: string;
   filename?: string;
   download_url: string;
+  display_url?: string;
+  tile_base_url?: string;
   image_base64?: string;
+  display?: {
+    path?: string;
+    filename?: string;
+    dimensions?: [number, number];
+    file_size_bytes?: number;
+    estimated_vram_mb?: number;
+    webp_quality?: number;
+  };
   original_resolution?: string | [number, number];
   enhanced_resolution?: string | [number, number];
+  aspect_crop?: {
+    applied?: boolean;
+    target_aspect?: string;
+    original_dimensions?: [number, number];
+    cropped_dimensions?: [number, number];
+    pixels_discarded_percent?: number;
+  };
   sentinel_critique?: string;
   critique?: string;
   scale?: number;
@@ -57,13 +75,18 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
   const [originalDimensions, setOriginalDimensions] = useState<{ w: number; h: number } | null>(null);
   const [scale, setScale] = useState<number>(4);
   const [model, setModel] = useState<string>('realesrgan-x4plus');
+  const [cropAspect, setCropAspect] = useState<string>('original');
   const [autoAdaptive, setAutoAdaptive] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingStage, setLoadingStage] = useState<string>('');
   const [result, setResult] = useState<EnhanceResponse | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'enhanced' | 'split' | 'original'>('split');
+  const [viewMode, setViewMode] = useState<'enhanced' | 'split' | 'original' | 'deep_zoom'>('split');
   const [isDragging, setIsDragging] = useState<boolean>(false);
+
+  // Deep-Zoom Tile state
+  const [tileX, setTileX] = useState<number>(0);
+  const [tileY, setTileY] = useState<number>(0);
 
   // Screen metrics
   const [screenWidth, setScreenWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1920);
@@ -121,16 +144,19 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
     setErrorMsg(null);
     setResult(null);
 
-    setLoadingStage('Step 1/4: Reading Phone/Camera EXIF metadata & display viewport...');
+    setLoadingStage('Step 1/5: Extracting Camera Hardware EXIF & Display Viewport...');
     const t1 = setTimeout(() => {
-      setLoadingStage('Step 2/4: Bilateral sensor noise filtering & LAB CLAHE dynamic range balance...');
-    }, 1500);
+      setLoadingStage('Step 2/5: Bilateral Sensor Noise Filtering & Aspect Pre-Crop...');
+    }, 1200);
     const t2 = setTimeout(() => {
-      setLoadingStage('Step 3/4: Real-ESRGAN Vulkan NCNN Neural Super-Resolution on host GPU...');
-    }, 3200);
+      setLoadingStage('Step 3/5: Real-ESRGAN Vulkan NCNN (-t 400 tile, -j 1:2:2 thread)...');
+    }, 2800);
     const t3 = setTimeout(() => {
-      setLoadingStage('Step 4/4: Moondream Sentinel evaluating optical clarity against camera limits...');
-    }, 5200);
+      setLoadingStage('Step 4/5: Lanczos4 Fit-to-Display WebP Downsampling (VRAM safe)...');
+    }, 4500);
+    const t4 = setTimeout(() => {
+      setLoadingStage('Step 5/5: Moondream Sentinel INT4 VLM Optical Hardware Critique...');
+    }, 6200);
 
     try {
       const res = await fetch('/api/spice/enhance', {
@@ -140,6 +166,9 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
           image_base64: previewUrl,
           scale: scale,
           model: model,
+          tile_size: 400,
+          threads: '1:2:2',
+          crop_aspect: cropAspect !== 'original' ? cropAspect : null,
           target_screen_width: screenWidth,
           target_screen_height: screenHeight,
           device_pixel_ratio: dpr,
@@ -152,6 +181,8 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
         throw new Error(data.error || data.detail || 'Enhancement pipeline failed.');
       }
       setResult(data);
+      setTileX(0);
+      setTileY(0);
     } catch (err: any) {
       console.error('Enhance error:', err);
       setErrorMsg(err.message || 'Failed to connect to /api/spice/enhance');
@@ -159,6 +190,7 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
+      clearTimeout(t4);
       setLoading(false);
       setLoadingStage('');
     }
@@ -170,7 +202,25 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
     setOriginalDimensions(null);
     setResult(null);
     setErrorMsg(null);
+    setTileX(0);
+    setTileY(0);
   };
+
+  // Safe display image source: uses downscaled WebP URL or WebP data URI (never raw 128 MP)
+  const displayEnhancedSrc = result
+    ? result.display_url || result.image_base64 || result.download_url
+    : '';
+
+  // Calculate master dimensions for Deep-Zoom tiles
+  const masterDims = result?.enhanced_resolution
+    ? Array.isArray(result.enhanced_resolution)
+      ? result.enhanced_resolution
+      : String(result.enhanced_resolution).split('x').map(Number)
+    : [4096, 3072];
+  const masterW = masterDims[0] || 4096;
+  const masterH = masterDims[1] || 3072;
+  const maxTileX = Math.max(0, Math.floor((masterW - 1) / 512));
+  const maxTileY = Math.max(0, Math.floor((masterH - 1) / 512));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
@@ -189,11 +239,11 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                   Pixel-Spicer & Moondream Sentinel
                 </h2>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                  Camera EXIF & Screen Maximizer
+                  GTX 1070 Vulkan & Display Safe
                 </span>
               </div>
               <p className="text-xs text-zinc-400">
-                Origin phone profile • Sensor-aware noise suppression • 4x Vulkan NCNN super-resolution
+                Fit-to-Display Lanczos4 • Tiled Real-ESRGAN (-t 400) • 128 MP Master On Disk
               </p>
             </div>
           </div>
@@ -250,7 +300,7 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                 Upload photo or drag and drop here
               </h3>
               <p className="text-xs text-zinc-400 mt-1.5 max-w-md mx-auto">
-                Andromeda automatically reads origin phone/camera EXIF (ISO, lens, aperture) and maximizes resolution for your target screen ({screenWidth}×{screenHeight} @ {dpr}x DPR).
+                Andromeda optimizes Real-ESRGAN shaders for your GTX 1070 and streams memory-safe Lanczos WebP for instant crash-free client rendering.
               </p>
               <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600/30 border border-purple-500/40 text-purple-200 text-xs font-medium shadow-md">
                 Browse Files
@@ -285,14 +335,14 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                     <div className="flex items-center gap-2">
                       <span className="text-purple-400">🖥️</span>
                       <div>
-                        <div className="font-semibold text-white text-[11px]">Display Maximizer</div>
+                        <div className="font-semibold text-white text-[11px]">Display Maximizer & Texture Guard</div>
                         <div className="text-[10px] text-zinc-400 font-mono">
-                          Target Viewport: {screenWidth}×{screenHeight} ({dpr}x DPR)
+                          Native Viewport: {screenWidth}×{screenHeight} ({dpr}x DPR) • VRAM &lt; 15 MB
                         </div>
                       </div>
                     </div>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-600/40 text-purple-200">
-                      Auto Maximized
+                      Safe WebP
                     </span>
                   </div>
 
@@ -301,7 +351,7 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                     <div>
                       <div className="text-xs font-medium text-white">Camera Hardware Optimization</div>
                       <div className="text-[10px] text-zinc-400">
-                        Adjusts denoising & CLAHE according to origin phone/camera sensor
+                        Calibrates noise suppression & gentle CLAHE according to origin sensor
                       </div>
                     </div>
                     <input
@@ -310,6 +360,40 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                       onChange={(e) => setAutoAdaptive(e.target.checked)}
                       className="w-4 h-4 accent-purple-500 cursor-pointer"
                     />
+                  </div>
+
+                  {/* Aspect Ratio Pre-Crop */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-mono uppercase text-zinc-400 block">
+                        Aspect Ratio Pre-Crop (Vulkan Shader Boost)
+                      </label>
+                      <span className="text-[10px] text-emerald-400 font-mono">
+                        {cropAspect !== 'original' ? '⚡ Discards ~25% pixels' : 'Full Frame'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { id: 'original', label: 'Original', desc: 'No crop' },
+                        { id: '16:9', label: '16:9', desc: 'Desktop / TV' },
+                        { id: '20:9', label: '20:9', desc: 'Mobile Screen' },
+                        { id: '9:16', label: '9:16', desc: 'Vertical Story' },
+                      ].map((asp) => (
+                        <button
+                          key={asp.id}
+                          type="button"
+                          onClick={() => setCropAspect(asp.id)}
+                          className={`p-2.5 rounded-xl border text-left transition-all ${
+                            cropAspect === asp.id
+                              ? 'bg-purple-900/40 border-purple-500 text-white shadow-[0_0_12px_rgba(168,85,247,0.2)]'
+                              : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
+                          }`}
+                        >
+                          <div className="text-xs font-bold">{asp.label}</div>
+                          <div className="text-[9px] text-zinc-400 mt-0.5 truncate">{asp.desc}</div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Scale Selector */}
@@ -329,7 +413,7 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                         <div className="text-sm font-bold">4x Ultra HD</div>
                         <div className="text-[10px] text-zinc-400 mt-0.5">
                           {originalDimensions
-                            ? `${originalDimensions.w * 4} × ${originalDimensions.h * 4} px`
+                            ? `${originalDimensions.w * 4} × ${originalDimensions.h * 4} px (~128 MP)`
                             : '400% Super-Sample'}
                         </div>
                       </button>
@@ -354,7 +438,7 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                   {/* Model Engine */}
                   <div>
                     <label className="text-xs font-mono uppercase text-zinc-400 block mb-1.5">
-                      Vulkan Neural Model
+                      Vulkan Neural Model (Tile: 400 • Thread: 1:2:2)
                     </label>
                     <select
                       value={model}
@@ -376,7 +460,7 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                       {loading ? (
                         <>
                           <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span>Enhancing with Hardware Tuning...</span>
+                          <span>Processing on GTX 1070...</span>
                         </>
                       ) : (
                         <>
@@ -398,7 +482,7 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                   {loading && (
                     <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-500/30 text-xs text-purple-200 animate-pulse flex items-center gap-2">
                       <span>🔮</span>
-                      <span>{loadingStage || 'Reading camera EXIF and initiating Vulkan NCNN...'}</span>
+                      <span>{loadingStage || 'Initiating Vulkan shader tile pipeline...'}</span>
                     </div>
                   )}
                 </div>
@@ -463,15 +547,17 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                   </div>
 
                   {/* Target Screen Maximization Match */}
-                  {result.adaptive_tuning?.target_screen_match && (
-                    <div className="text-right">
-                      <div className="text-[10px] font-mono text-zinc-400">Target Screen Maximized</div>
-                      <div className="text-xs font-bold text-emerald-400 font-mono">
-                        {result.adaptive_tuning.target_screen_match.target_effective_res?.[0]} ×{' '}
-                        {result.adaptive_tuning.target_screen_match.target_effective_res?.[1]} px
-                      </div>
+                  <div className="text-right space-y-1">
+                    <div className="text-[10px] font-mono text-zinc-400">
+                      Fit-to-Display Rendered
                     </div>
-                  )}
+                    <div className="text-xs font-bold text-emerald-400 font-mono">
+                      {result.display?.dimensions?.[0] || '1920'} × {result.display?.dimensions?.[1] || '1080'} px (WebP Q88)
+                    </div>
+                    <div className="text-[9px] font-mono text-zinc-500">
+                      Decoded VRAM: ~{result.display?.estimated_vram_mb || '11'} MB • Texture Safe
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -509,7 +595,16 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                         viewMode === 'enhanced' ? 'bg-purple-600 text-white' : 'text-zinc-400 hover:text-white'
                       }`}
                     >
-                      Enhanced ({result.scale || scale}x)
+                      Fit-to-Display ({result.scale || scale}x)
+                    </button>
+                    <button
+                      onClick={() => setViewMode('deep_zoom')}
+                      className={`px-3 py-1 rounded-lg transition-colors flex items-center gap-1 ${
+                        viewMode === 'deep_zoom' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      <span>🔍</span>
+                      <span>Deep-Zoom (100% Tile)</span>
                     </button>
                     <button
                       onClick={() => setViewMode('original')}
@@ -529,8 +624,8 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                       : result.original_resolution || 'Original'}
                   </span>
                   <span className="text-purple-400 font-bold">&rarr;</span>
-                  <span className="px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-bold">
-                    {Array.isArray(result.enhanced_resolution)
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-bold" title="Full 128 MP Master on disk">
+                    Master: {Array.isArray(result.enhanced_resolution)
                       ? `${result.enhanced_resolution[0]} × ${result.enhanced_resolution[1]}`
                       : result.enhanced_resolution || 'Enhanced'}
                   </span>
@@ -553,25 +648,82 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                     </div>
                     <div className="w-1/2 h-full relative overflow-hidden flex items-center justify-center bg-black/60">
                       <img
-                        src={result.image_base64 || result.download_url}
+                        src={displayEnhancedSrc}
                         alt="Enhanced"
                         className="max-h-full max-w-full object-contain"
                       />
                       <span className="absolute top-2 right-2 px-2 py-0.5 rounded bg-emerald-950/80 text-[10px] font-mono text-emerald-300 border border-emerald-500/30">
-                        {result.scale || scale}x Enhanced (Vulkan NCNN)
+                        Fit-to-Display WebP ({result.scale || scale}x)
                       </span>
                     </div>
                   </div>
                 ) : viewMode === 'enhanced' ? (
                   <div className="w-full h-full flex items-center justify-center relative">
                     <img
-                      src={result.image_base64 || result.download_url}
+                      src={displayEnhancedSrc}
                       alt="Enhanced"
                       className="max-h-full max-w-full object-contain"
                     />
                     <span className="absolute top-2 right-2 px-2.5 py-1 rounded-lg bg-emerald-950/80 text-xs font-mono text-emerald-300 border border-emerald-500/30">
-                      {result.scale || scale}x Maximize
+                      {result.scale || scale}x Fit-to-Display WebP
                     </span>
+                  </div>
+                ) : viewMode === 'deep_zoom' ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center relative bg-black/90 p-4">
+                    {/* Deep-Zoom Tile Viewport */}
+                    <div className="relative w-[340px] h-[340px] border-2 border-emerald-500/50 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(16,185,129,0.2)] bg-black flex items-center justify-center">
+                      <img
+                        src={`/api/spice/tile/${result.filename}/0/${tileX}/${tileY}`}
+                        alt={`Tile ${tileX}, ${tileY}`}
+                        className="w-full h-full object-cover"
+                        key={`${tileX}-${tileY}`}
+                      />
+                      <div className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-black/80 border border-white/10 text-[10px] font-mono text-emerald-300">
+                        Tile [{tileX}, {tileY}] (512×512 px @ 100% Optical Detail)
+                      </div>
+                    </div>
+
+                    {/* Tile Navigation Controls */}
+                    <div className="mt-3 flex items-center gap-3">
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setTileX((prev) => Math.max(0, prev - 1))}
+                          disabled={tileX <= 0}
+                          className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 text-xs font-bold text-white transition-colors"
+                          title="Pan Left"
+                        >
+                          ◀
+                        </button>
+                        <button
+                          onClick={() => setTileY((prev) => Math.max(0, prev - 1))}
+                          disabled={tileY <= 0}
+                          className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 text-xs font-bold text-white transition-colors"
+                          title="Pan Up"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          onClick={() => setTileY((prev) => Math.min(maxTileY, prev + 1))}
+                          disabled={tileY >= maxTileY}
+                          className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 text-xs font-bold text-white transition-colors"
+                          title="Pan Down"
+                        >
+                          ▼
+                        </button>
+                        <button
+                          onClick={() => setTileX((prev) => Math.min(maxTileX, prev + 1))}
+                          disabled={tileX >= maxTileX}
+                          className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 text-xs font-bold text-white transition-colors"
+                          title="Pan Right"
+                        >
+                          ▶
+                        </button>
+                      </div>
+
+                      <div className="text-[10px] font-mono text-zinc-400">
+                        Tile {tileX + 1}/{maxTileX + 1} H • {tileY + 1}/{maxTileY + 1} V of 128 MP Master
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center relative">
@@ -593,11 +745,11 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
                   <div className="flex items-center gap-2">
                     <span className="text-amber-400">👁️</span>
                     <span className="text-xs font-semibold uppercase tracking-wider text-amber-300">
-                      Moondream Sentinel Hardware Critique
+                      Moondream Sentinel Hardware Critique (INT4 VLM)
                     </span>
                   </div>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">
-                    Camera Calibrated
+                    Camera Calibrated • 512px Thumbnail
                   </span>
                 </div>
                 <div className="text-xs text-zinc-300 leading-relaxed font-sans whitespace-pre-wrap bg-black/30 p-3 rounded-xl border border-white/5">
@@ -609,12 +761,12 @@ export const PixelSpicingModal: React.FC<PixelSpicingModalProps> = ({ isOpen, on
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                 <div className="flex items-center gap-2">
                   <a
-                    href={result.image_base64 || result.download_url}
-                    download={result.filename || 'spiced_enhanced.png'}
+                    href={result.download_url}
+                    download={result.filename || 'spiced_master.png'}
                     className="py-3 px-5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold text-sm shadow-[0_4px_20px_rgba(16,185,129,0.35)] hover:brightness-110 active:scale-[0.98] transition-all flex items-center gap-2"
                   >
                     <span>⬇</span>
-                    <span>Download {result.scale || scale}x Enhanced Image</span>
+                    <span>Download {result.scale || scale}x Master Render (Full 128 MP)</span>
                   </a>
                   <button
                     onClick={resetAll}

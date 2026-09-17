@@ -58,7 +58,9 @@ def deploy_github_pages():
             print("[URL Fetcher]: GitHub Pages deploy already running, skipping overlapping run.", file=sys.stderr)
             return
 
-        deploy_script = os.path.join(RUNTIME_DIR, "deploy-gh-pages.sh")
+        deploy_script = os.path.join(RUNTIME_DIR, "automation", "deploy-gh-pages.sh")
+        if not os.path.exists(deploy_script):
+            deploy_script = os.path.join(RUNTIME_DIR, "deploy-gh-pages.sh")
         if os.path.exists(deploy_script):
             log_dir = os.path.join(RUNTIME_DIR, "logs")
             os.makedirs(log_dir, exist_ok=True)

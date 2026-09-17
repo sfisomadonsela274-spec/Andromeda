@@ -251,7 +251,9 @@ open_andromeda() {
 
 sync_andromeda() {
     print_header
-    if [ -f "$TARGET_DIR/sync-to-online.sh" ]; then
+    if [ -f "$TARGET_DIR/automation/sync-to-online.sh" ]; then
+        bash "$TARGET_DIR/automation/sync-to-online.sh"
+    elif [ -f "$TARGET_DIR/sync-to-online.sh" ]; then
         bash "$TARGET_DIR/sync-to-online.sh"
     else
         sync_usb_if_present

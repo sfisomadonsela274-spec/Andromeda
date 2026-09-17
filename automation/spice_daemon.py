@@ -24,12 +24,14 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileCreatedEvent, FileMovedEvent
 
 # Import the core enhancement pipeline
-try:
-    from pixel_spicer import spice_image, SUPPORTED_EXTENSIONS
-except ImportError:
-    # Ensure current directory is on sys.path
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from pixel_spicer import spice_image, SUPPORTED_EXTENSIONS
+from pathlib import Path
+_curr_dir = Path(__file__).resolve().parent
+_proj_root = _curr_dir.parent
+for _cand in [str(_proj_root / "jimmy"), str(_proj_root / "andromeda" / "backend"), "/app/andromeda/backend", "/app"]:
+    if os.path.isdir(_cand) and _cand not in sys.path:
+        sys.path.insert(0, _cand)
+
+from pixel_spicer import spice_image, SUPPORTED_EXTENSIONS
 
 
 DEFAULT_INCOMING = os.path.expanduser("/home/sfiso/photos_incoming")
@@ -154,7 +156,9 @@ class SpiceDropHandler(FileSystemEventHandler):
 
             print("=" * 65)
             print(f"✅ [Spice Daemon] Finished {filepath.name} in {res['total_duration_ms']} ms")
-            print(f"✨ Enhanced output: {destination_image}")
+            print(f"✨ Master output:  {destination_image}")
+            if res.get("display", {}).get("path"):
+                print(f"🖥️ Display WebP:   {res['display']['path']} (~{res['display'].get('estimated_vram_mb')} MB VRAM)")
             print(f"📋 Metadata saved:  {destination_image.with_suffix('.json')}")
             if res.get("sentinel_critique", {}).get("critique"):
                 critique_preview = res["sentinel_critique"]["critique"].replace("\n", " ")[:120]

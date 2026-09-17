@@ -12,3 +12,5 @@ __pycache__/
 bin/
 data/tunnel/
 .DS_Store
+.vscode/
+.pytest_cache/

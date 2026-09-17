@@ -78,6 +78,11 @@ CRITICAL RULE FOR PROGRAMMING, EXPLANATIONS, AND GENERAL QUESTIONS:
 - Place the complete explanation, including all code blocks and examples, directly within the "message" field.
 - NEVER invent arbitrary custom JSON keys or schemas (e.g., do NOT output schemas like {"Superclass": ..., "Methods": ...}).
 
+CRITICAL RULE FOR RETRIEVED CONTEXT, DISTRACTORS, AND CONFLICTS:
+- When retrieved reference chunks or context are provided, strictly answer using the facts present in the context.
+- If the retrieved context chunks contain contradictory statements, conflicting claims, or corrupted distractors, explicitly identify, highlight, and report the contradiction in your response (e.g., state clearly what conflict exists between the chunks).
+- NEVER hallucinate or fabricate an ungrounded compromise or middle ground.
+
 Example responses:
 {"action": "youtube", "query": "tame impala loser", "message": "Playing Tame Impala - Loser on YouTube for you."}
 {"action": "app_install", "app": "spotify", "method": "flatpak", "message": "Installing Spotify via Flatpak for you."}
@@ -520,6 +525,21 @@ async def run_agent_step(user_prompt: str, messages: List[Dict], cwd: str, with_
             parsed["package_id"] = pkg_id
             parsed["command"] = f"flatpak install --user -y flathub {pkg_id}"
             parsed["message"] = f"Ready to install {app_raw.capitalize()} via Flatpak ({pkg_id})."
+            final_completion = json.dumps(parsed)
+        # 3. Enrich app_control actions with app_registry metadata
+        elif act == "app_control":
+            try:
+                from app_registry import find_app_entry
+                app_name = parsed.get("app", "")
+                if app_name:
+                    app_entry = find_app_entry(app_name)
+                    if app_entry:
+                        if app_entry.get("category"):
+                            parsed["category"] = app_entry["category"]
+                        if not parsed.get("url") and app_entry.get("web_base"):
+                            parsed["url"] = app_entry["web_base"]
+            except Exception as reg_err:
+                logging.warning(f"[App Registry Lookup] {reg_err}")
             final_completion = json.dumps(parsed)
         else:
             final_completion = json.dumps(parsed)

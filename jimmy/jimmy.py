@@ -24,7 +24,11 @@ import glob
 import threading
 import sys
 import os
-# Robustly ensure user site-packages is included to prevent ModuleNotFoundError when run globally
+# Ensure current script directory and site-packages are included
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
 local_packages = os.path.expanduser("~/.local/lib/python3.12/site-packages")
 if local_packages not in sys.path:
     sys.path.insert(0, local_packages)

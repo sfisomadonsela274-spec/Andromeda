@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=/home/sfiso/andromeda-runtime
-ExecStart=/home/sfiso/andromeda-runtime/bin/andromeda-boot.sh
+ExecStart=/home/sfiso/andromeda-runtime/automation/andromeda-boot.sh
 Restart=on-failure
 RestartSec=15
 

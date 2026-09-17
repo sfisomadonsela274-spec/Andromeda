@@ -153,8 +153,10 @@ fi
 
 # Extract current tunnel URL
 TUNNEL_URL=""
+FETCHER_SCRIPT="$RUNTIME_DIR/automation/url_fetcher.py"
+[ ! -f "$FETCHER_SCRIPT" ] && FETCHER_SCRIPT="$RUNTIME_DIR/url_fetcher.py"
 for i in {1..15}; do
-    TUNNEL_URL=$(python3 "$RUNTIME_DIR/url_fetcher.py" --once 2>/dev/null || true)
+    TUNNEL_URL=$(python3 "$FETCHER_SCRIPT" --once 2>/dev/null || true)
     if [ -n "$TUNNEL_URL" ] && [[ "$TUNNEL_URL" =~ ^https://.*trycloudflare\.com$ ]]; then
         break
     fi
@@ -166,8 +168,10 @@ done
 # ------------------------------------------------------------------------------
 if [ -n "$TUNNEL_URL" ]; then
     log "Step 6: Publishing active Cloudflare tunnel URL to GitHub Pages..."
-    if [ -x "$RUNTIME_DIR/deploy-gh-pages.sh" ]; then
-        "$RUNTIME_DIR/deploy-gh-pages.sh" >/dev/null 2>&1 || true
+    DEPLOY_SCRIPT="$RUNTIME_DIR/automation/deploy-gh-pages.sh"
+    [ ! -x "$DEPLOY_SCRIPT" ] && DEPLOY_SCRIPT="$RUNTIME_DIR/deploy-gh-pages.sh"
+    if [ -x "$DEPLOY_SCRIPT" ]; then
+        "$DEPLOY_SCRIPT" >/dev/null 2>&1 || true
         log "GitHub Pages edge updated with live tunnel endpoint."
     fi
 fi

@@ -1665,7 +1665,7 @@
 
           if (res.ok) {
             const data = await res.json();
-            const enhancedImgUrl = data.image_base64 || (data.download_url ? `${getBackendHttpUrl()}${data.download_url}` : originalDataUrl);
+            const enhancedImgUrl = data.display_url ? `${getBackendHttpUrl()}${data.display_url}` : (data.image_base64 || (data.download_url ? `${getBackendHttpUrl()}${data.download_url}` : originalDataUrl));
             const resBefore = data.original_resolution ? `${data.original_resolution[0]}x${data.original_resolution[1]}` : "Standard";
             const resAfter = data.enhanced_resolution ? `${data.enhanced_resolution[0]}x${data.enhanced_resolution[1]}` : "4x Super-Res";
             const critique = data.critique || "Dynamic range balanced via LAB CLAHE, edges enhanced with Vulkan neural kernel.";

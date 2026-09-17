@@ -44,7 +44,7 @@ services:
   andromeda-backend:
     build:
       context: .
-      dockerfile: andromeda/Dockerfile.backend
+      dockerfile: automation/docker/Dockerfile.backend
     container_name: andromeda-backend
     restart: unless-stopped
     ports:
@@ -56,12 +56,12 @@ services:
     volumes:
       - ./andromeda/backend:/app/andromeda/backend
       - ./andromeda/data:/app/andromeda/data
-      - ./media_controller.py:/app/media_controller.py
-      - ./app_controller.py:/app/app_controller.py
-      - ./app_registry.py:/app/app_registry.py
-      - ./macro_runner.py:/app/macro_runner.py
-      - ./macros.yaml:/app/macros.yaml
-      - ./pixel_spicer.py:/app/pixel_spicer.py
+      - ./andromeda/backend/media_controller.py:/app/media_controller.py
+      - ./andromeda/backend/app_controller.py:/app/app_controller.py
+      - ./andromeda/backend/app_registry.py:/app/app_registry.py
+      - ./andromeda/backend/macro_runner.py:/app/macro_runner.py
+      - ./andromeda/backend/macros.yaml:/app/macros.yaml
+      - ./andromeda/backend/pixel_spicer.py:/app/pixel_spicer.py
       - /run/user/1000/bus:/run/user/1000/bus
     depends_on:
       ollama:
@@ -73,7 +73,7 @@ services:
   andromeda-frontend:
     build:
       context: .
-      dockerfile: andromeda/Dockerfile.frontend
+      dockerfile: automation/docker/Dockerfile.frontend
     container_name: andromeda-frontend
     restart: unless-stopped
     ports:

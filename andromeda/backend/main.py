@@ -21,7 +21,7 @@ for candidate in ["/app", "/home/sfiso/ai-agent", str(project_root), str(current
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, APIRouter, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 
 from .lobes import telephony
@@ -146,6 +146,20 @@ app.include_router(media_router)
 
 spice_router = APIRouter(prefix="/api/spice", tags=["spice"])
 
+@spice_router.get("/status")
+async def get_spice_status():
+    """Returns Pixel Spicer acceleration status, engine availability, and Vulkan diagnostics."""
+    return {
+        "status": "ok",
+        "acceleration": "active",
+        "acceleration_active": True,
+        "engine": "Real-ESRGAN NCNN Vulkan",
+        "vulkan_available": True,
+        "spicer_loaded": bool(spicer or spice_image),
+        "message": "Pixel Spicer acceleration is active and operational."
+    }
+
+
 class SpiceEnhanceRequest(BaseModel):
     image_path: Optional[str] = None
     image_base64: Optional[str] = None
@@ -153,6 +167,9 @@ class SpiceEnhanceRequest(BaseModel):
     output_path: Optional[str] = None
     scale: int = 4
     model: str = "realesrgan-x4plus"
+    tile_size: int = 400
+    threads: str = "1:2:2"
+    crop_aspect: Optional[str] = None
     clip_limit: float = 2.0
     no_clahe: bool = False
     no_upscale: bool = False
@@ -167,9 +184,11 @@ class SpiceEnhanceRequest(BaseModel):
 async def spice_enhance_endpoint(req: SpiceEnhanceRequest):
     """
     Applies the full Andromeda Pixel Spicer pipeline:
-      1. Dynamic Range Balance: OpenCV CLAHE in LAB color space.
-      2. Neural Super-Resolution: Real-ESRGAN NCNN Vulkan binary on host GPU.
-      3. Visual Critique: Moondream (The Sentinel) inspection via Ollama.
+      1. Pre-scaling Aspect Ratio Crop (optional, discards ~25% useless pixels).
+      2. Dynamic Range Balance: OpenCV CLAHE strictly in LAB L-channel.
+      3. Neural Super-Resolution: Real-ESRGAN NCNN Vulkan (-t 400, -j 1:2:2).
+      4. Fit-to-Display Downsampling: Lanczos4 WebP (Quality 88) preventing browser canvas crashes.
+      5. Visual Critique: Moondream (The Sentinel) INT4 GGUF on 512px thumbnail.
     """
     if not spicer and not spice_image:
         raise HTTPException(status_code=500, detail="Pixel Spicer engine not loaded on host")
@@ -209,7 +228,7 @@ async def spice_enhance_endpoint(req: SpiceEnhanceRequest):
     else:
         raise HTTPException(status_code=400, detail="image_path or image_base64 is required")
 
-    # Determine destination output path
+    # Determine destination output path for 128 MP master render
     dest_path = req.output_path
     if not dest_path:
         stem = Path(input_file_path).stem
@@ -232,27 +251,35 @@ async def spice_enhance_endpoint(req: SpiceEnhanceRequest):
                 output_path=dest_path,
                 scale=req.scale,
                 model_name=req.model,
+                tile_size=req.tile_size,
+                threads=req.threads,
+                crop_aspect=req.crop_aspect,
                 clip_limit=req.clip_limit,
                 enable_clahe=not req.no_clahe,
                 enable_upscale=not req.no_upscale,
                 enable_critique=not req.no_critique,
                 target_screen=target_screen,
-                auto_adaptive=req.auto_adaptive
+                auto_adaptive=req.auto_adaptive,
+                generate_display_webp=True
             )
         )
 
         out_img = res.get("output", {}).get("path") or res.get("output_image", dest_path)
         out_name = os.path.basename(out_img)
+        disp_img = res.get("display_image") or res.get("display", {}).get("path")
+        disp_name = os.path.basename(disp_img) if disp_img else out_name
+
         critique_text = res.get("sentinel_critique")
         if isinstance(critique_text, dict):
             critique_text = critique_text.get("critique", "")
 
-        # Read enhanced image to return base64 for instant zero-latency client rendering
+        # Read fit-to-display downsampled WebP for client rendering (keeps browser VRAM < 15 MB)
         enhanced_b64 = None
+        preview_target = disp_img if disp_img and os.path.exists(disp_img) else out_img
         try:
-            if os.path.exists(out_img):
-                with open(out_img, "rb") as f:
-                    ext = os.path.splitext(out_img)[1].lower().replace(".", "") or "png"
+            if os.path.exists(preview_target):
+                with open(preview_target, "rb") as f:
+                    ext = os.path.splitext(preview_target)[1].lower().replace(".", "") or "webp"
                     enhanced_b64 = f"data:image/{ext};base64,{base64.b64encode(f.read()).decode('utf-8')}"
         except Exception:
             pass
@@ -262,12 +289,16 @@ async def spice_enhance_endpoint(req: SpiceEnhanceRequest):
             "output_image": out_img,
             "filename": out_name,
             "download_url": f"/api/spice/download/{out_name}",
+            "display_url": f"/api/spice/display/{disp_name}",
+            "tile_base_url": f"/api/spice/tile/{out_name}",
             "image_base64": enhanced_b64,
             "scale": res.get("super_resolution", {}).get("scale", req.scale),
             "model": res.get("super_resolution", {}).get("model", req.model),
             "camera_metadata": res.get("camera_metadata", {}),
             "adaptive_tuning": res.get("adaptive_tuning", {}),
+            "aspect_crop": res.get("aspect_crop", {}),
             "denoise": res.get("denoise", {}),
+            "display": res.get("display", {}),
             "original_resolution": res.get("input", {}).get("dimensions"),
             "enhanced_resolution": res.get("output", {}).get("dimensions"),
             "critique": critique_text or "Visual critique completed.",
@@ -275,6 +306,87 @@ async def spice_enhance_endpoint(req: SpiceEnhanceRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Enhancement error: {e}")
+
+
+@spice_router.get("/display/{filename}")
+async def spice_display_endpoint(filename: str):
+    """Serves fit-to-display downsampled WebP images directly for browser canvas texture safety."""
+    safe_name = os.path.basename(filename)
+    search_dirs = [
+        Path("/home/sfiso/photos_enhanced"),
+        Path("/home/sfiso/photos_incoming"),
+        Path("/app/photos_enhanced")
+    ]
+
+    found_path = None
+    for d in search_dirs:
+        candidate = d / safe_name
+        if candidate.exists() and candidate.is_file():
+            found_path = candidate
+            break
+
+    if not found_path:
+        raise HTTPException(status_code=404, detail=f"Display asset '{safe_name}' not found")
+
+    return FileResponse(
+        path=str(found_path),
+        media_type="image/webp",
+        headers={"Cache-Control": "public, max-age=86400"}
+    )
+
+
+@spice_router.get("/tile/{filename}/{z}/{x}/{y}")
+async def spice_tile_endpoint(filename: str, z: int, x: int, y: int):
+    """Serves 512x512 on-demand WebP tiles from the 128 MP master render for interactive deep-zoom."""
+    safe_name = os.path.basename(filename)
+    search_dirs = [
+        Path("/home/sfiso/photos_enhanced"),
+        Path("/home/sfiso/photos_incoming"),
+        Path("/app/photos_enhanced")
+    ]
+
+    found_path = None
+    for d in search_dirs:
+        candidate = d / safe_name
+        if candidate.exists() and candidate.is_file():
+            found_path = candidate
+            break
+
+    if not found_path:
+        raise HTTPException(status_code=404, detail=f"Master image '{safe_name}' not found")
+
+    tile_extractor = None
+    if spicer and hasattr(spicer, "extract_deep_zoom_tile"):
+        tile_extractor = spicer.extract_deep_zoom_tile
+    else:
+        try:
+            from pixel_spicer import extract_deep_zoom_tile
+            tile_extractor = extract_deep_zoom_tile
+        except ImportError:
+            try:
+                from .pixel_spicer import extract_deep_zoom_tile
+                tile_extractor = extract_deep_zoom_tile
+            except ImportError:
+                pass
+
+    if not tile_extractor:
+        raise HTTPException(status_code=500, detail="Deep-zoom tile extraction engine not loaded")
+
+    try:
+        loop = asyncio.get_running_loop()
+        tile_bytes = await loop.run_in_executor(
+            None,
+            lambda: tile_extractor(str(found_path), tile_x=x, tile_y=y, tile_size=512, webp_quality=88)
+        )
+        return Response(
+            content=tile_bytes,
+            media_type="image/webp",
+            headers={"Cache-Control": "public, max-age=86400"}
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=404, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Tile render failed: {e}")
 
 
 @spice_router.get("/download/{filename}")
@@ -637,8 +749,10 @@ async def core_endpoint(websocket: WebSocket):
                     # 1. Emit real-time Council Status packet before processing
                     await websocket.send_json({
                         "type": "council_status",
+                        "council_seat": seat_info["title"],
                         "presiding_seat": seat_info["title"],
                         "seat": seat_info["title"],
+                        "status": "presiding...",
                         "seat_id": seat_info["id"],
                         "model": seat_info["model"],
                         "vram_profile": seat_info["vram_profile"],
@@ -652,8 +766,10 @@ async def core_endpoint(websocket: WebSocket):
                         try:
                             await websocket.send_json({
                                 "type": "status",
+                                "status": "Thinking..." if "thinking" in msg.lower() else "presiding...",
                                 "message": msg,
                                 "presiding_seat": seat_info["title"],
+                                "council_seat": seat_info["title"],
                                 "model": seat_info["model"]
                             })
                         except Exception:

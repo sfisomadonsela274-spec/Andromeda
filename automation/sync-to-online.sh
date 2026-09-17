@@ -23,4 +23,8 @@ echo "🚀 2. Performing zero-downtime rolling build of backend and frontend..."
 docker compose -p ai-agent -f "$DEST_DIR/docker-compose.yml" up -d --build --no-deps andromeda-backend andromeda-frontend
 
 echo "✅ 3. Sync and reload complete! GPU models and traces preserved."
-"$DEST_DIR/get-url.sh"
+if [ -x "$DEST_DIR/automation/get-url.sh" ]; then
+    "$DEST_DIR/automation/get-url.sh"
+elif [ -x "$DEST_DIR/get-url.sh" ]; then
+    "$DEST_DIR/get-url.sh"
+fi
