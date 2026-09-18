@@ -4,6 +4,14 @@ import { MediaDeck } from './components/MediaDeck';
 import { PixelSpicingModal } from './components/PixelSpicingModal';
 import { MacroRunnerModal } from './components/MacroRunnerModal';
 import { AppLauncherModal } from './components/AppLauncherModal';
+import { ClientHardwareModal } from './components/ClientHardwareModal';
+import {
+  profileClientHardware,
+  ClientHardwareProfile,
+  ModelTier,
+  getStoredEngineMode
+} from './utils/ramCalculator';
+import { clientInference, InferenceProgressEvent } from './services/clientInference';
 
 export const App: React.FC = () => {
   const [avatarState, setAvatarState] = useState<AvatarState>('idle');
@@ -17,6 +25,10 @@ export const App: React.FC = () => {
   const [isPixelSpicerOpen, setIsPixelSpicerOpen] = useState<boolean>(false);
   const [isMacroRunnerOpen, setIsMacroRunnerOpen] = useState<boolean>(false);
   const [isAppLauncherOpen, setIsAppLauncherOpen] = useState<boolean>(false);
+  const [isHardwareModalOpen, setIsHardwareModalOpen] = useState<boolean>(false);
+  const [hardwareProfile, setHardwareProfile] = useState<ClientHardwareProfile | null>(null);
+  const [clientProgress, setClientProgress] = useState<InferenceProgressEvent | null>(null);
+  const [engineMode, setEngineMode] = useState<'client_webgpu' | 'native_window_ai' | 'host_server'>(getStoredEngineMode());
   const [sweepNotice, setSweepNotice] = useState<string | null>(null);
   const [promptInput, setPromptInput] = useState<string>('');
   const [messages, setMessages] = useState<
@@ -24,13 +36,53 @@ export const App: React.FC = () => {
   >([
     {
       role: 'system',
-      text: '🌌 Andromeda Cosmic Workspace online. Council of AIs active across Ollama.',
+      text: '🌌 Andromeda Cosmic Workspace online. Council of AIs active across Ollama & WebGPU.',
     },
   ]);
   const [wsConnected, setWsConnected] = useState<boolean>(false);
   const [simulatedAudio, setSimulatedAudio] = useState<number>(0);
 
   const wsRef = useRef<WebSocket | null>(null);
+
+  // Hardware Profiling & Client-Side Inference Sync on Mount
+  useEffect(() => {
+    let isMounted = true;
+    profileClientHardware().then((prof) => {
+      if (isMounted) {
+        setHardwareProfile(prof);
+        setEngineMode(prof.activeEngineMode);
+
+        if (prof.activeEngineMode !== 'host_server') {
+          const rec = prof.models.find((m) => m.id === prof.recommendedModelId);
+          if (rec) {
+            setCouncilSeat({
+              seat: rec.seat,
+              model: rec.name,
+              vramProfile: `Local WebGPU (~${rec.runtimeVramGB}GB RAM)`,
+              reason: `Auto-tuned to your ${prof.detectedRamGB}GB RAM`,
+            });
+            setMessages((prev) => [
+              ...prev,
+              {
+                role: 'system',
+                text: `⚡ Client Hardware Synced: ~${prof.detectedRamGB}GB RAM detected (${prof.cpuCores} cores, WebGPU ${prof.hasWebGpu ? 'Active' : 'Disabled'}). Allocated model: ${rec.name}. 0 bytes host GPU used.`,
+                seat: rec.seat,
+              },
+            ]);
+          }
+        }
+      }
+    });
+
+    const unsubscribe = clientInference.subscribe((evt) => {
+      setClientProgress(evt);
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, []);
 
   // WebSocket Connection to /ws/core
   useEffect(() => {
@@ -210,6 +262,41 @@ export const App: React.FC = () => {
     setPromptInput('');
     setAvatarState('thinking');
 
+    // 1. Client-Side WebGPU / Native AI execution (Zero host compute)
+    if (engineMode === 'client_webgpu' || engineMode === 'native_window_ai') {
+      let agentMsgIndex = -1;
+      setMessages((prev) => {
+        agentMsgIndex = prev.length;
+        return [
+          ...prev,
+          { role: 'agent', text: '', seat: councilSeat.seat },
+        ];
+      });
+
+      clientInference
+        .generateCompletion(prompt, (token) => {
+          setMessages((prev) => {
+            const updated = [...prev];
+            if (updated[agentMsgIndex]) {
+              updated[agentMsgIndex] = {
+                ...updated[agentMsgIndex],
+                text: updated[agentMsgIndex].text + token,
+              };
+            }
+            return updated;
+          });
+        })
+        .then(() => {
+          setAvatarState('idle');
+        })
+        .catch((err) => {
+          console.warn('Client inference failed:', err);
+          setAvatarState('idle');
+        });
+      return;
+    }
+
+    // 2. Host Server Fallback (/ws/core)
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(
         JSON.stringify({
@@ -286,7 +373,23 @@ export const App: React.FC = () => {
 
         {/* Action Controls & Modal Triggers */}
         <div className="flex flex-wrap items-center gap-2">
-          
+
+          {/* Client RAM & Hardware Profiler Trigger */}
+          <button
+            id="btn-hardware-hud"
+            onClick={() => setIsHardwareModalOpen(true)}
+            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600/30 via-teal-600/30 to-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-xs font-medium hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+            title="Inspect Client RAM, WebGPU status, and In-Browser AI Allocation"
+          >
+            <span>⚡</span>
+            <span>
+              {hardwareProfile ? `${hardwareProfile.detectedRamGB}GB RAM` : 'RAM Calc'}
+            </span>
+            <span className="hidden md:inline text-[10px] text-emerald-400/80 font-mono">
+              • {engineMode === 'host_server' ? 'Host' : 'Client AI'}
+            </span>
+          </button>
+
           {/* Pixel Spicer Trigger */}
           <button
             onClick={() => setIsPixelSpicerOpen(true)}
@@ -480,6 +583,7 @@ export const App: React.FC = () => {
           {/* Prompt Dispatch Bar */}
           <form onSubmit={sendPrompt} className="flex gap-2 pt-2 border-t border-white/5">
             <input
+              id="prompt-input"
               type="text"
               placeholder="Ask the Council or enter action (e.g. '/music lofi chill', '/install vscode', '/macro deep_work')..."
               value={promptInput}
@@ -487,6 +591,7 @@ export const App: React.FC = () => {
               className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50"
             />
             <button
+              id="btn-dispatch-prompt"
               type="submit"
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-semibold shadow-lg shadow-purple-600/30 active:scale-95 transition-all"
             >
@@ -497,6 +602,28 @@ export const App: React.FC = () => {
       </main>
 
       {/* Modals */}
+      <ClientHardwareModal
+        isOpen={isHardwareModalOpen}
+        onClose={() => setIsHardwareModalOpen(false)}
+        activeModelId={hardwareProfile?.recommendedModelId}
+        onSelectModel={(model: ModelTier) => {
+          setCouncilSeat({
+            seat: model.seat,
+            model: model.name,
+            vramProfile: `Local WebGPU (~${model.runtimeVramGB}GB RAM)`,
+            reason: `Mounted locally in client browser (${model.mlcModelId})`,
+          });
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: 'system',
+              text: `⚖️ [Council of AIs]: ${model.seat} assumed the bench locally (${model.name} • ${model.runtimeVramGB}GB VRAM). Zero host resources used.`,
+              seat: model.seat,
+            },
+          ]);
+        }}
+      />
+
       <PixelSpicingModal
         isOpen={isPixelSpicerOpen}
         onClose={() => setIsPixelSpicerOpen(false)}
