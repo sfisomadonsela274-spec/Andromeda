@@ -12,6 +12,7 @@ import {
   getStoredEngineMode
 } from './utils/ramCalculator';
 import { clientInference, InferenceProgressEvent } from './services/clientInference';
+import { clientVectorMemory } from './services/clientVectorMemory';
 
 export const App: React.FC = () => {
   const [avatarState, setAvatarState] = useState<AvatarState>('idle');
@@ -273,21 +274,37 @@ export const App: React.FC = () => {
         ];
       });
 
-      clientInference
-        .generateCompletion(prompt, (token) => {
-          setMessages((prev) => {
-            const updated = [...prev];
-            if (updated[agentMsgIndex]) {
-              updated[agentMsgIndex] = {
-                ...updated[agentMsgIndex],
-                text: updated[agentMsgIndex].text + token,
-              };
-            }
-            return updated;
-          });
+      // Semantic retrieval from local IndexedDB Vector Memory
+      clientVectorMemory
+        .retrieve(prompt, 3)
+        .then((matches) => {
+          const memoryContext = clientVectorMemory.formatRetrievedContext(matches);
+          return clientInference.generateCompletion(
+            prompt,
+            (token) => {
+              setMessages((prev) => {
+                const updated = [...prev];
+                if (updated[agentMsgIndex]) {
+                  updated[agentMsgIndex] = {
+                    ...updated[agentMsgIndex],
+                    text: updated[agentMsgIndex].text + token,
+                  };
+                }
+                return updated;
+              });
+            },
+            memoryContext
+          );
         })
-        .then(() => {
+        .then((fullAnswer) => {
           setAvatarState('idle');
+          // Asynchronously index the turn into local IndexedDB
+          if (fullAnswer && fullAnswer.trim()) {
+            clientVectorMemory.memorize(
+              `User prompt: "${prompt}". Assistant: "${fullAnswer.slice(0, 300)}"`,
+              'conversation'
+            ).catch(() => {});
+          }
         })
         .catch((err) => {
           console.warn('Client inference failed:', err);

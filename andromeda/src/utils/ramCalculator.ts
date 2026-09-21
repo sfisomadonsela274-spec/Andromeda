@@ -241,7 +241,7 @@ export async function profileClientHardware(manualOverride?: number | null): Pro
     : 0.5;
 
   // 6. Evaluate Model Tier Availability
-  let recommendedModelId = 'llama-3.2-1b';
+  let recommendedModelId = 'smollm2-360m-scout';
 
   const models: ModelTier[] = ANDROMEDA_MODEL_CATALOG.map((m) => {
     const accessible = (hasWebGpu || hasNativeWindowAi) && estimatedRam >= m.requiredRamGB;
@@ -265,21 +265,18 @@ export async function profileClientHardware(manualOverride?: number | null): Pro
   });
 
   // Automatically determine the recommended model:
-  // Best model that comfortably fits the unlocked budget
-  const unlockedModels = models.filter((m) => m.badge === 'Unlocked' && m.stage === 2);
-  if (unlockedModels.length > 0) {
-    const best = unlockedModels[unlockedModels.length - 1];
-    best.recommended = true;
-    best.badge = 'Recommended';
-    recommendedModelId = best.id;
+  // Default to SmolLM2 360M Pocket Scout for sub-5 second instant warm-up,
+  // while keeping heavier models unlocked and ready for 1-click selection.
+  const pocketScout = models.find((m) => m.id === 'smollm2-360m-scout' && m.accessible);
+  if (pocketScout) {
+    pocketScout.recommended = true;
+    pocketScout.badge = 'Recommended';
+    recommendedModelId = pocketScout.id;
   } else {
-    // Fallback to stage 1 scout if budget is constrained
-    const scout = models.find((m) => m.stage === 1 && m.accessible) || models[0];
-    if (scout) {
-      scout.recommended = true;
-      scout.badge = 'Recommended';
-      recommendedModelId = scout.id;
-    }
+    const fallbackScout = models.find((m) => m.accessible) || models[0];
+    fallbackScout.recommended = true;
+    fallbackScout.badge = 'Recommended';
+    recommendedModelId = fallbackScout.id;
   }
 
   // Determine active engine mode

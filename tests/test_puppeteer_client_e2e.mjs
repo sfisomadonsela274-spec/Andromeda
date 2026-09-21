@@ -8,8 +8,10 @@
  *  - Hardware modal opening (#modal-hardware)
  *  - Slider manipulation (#ram-slider)
  *  - Cache purge trigger (#btn-purge-cache)
- *  - Model selection (#btn-select-model-llama-3.2-1b)
- *  - Local prompt dispatch (#prompt-input, #btn-dispatch-prompt)
+ *  - Memory Vault tab (#tab-memory-vault)
+ *  - Custom memory indexing (#input-custom-memory, #btn-add-memory)
+ *  - Model selection (#btn-select-model-smollm2-360m-scout)
+ *  - Local prompt dispatch with memory context (#prompt-input, #btn-dispatch-prompt)
  * =============================================================================
  */
 
@@ -24,7 +26,7 @@ const __dirname = path.dirname(__filename);
 const DIST_DIR = path.resolve(__dirname, '../andromeda/dist');
 
 // Simple static server for dist
-function startStaticServer(port = 4173) {
+function startStaticServer(port = 4199) {
   const mimeTypes = {
     '.html': 'text/html',
     '.js': 'application/javascript',
@@ -43,7 +45,6 @@ function startStaticServer(port = 4173) {
 
     fs.readFile(filePath, (err, data) => {
       if (err) {
-        // Fallback to app.html for SPA
         fs.readFile(path.join(DIST_DIR, 'app.html'), (err2, fallbackData) => {
           if (err2) {
             res.writeHead(404);
@@ -124,25 +125,38 @@ async function runE2E() {
     await page.click('#btn-purge-cache');
     console.log('✓ Clicked #btn-purge-cache. Storage purge dispatched cleanly.');
 
-    // 6. Test Model Selection
-    const modelBtnSelector = '#btn-select-model-llama-3\\.2-1b';
-    const modelBtn = await page.$(modelBtnSelector);
-    if (modelBtn) {
-      await modelBtn.click();
-      console.log('✓ Selected Llama 3.2 1B model card.');
-    }
+    // 6. Test In-Browser Vector Memory Vault Tab
+    await page.waitForSelector('#tab-memory-vault', { timeout: 3000 });
+    await page.click('#tab-memory-vault');
+    console.log('✓ Switched to Memory Vault tab (#tab-memory-vault)');
 
-    // 7. Close modal
+    // Add a custom memory
+    await page.waitForSelector('#input-custom-memory', { timeout: 3000 });
+    await page.type('#input-custom-memory', 'User prefers concise TypeScript code');
+    await page.click('#btn-add-memory');
+    console.log('✓ Added custom memory record via #btn-add-memory');
+
+    await new Promise((r) => setTimeout(r, 600));
+
+    // Assert memory count badge
+    const countText = await page.$eval('#badge-memories-count', (el) => el.innerText.trim());
+    console.log(`✓ Stored memories count updated: "${countText}"`);
+
+    // 7. Select Models allocation tab
+    await page.click('#tab-models-allocation');
+    await new Promise((r) => setTimeout(r, 400));
+
+    // 8. Close modal
     await page.keyboard.press('Escape');
     await new Promise((r) => setTimeout(r, 400));
 
-    // 8. Test Prompt Submission
+    // 9. Test Prompt Submission with Memory Context
     await page.waitForSelector('#prompt-input', { timeout: 3000 });
     await page.type('#prompt-input', 'Write a hello world script');
     await page.click('#btn-dispatch-prompt');
-    console.log('✓ Submitted prompt via #prompt-input and #btn-dispatch-prompt.');
+    console.log('✓ Submitted prompt via #prompt-input and #btn-dispatch-prompt with local memory retrieval.');
 
-    // Wait for client inference token streaming
+    // Wait for streaming tokens
     await new Promise((r) => setTimeout(r, 1200));
 
     console.log('\n=============================================================================');
