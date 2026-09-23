@@ -724,9 +724,9 @@ async def core_endpoint(websocket: WebSocket):
                     seat_info = {
                         "title": "The Scribe",
                         "id": "scribe",
-                        "model": "qwen2.5-coder:1.5b",
-                        "vram_profile": "~1.0GB VRAM (Resident / Always Warm)",
-                        "role": "Fast Intent Extraction, Quick Tools & Standard Conversation",
+                        "model": "llama3.2:latest",
+                        "vram_profile": "~2.0GB VRAM (Resident / Always Warm)",
+                        "role": "Fast Intent Extraction, Knowledge & Articulate Conversation",
                         "reason": "Standard conversational query"
                     }
 

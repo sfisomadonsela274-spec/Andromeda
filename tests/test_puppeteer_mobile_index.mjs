@@ -105,7 +105,11 @@ async function runMobileE2E() {
     console.log('✓ Dispatched prompt on mobile without host server.');
 
     // Wait for in-browser streaming response to render
-    await page.waitForSelector('.agent-stream-content', { timeout: 6000 });
+    await page.waitForSelector('.agent-stream-content', { timeout: 15000 });
+    await page.waitForFunction(
+      () => (document.querySelector('.agent-stream-content')?.innerText.trim().length || 0) > 0,
+      { timeout: 15000 }
+    );
     const replyText = await page.$eval('.agent-stream-content', (el) => el.innerText.trim());
     console.log(`✓ In-Browser AI response received on mobile:\n   "${replyText.slice(0, 100)}..."`);
 

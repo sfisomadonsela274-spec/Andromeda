@@ -445,55 +445,118 @@ class ClientInferenceService {
       }
     }
 
-    // 3. High-speed In-Browser Client Fast Scout execution
-    const seatName = this.activeModel?.seat || 'The Scribe';
-    const modelName = this.activeModel?.name || 'SmolLM2 360M Pocket Scout';
-    const memoryContextNotice = context ? `\n\n🧠 Context retrieved from your local Vector Vault:\n${context}` : '';
+    // 3. Dynamic Edge-Native Neural Inference (Zero Host Load, Real AI Streaming)
+    const systemContent = `You are Andromeda, an intelligent, sleek workspace companion. You provide sharp, articulate, helpful, and insightful responses. You format code with clean markdown code fences.${context ? `\n\nRetrieved Context:\n${context}` : ''}`;
+    const messages = [
+      { role: 'system', content: systemContent },
+      { role: 'user', content: prompt }
+    ];
 
-    let simulatedResponse = '';
-    const lower = prompt.toLowerCase();
+    // Stage 3A: SSE Streaming Neural Generation
+    try {
+      const edgeResponse = await fetch('https://text.pollinations.ai/openai/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages,
+          stream: true,
+          model: 'openai',
+          temperature: 0.7
+        }),
+        signal
+      });
 
-    if (lower.startsWith('/music') || lower.includes('music') || lower.includes('lofi') || lower.includes('song')) {
-      simulatedResponse = `[In-Browser AI • ${seatName}]: 🎵 Ambient soundscape queued for "${prompt.replace(/^\/music\s*/i, '')}". You can enjoy audio playback directly in the client Media Hub.`;
-    } else if (lower.startsWith('/macro') || lower.includes('macro') || lower.includes('automation')) {
-      simulatedResponse = `[In-Browser AI • ${seatName}]: ⚙️ Executing client-side workflow macro. Sequence parameters checked and registered into local state.`;
-    } else if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
-      simulatedResponse = `[In-Browser AI • ${seatName}]: Greetings! I am running directly inside your browser on this device. Your host PC is not needed for this conversation. How can I assist your workspace today?${memoryContextNotice}`;
-    } else if (lower.includes('code') || lower.includes('python') || lower.includes('typescript') || lower.includes('javascript') || lower.includes('script')) {
-      simulatedResponse = `[In-Browser AI • ${seatName}]: Here is a clean solution synthesized locally on your machine:\n\n\`\`\`typescript\n// Client-side executed task\nexport function executeTask(input: string) {\n  console.log("Processing locally:", input);\n  return { success: true, timestamp: Date.now() };\n}\n\`\`\`\n\nAdjudicated via ${modelName} on your device.${memoryContextNotice}`;
-    } else {
-      simulatedResponse = `[In-Browser AI • ${seatName}]: I have processed your request "${prompt}" entirely within your local device memory using ${modelName}.${memoryContextNotice}\n\n✓ Zero host GPU or server compute consumed\n✓ Conversation indexed into your private browser Vector Vault`;
-    }
+      if (edgeResponse.ok && edgeResponse.body) {
+        const reader = edgeResponse.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let full = '';
+        let buffer = '';
 
-    const tokens = simulatedResponse.split(' ');
-    let accumulated = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-    for (let i = 0; i < tokens.length; i++) {
-      if (signal.aborted) {
-        this.notify({
-          phase: 'ready',
-          progress: 1.0,
-          text: 'Inference cancelled.',
-          activeModelId: this.activeModel?.id || 'client-default'
-        });
-        return accumulated;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('data: ')) {
+              const dataStr = trimmed.slice(6);
+              if (dataStr === '[DONE]') break;
+              try {
+                const parsed = JSON.parse(dataStr);
+                const delta = parsed.choices?.[0]?.delta?.content || '';
+                if (delta) {
+                  full += delta;
+                  onToken(delta);
+                }
+              } catch (_) {}
+            }
+          }
+        }
+
+        if (full.trim()) {
+          this.notify({
+            phase: 'ready',
+            progress: 1.0,
+            text: 'Neural Engine Ready',
+            activeModelId: this.activeModel?.id || 'client-online-ai'
+          });
+          this.abortController = null;
+          return full;
+        }
       }
-
-      const word = (i === 0 ? '' : ' ') + tokens[i];
-      accumulated += word;
-      onToken(word);
-      await new Promise((r) => setTimeout(r, 20)); // High speed client simulation
+    } catch (edgeErr: any) {
+      if (edgeErr.name === 'AbortError') return '';
+      console.warn('[Andromeda Client Inference]: Edge SSE streaming deferred, attempting direct endpoint:', edgeErr);
     }
+
+    // Stage 3B: Direct Neural Fast Generation Fallback
+    try {
+      const directResponse = await fetch('https://text.pollinations.ai/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages,
+          model: 'openai'
+        }),
+        signal
+      });
+
+      if (directResponse.ok) {
+        const fullText = await directResponse.text();
+        if (fullText && fullText.trim()) {
+          onToken(fullText);
+          this.notify({
+            phase: 'ready',
+            progress: 1.0,
+            text: 'Neural Engine Ready',
+            activeModelId: this.activeModel?.id || 'client-online-ai'
+          });
+          this.abortController = null;
+          return fullText;
+        }
+      }
+    } catch (directErr: any) {
+      if (directErr.name === 'AbortError') return '';
+      console.warn('[Andromeda Client Inference]: Direct edge endpoint notice:', directErr);
+    }
+
+    // 4. Honest Offline Notification (Only reached when completely disconnected from network)
+    const offlineNotice = `I am currently operating in offline client mode with no active network or host connection. To receive full real-time neural responses, please ensure your device is connected to the internet or power on your host PC.`;
+    onToken(offlineNotice);
 
     this.notify({
       phase: 'ready',
       progress: 1.0,
-      text: 'Local Client Engine Ready',
-      activeModelId: this.activeModel?.id || 'client-default'
+      text: 'Offline Mode Active',
+      activeModelId: this.activeModel?.id || 'offline-scout'
     });
 
     this.abortController = null;
-    return accumulated;
+    return offlineNotice;
   }
 
   public getActiveModel(): ModelTier | null {

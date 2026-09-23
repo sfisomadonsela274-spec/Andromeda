@@ -66,14 +66,14 @@ class CouncilSeat:
 SEAT_SCRIBE = CouncilSeat(
     id="scribe",
     title="The Scribe",
-    model="qwen2.5-coder:1.5b",
+    model="llama3.2:latest",
     keep_alive=-1,  # Always warm in VRAM
-    role="Fast Intent Extraction, Quick Tools & Standard Conversation",
-    vram_profile="~1.0GB VRAM (Resident / Always Warm)",
+    role="Fast Intent Extraction, Knowledge & Articulate Conversation",
+    vram_profile="~2.0GB VRAM (Resident / Always Warm)",
     description="Primary rapid-response coordinator for conversational queries, shell commands, and quick dispatch.",
     system_prompt=(
         "You are The Scribe, the rapid coordinator of the Andromeda Council of AIs. "
-        "Your duty is crisp, precise communication, fast intent extraction, and immediate utility. "
+        "Your duty is crisp, articulate, helpful communication, fast intent extraction, and immediate utility. "
         "When presented with reference contexts or specifications, maintain strict factual precision. "
         "If the retrieved context contains contradictory claims, conflicting specifications, or corrupted distractors, explicitly identify and flag the contradiction rather than hallucinating a false compromise."
     ),

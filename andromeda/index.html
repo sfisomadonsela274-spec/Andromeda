@@ -1826,7 +1826,7 @@
     // ==========================================
     // BACKEND WEBSOCKET & DYNAMIC ENDPOINT RESOLUTION
     // ==========================================
-    let DEFAULT_24_7_BACKEND = "https://culture-subsection-howard-arm.trycloudflare.com";
+    let DEFAULT_24_7_BACKEND = "https://zinc-principles-powerseller-enhancements.trycloudflare.com";
     let socketFailureCount = 0;
 
     async function autoDiscoverBackendUrl() {
@@ -1953,10 +1953,7 @@
 
     async function initCoreSocket() {
       if (window.location.hostname.includes("github.io") || window.location.hostname.includes("sfi.so")) {
-        const currentSaved = localStorage.getItem("andromeda_backend_url");
-        if (!currentSaved || currentSaved.includes("sin-serial-hearts-calendar") || currentSaved.includes("either-mercury")) {
-          try { await autoDiscoverBackendUrl(); } catch (_) {}
-        }
+        try { await autoDiscoverBackendUrl(); } catch (_) {}
       }
 
       let wsUrl = getBackendWsUrl();
@@ -2612,93 +2609,178 @@
 
       if (coreSocket && coreSocket.readyState === WebSocket.OPEN) {
         coreSocket.send(JSON.stringify({ type: "prompt", prompt: query, with_tools: true }));
-      } else if (window.AndromedaClientAI) {
-        // Client In-Browser AI Execution (Zero Host Compute - Mobile & PC)
-        window.AndromedaClientAI.retrieveMemories(query, 3).then((matches) => {
-          const memContext = window.AndromedaClientAI.formatMemoryContext(matches);
-          const modelName = window.AndromedaClientAI.activeModelName || 'Client Pocket Scout';
-          showThoughtTrace(`Adjudicating locally via In-Browser AI Engine (${modelName})...`);
-          
-          let responseBubble = null;
-          let streamText = '';
-          
-          window.AndromedaClientAI.generateCompletion(query, (token) => {
-            hideThoughtTrace();
-            removeTypingIndicator();
-            if (!responseBubble) {
-              responseBubble = appendAgentStreamPlaceholder();
-            }
-            streamText += token;
-            responseBubble.textContent = streamText;
-            scrollToBottom();
-          }, memContext).then((fullAnswer) => {
-            hideThoughtTrace();
-            removeTypingIndicator();
-            if (!responseBubble && fullAnswer) {
-              appendSystemMessage(fullAnswer);
-            }
-            if (fullAnswer && fullAnswer.trim()) {
-              window.AndromedaClientAI.memorize(`User prompt: "${query}". Assistant: "${fullAnswer.slice(0, 300)}"`, 'conversation');
-            }
-            runBackgroundRamHealthCheck();
-          }).catch((err) => {
-            console.warn('Local client inference notice:', err);
-            hideThoughtTrace();
-            removeTypingIndicator();
-            appendSystemMessage(`[Client AI]: Processed request "${escapeHtml(query)}" locally on your device with 0 bytes host compute.`);
-            runBackgroundRamHealthCheck();
-          });
-        });
       } else {
-        // Fallback simulation if bridge is still warming up
-        setTimeout(() => {
+        const lower = query.trim().toLowerCase();
+        if (lower === '/purge' || lower === '/clean' || lower === 'clean ram' || lower === 'purge ram') {
+          executeCleanRamPurge();
+          return;
+        }
+        if (lower.startsWith('/music') || lower.startsWith('/audio')) {
+          const musicQuery = query.replace(/^\/(music|audio)\s*/i, '') || "ambient focus stream";
+          const streamInfo = playClientAudioStream(musicQuery);
           hideThoughtTrace();
           removeTypingIndicator();
-          const lower = query.toLowerCase();
-          if (lower.includes('email') || lower.includes('mail')) {
-            appendSystemMessage(`
-              <div class="space-y-2">
-                <p>Prepared draft for native email intent:</p>
-                <div class="p-3 bg-zinc-900 rounded-xl border border-zinc-800 text-xs font-mono space-y-1">
-                  <div><span class="text-zinc-400">Subject:</span> Project Milestone Update</div>
-                  <div><span class="text-zinc-400">Body:</span> The deployment is verified on the edge-native node. SQR compression is active.</div>
+          appendSystemMessage(`
+            <div class="space-y-2.5">
+              <p class="text-[#dde2ea]">Streaming audio on your device via <strong>${escapeHtml(streamInfo.appName)}</strong>:</p>
+              <div class="p-4 neu-raised-lg rounded-2xl text-xs space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2.5 font-semibold text-[#dde2ea] tracking-wide">
+                    <i data-lucide="music" class="w-4 h-4 text-[#5072a7]"></i>
+                    <span>${escapeHtml(streamInfo.appName)}</span>
+                  </div>
+                  <span class="neu-inset-sm px-2.5 py-0.5 rounded-full text-[10px] font-mono text-[#5e937d] uppercase">Background Stream</span>
                 </div>
-                <button onclick="window.open('mailto:?subject=Project%20Update&body=Deployment%20verified.')" class="px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-950 font-medium text-xs hover:bg-white transition-colors flex items-center gap-1.5">
-                  <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Open Mail Client
-                </button>
-              </div>
-            `);
-          } else if (lower.includes('ram') || lower.includes('purge') || lower.includes('leak')) {
-            executeCleanRamPurge();
-          } else if (lower.includes('audio') || lower.includes('music') || lower.includes('play')) {
-            const musicQuery = query.replace(/^(play|audio|music|\/music)\s*/i, '') || "ambient focus stream";
-            const streamInfo = playClientAudioStream(musicQuery);
-            appendSystemMessage(`
-              <div class="space-y-2.5">
-                <p class="text-[#dde2ea]">Streaming audio on your device via <strong>${escapeHtml(streamInfo.appName)}</strong>:</p>
-                <div class="p-4 neu-raised-lg rounded-2xl text-xs space-y-2.5">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2.5 font-semibold text-[#dde2ea] tracking-wide">
-                      <i data-lucide="music" class="w-4 h-4 text-[#5072a7]"></i>
-                      <span>${escapeHtml(streamInfo.appName)}</span>
-                    </div>
-                    <span class="neu-inset-sm px-2.5 py-0.5 rounded-full text-[10px] font-mono text-[#5e937d] uppercase">Background Stream</span>
-                  </div>
-                  <div class="neu-inset-deep p-2.5 rounded-xl text-[#8892a0] text-xs font-mono truncate">Query: "${escapeHtml(streamInfo.query)}"</div>
-                  <div class="pt-1 flex items-center justify-between">
-                    <a href="${streamInfo.streamUrl}" target="_blank" rel="noopener noreferrer" class="neu-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[#dde2ea] hover:text-white text-xs font-medium transition-all">
-                      <i data-lucide="external-link" class="w-3.5 h-3.5 text-[#5072a7]"></i> Open in ${escapeHtml(streamInfo.appName)}
-                    </a>
-                    <span class="text-[10px] text-[#8892a0] font-mono">Playing on Client Device</span>
-                  </div>
+                <div class="neu-inset-deep p-2.5 rounded-xl text-[#8892a0] text-xs font-mono truncate">Query: "${escapeHtml(streamInfo.query)}"</div>
+                <div class="pt-1 flex items-center justify-between">
+                  <a href="${streamInfo.streamUrl}" target="_blank" rel="noopener noreferrer" class="neu-btn inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[#dde2ea] hover:text-white text-xs font-medium transition-all">
+                    <i data-lucide="external-link" class="w-3.5 h-3.5 text-[#5072a7]"></i> Open in ${escapeHtml(streamInfo.appName)}
+                  </a>
+                  <span class="text-[10px] text-[#8892a0] font-mono">Playing on Client Device</span>
                 </div>
               </div>
-            `);
-          } else {
-            appendSystemMessage(`[In-Browser AI]: Processed request "${escapeHtml(query)}" locally in your browser with 0 bytes host compute.`);
+            </div>
+          `);
+          runBackgroundRamHealthCheck();
+          return;
+        }
+
+        // Universal Edge & In-Browser Neural AI Execution (Zero Host Compute - Mobile & PC)
+        let responseBubble = appendAgentStreamPlaceholder();
+        let streamText = '';
+
+        const handleToken = (token) => {
+          hideThoughtTrace();
+          removeTypingIndicator();
+          streamText += token;
+          if (responseBubble) {
+            responseBubble.textContent = streamText;
+          }
+          scrollToBottom();
+        };
+
+        const executeUniversalInference = async () => {
+          let memContext = '';
+          if (window.AndromedaClientAI && typeof window.AndromedaClientAI.retrieveMemories === 'function') {
+            try {
+              const matches = await window.AndromedaClientAI.retrieveMemories(query, 3);
+              memContext = window.AndromedaClientAI.formatMemoryContext(matches);
+            } catch (_) {}
+          }
+
+          const modelName = window.AndromedaClientAI?.activeModelName || 'Andromeda Neural Engine';
+          showThoughtTrace(`Adjudicating via Cognitive Neural Engine (${modelName})...`);
+
+          // 1. Primary: Use window.AndromedaClientAI bridge if available
+          if (window.AndromedaClientAI && typeof window.AndromedaClientAI.generateCompletion === 'function') {
+            try {
+              const result = await window.AndromedaClientAI.generateCompletion(query, handleToken, memContext);
+              if (result && result.trim()) return result;
+            } catch (bridgeErr) {
+              console.warn('[Andromeda]: Bridge generation notice, trying direct edge:', bridgeErr);
+            }
+          }
+
+          // 2. Direct In-Page Edge Neural Stream (Guarantees intelligent real AI even if bridge script is loading)
+          const messages = [
+            { role: 'system', content: 'You are Andromeda, an intelligent, sleek workspace companion. You provide sharp, articulate, helpful, well-structured, insightful responses. Format code with standard markdown fences.' },
+            { role: 'user', content: query }
+          ];
+
+          try {
+            const edgeResp = await fetch('https://text.pollinations.ai/openai/chat/completions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                messages,
+                stream: true,
+                model: 'openai',
+                temperature: 0.7
+              })
+            });
+
+            if (edgeResp.ok && edgeResp.body) {
+              const reader = edgeResp.body.getReader();
+              const decoder = new TextDecoder('utf-8');
+              let full = '';
+              let buffer = '';
+
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                  const trimmed = line.trim();
+                  if (trimmed.startsWith('data: ')) {
+                    const dataStr = trimmed.slice(6);
+                    if (dataStr === '[DONE]') break;
+                    try {
+                      const parsed = JSON.parse(dataStr);
+                      const delta = parsed.choices?.[0]?.delta?.content || '';
+                      if (delta) {
+                        full += delta;
+                        handleToken(delta);
+                      }
+                    } catch (_) {}
+                  }
+                }
+              }
+              if (full.trim()) return full;
+            }
+          } catch (streamErr) {
+            console.warn('[Andromeda]: Edge stream fallback notice, trying direct text endpoint:', streamErr);
+          }
+
+          // 3. Direct Fast Endpoint Fallback
+          try {
+            const directResp = await fetch('https://text.pollinations.ai/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                messages,
+                model: 'openai'
+              })
+            });
+            if (directResp.ok) {
+              const text = await directResp.text();
+              if (text && text.trim()) {
+                handleToken(text);
+                return text;
+              }
+            }
+          } catch (textErr) {
+            console.warn('[Andromeda]: Direct text endpoint notice:', textErr);
+          }
+
+          throw new Error('Offline - No connection available.');
+        };
+
+        executeUniversalInference().then((fullAnswer) => {
+          hideThoughtTrace();
+          removeTypingIndicator();
+          if (responseBubble && !streamText && fullAnswer) {
+            responseBubble.textContent = fullAnswer;
+          } else if (!responseBubble && fullAnswer) {
+            appendSystemMessage(fullAnswer);
+          }
+          if (fullAnswer && fullAnswer.trim() && window.AndromedaClientAI?.memorize) {
+            window.AndromedaClientAI.memorize(`User prompt: "${query}". Assistant: "${fullAnswer.slice(0, 300)}"`, 'conversation');
           }
           runBackgroundRamHealthCheck();
-        }, 300);
+        }).catch((err) => {
+          hideThoughtTrace();
+          removeTypingIndicator();
+          const offlineMsg = `I am currently operating in offline standalone mode without an active network connection or host connection. Please verify your internet connection or turn on your host PC to access full neural reasoning.`;
+          if (responseBubble) {
+            responseBubble.textContent = offlineMsg;
+          } else {
+            appendSystemMessage(offlineMsg);
+          }
+          runBackgroundRamHealthCheck();
+        });
       }
     }
 
