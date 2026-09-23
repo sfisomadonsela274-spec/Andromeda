@@ -3,20 +3,22 @@
  *             🌌 ANDROMEDA PWA SERVICE WORKER & OFFLINE CACHE
  * =============================================================================
  * Manages:
- *  1. Offline shell caching for 100% host-independent execution
+ *  1. Offline shell caching for 100% host-independent execution on mobile & PC
  *  2. Model weight shard persistence in CacheStorage
- *  3. Background pre-warming when on the landing page
+ *  3. Dynamic asset caching for standalone PWA loading without host connection
  * =============================================================================
  */
 
-const CACHE_NAME = 'andromeda-shell-v1';
+const CACHE_NAME = 'andromeda-shell-v2';
 const WEIGHTS_CACHE_NAME = 'andromeda-model-weights-v1';
 
 const STATIC_SHELL = [
-  '/',
-  '/index.html',
-  '/favicon.svg',
-  '/icons.svg'
+  './',
+  './index.html',
+  './app.html',
+  './manifest.webmanifest',
+  './favicon.svg',
+  './icons.svg'
 ];
 
 self.addEventListener('install', (event) => {
@@ -48,7 +50,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // 1. Bypass WebSocket connections and live API endpoints
+  // 1. Bypass WebSocket connections and live backend API endpoints
   if (url.pathname.startsWith('/ws/') || url.pathname.startsWith('/api/')) {
     return;
   }
@@ -59,41 +61,54 @@ self.addEventListener('fetch', (event) => {
       caches.open(WEIGHTS_CACHE_NAME).then(async (cache) => {
         const cached = await cache.match(event.request);
         if (cached) return cached;
-        const netResponse = await fetch(event.request);
-        if (netResponse.ok) {
-          cache.put(event.request, netResponse.clone());
+        try {
+          const netResponse = await fetch(event.request);
+          if (netResponse.ok) {
+            cache.put(event.request, netResponse.clone());
+          }
+          return netResponse;
+        } catch (e) {
+          if (cached) return cached;
+          throw e;
         }
-        return netResponse;
       })
     );
     return;
   }
 
-  // 3. Static Assets: Stale-While-Revalidate
+  // 3. Static Assets: Network-First with Cache fallback for true offline operation
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => cachedResponse);
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(async () => {
+        const cachedResponse = await caches.match(event.request);
+        if (cachedResponse) return cachedResponse;
 
-      return cachedResponse || fetchPromise;
-    })
+        // If navigating to a page while offline, fallback to cached index.html
+        if (event.request.mode === 'navigate') {
+          const fallback = await caches.match('./index.html') || await caches.match('./');
+          if (fallback) return fallback;
+        }
+        return new Response('Offline - Andromeda Standalone Client Mode Active', {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: { 'Content-Type': 'text/plain' }
+        });
+      })
   );
 });
 
-// Background message handler for landing page pre-caching
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'PRECACHE_MODEL') {
     const modelId = event.data.modelId;
     console.log(`[Andromeda SW]: Background pre-cache initiated for model ${modelId}`);
-    // Register background sync or pre-fetch shard manifest
   }
 });

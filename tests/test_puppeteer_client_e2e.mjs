@@ -38,14 +38,14 @@ function startStaticServer(port = 4199) {
 
   const server = http.createServer((req, res) => {
     let reqPath = req.url.split('?')[0].split('#')[0];
-    if (reqPath === '/' || reqPath === '') reqPath = '/app.html';
+    if (reqPath === '/' || reqPath === '') reqPath = '/index.html';
 
     const filePath = path.join(DIST_DIR, reqPath);
     const ext = path.extname(filePath).toLowerCase();
 
     fs.readFile(filePath, (err, data) => {
       if (err) {
-        fs.readFile(path.join(DIST_DIR, 'app.html'), (err2, fallbackData) => {
+        fs.readFile(path.join(DIST_DIR, 'index.html'), (err2, fallbackData) => {
           if (err2) {
             res.writeHead(404);
             res.end('Not found');
@@ -88,7 +88,7 @@ async function runE2E() {
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 800 });
 
-    const targetUrl = `http://127.0.0.1:${port}/app.html`;
+    const targetUrl = `http://127.0.0.1:${port}/`;
     console.log(`Navigating to: ${targetUrl}`);
 
     await page.goto(targetUrl, { waitUntil: 'networkidle0', timeout: 15000 });

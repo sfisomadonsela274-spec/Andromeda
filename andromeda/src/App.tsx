@@ -42,8 +42,15 @@ export const App: React.FC = () => {
   ]);
   const [wsConnected, setWsConnected] = useState<boolean>(false);
   const [simulatedAudio, setSimulatedAudio] = useState<number>(0);
+  const [isMobileView, setIsMobileView] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 640 : false);
 
   const wsRef = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobileView(window.innerWidth < 640);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Hardware Profiling & Client-Side Inference Sync on Mount
   useEffect(() => {
@@ -378,12 +385,18 @@ export const App: React.FC = () => {
             <div className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-400">
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
-                  wsConnected ? 'bg-emerald-400 shadow-[0_0_6px_#34d399]' : 'bg-amber-400 animate-pulse'
+                  engineMode !== 'host_server'
+                    ? (wsConnected ? 'bg-emerald-400 shadow-[0_0_6px_#34d399]' : 'bg-purple-400 shadow-[0_0_6px_#c084fc]')
+                    : (wsConnected ? 'bg-emerald-400 shadow-[0_0_6px_#34d399]' : 'bg-amber-400 animate-pulse')
                 }`}
               />
-              <span>{wsConnected ? 'WS Core Synced' : 'Connecting to /ws/core'}</span>
-              <span className="text-zinc-600">•</span>
-              <span className="text-purple-400">MPRIS Active</span>
+              <span>
+                {engineMode !== 'host_server'
+                  ? (wsConnected ? 'Client AI • WS Synced' : 'Standalone Client Mode (Zero Host Load)')
+                  : (wsConnected ? 'WS Core Synced' : 'Host Offline (Client Mode Ready)')}
+              </span>
+              <span className="hidden sm:inline text-zinc-600">•</span>
+              <span className="hidden sm:inline text-purple-400">MPRIS</span>
             </div>
           </div>
         </div>
@@ -477,7 +490,7 @@ export const App: React.FC = () => {
         <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
           
           {/* Avatar Cosmic Core Box */}
-          <div className="flex flex-col items-center justify-between p-6 rounded-3xl bg-[#0A0816]/75 border border-white/10 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] min-h-[420px]">
+          <div className="flex flex-col items-center justify-between p-4 sm:p-6 rounded-3xl bg-[#0A0816]/75 border border-white/10 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] min-h-[340px] sm:min-h-[420px]">
             <div className="w-full flex items-center justify-between pb-2 border-b border-white/5">
               <div className="text-[11px] font-mono tracking-wider text-zinc-400 uppercase flex items-center gap-1.5">
                 <span>Cosmic Core Singularity</span>
@@ -488,12 +501,12 @@ export const App: React.FC = () => {
             </div>
 
             {/* Canvas Avatar Component with Wired Council Badge */}
-            <div className="my-auto py-3">
+            <div className="my-auto py-2 sm:py-3">
               <WorkspaceAvatar
                 state={avatarState}
                 councilSeat={councilSeat}
                 audioLevel={simulatedAudio}
-                size={190}
+                size={isMobileView ? 140 : 190}
               />
             </div>
 
@@ -605,7 +618,7 @@ export const App: React.FC = () => {
               placeholder="Ask the Council or enter action (e.g. '/music lofi chill', '/install vscode', '/macro deep_work')..."
               value={promptInput}
               onChange={(e) => setPromptInput(e.target.value)}
-              className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50"
+              className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-base sm:text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500/50"
             />
             <button
               id="btn-dispatch-prompt"
