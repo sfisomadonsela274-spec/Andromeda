@@ -448,13 +448,13 @@ class ClientInferenceService {
     // 3. High-speed In-Browser Client Fast Scout execution
     const seatName = this.activeModel?.seat || 'The Scribe';
     const modelName = this.activeModel?.name || 'SmolLM2 360M Pocket Scout';
-    const memoryContextNotice = context ? `\n\n🧠 Context retrieved from local Vector Vault:\n${context}` : '';
+    const memoryContextNotice = context ? `\n\n🧠 Context retrieved from your local Vector Vault:\n${context}` : '';
 
     let simulatedResponse = '';
     const lower = prompt.toLowerCase();
 
     if (lower.startsWith('/music') || lower.includes('music') || lower.includes('lofi') || lower.includes('song')) {
-      simulatedResponse = `[In-Browser AI • ${seatName}]: 🎵 Ambient soundscape queued for "${prompt.replace(/^\/music\s*/i, '')}". You can enjoy cosmic audio directly in the Media Hub card above.`;
+      simulatedResponse = `[In-Browser AI • ${seatName}]: 🎵 Ambient soundscape queued for "${prompt.replace(/^\/music\s*/i, '')}". You can enjoy audio playback directly in the client Media Hub.`;
     } else if (lower.startsWith('/macro') || lower.includes('macro') || lower.includes('automation')) {
       simulatedResponse = `[In-Browser AI • ${seatName}]: ⚙️ Executing client-side workflow macro. Sequence parameters checked and registered into local state.`;
     } else if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {

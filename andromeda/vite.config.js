@@ -9,7 +9,6 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         landing: resolve(__dirname, 'landing.html'),
         app: resolve(__dirname, 'app.html'),
-        legacy: resolve(__dirname, 'legacy.html'),
       },
     },
   },

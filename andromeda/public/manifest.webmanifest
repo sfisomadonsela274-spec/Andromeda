@@ -1,12 +1,11 @@
 {
   "name": "Andromeda // Intelligent Workspace",
   "short_name": "Andromeda",
-  "description": "Edge-Native In-Browser AI Workspace & Council of AIs with local WebGPU inference and client vector memory",
+  "description": "High-performance AI companion and workspace running local WebGPU inference",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#07050E",
   "theme_color": "#07050E",
-  "orientation": "any",
   "icons": [
     {
       "src": "./favicon.svg",

@@ -41,10 +41,6 @@ export interface ClientHardwareProfile {
   safeMemoryBudgetGB: number;
   recommendedModelId: string;
   activeEngineMode: 'client_webgpu' | 'native_window_ai' | 'host_server';
-  isMobile: boolean;
-  isIOS: boolean;
-  isAndroid: boolean;
-  webGpuGuide: string | null;
   models: ModelTier[];
 }
 
@@ -244,36 +240,17 @@ export async function profileClientHardware(manualOverride?: number | null): Pro
     ? Number(Math.max(0.6, estimatedRam * 0.45).toFixed(2))
     : 0.5;
 
-  // Platform Detection (Mobile & OS Diagnostics)
-  const ua = nav.userAgent || '';
-  const isIOS = /iPad|iPhone|iPod/.test(ua) || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
-  const isAndroid = /Android/.test(ua);
-  const isMobile = isIOS || isAndroid || (typeof window !== 'undefined' && window.innerWidth < 768);
-
-  let webGpuGuide: string | null = null;
-  if (!hasWebGpu) {
-    if (isIOS) {
-      webGpuGuide = 'To enable WebGPU on iPhone/iPad: Open iOS Settings → Safari → Advanced → Feature Flags → Turn ON "WebGPU".';
-    } else if (isAndroid) {
-      webGpuGuide = 'To enable WebGPU on Android: Open Chrome → visit chrome://flags/#enable-unsafe-webgpu → Set to Enabled → Relaunch Chrome.';
-    } else {
-      webGpuGuide = 'WebGPU is inactive. Running In-Browser Fast Scout mode (Zero Host Load) with full Vector Memory.';
-    }
-  }
-
   // 6. Evaluate Model Tier Availability
   let recommendedModelId = 'smollm2-360m-scout';
 
   const models: ModelTier[] = ANDROMEDA_MODEL_CATALOG.map((m) => {
-    const isFastScout = m.id === 'smollm2-360m-scout' || m.id === 'qwen-0.5b-scout';
-    const accessible = (hasWebGpu || hasNativeWindowAi || isFastScout) && estimatedRam >= m.requiredRamGB;
-    const isBudgetFit = m.runtimeVramGB <= safeMemoryBudgetGB || isFastScout;
+    const isPocketScout = m.id === 'smollm2-360m-scout';
+    const accessible = (hasWebGpu || hasNativeWindowAi || isPocketScout) && estimatedRam >= (isPocketScout ? 1 : m.requiredRamGB);
+    const isBudgetFit = m.runtimeVramGB <= safeMemoryBudgetGB || isPocketScout;
 
     let badge: ModelTier['badge'] = 'Locked';
     if (!accessible) {
       badge = 'Locked';
-    } else if (!hasWebGpu && isFastScout) {
-      badge = 'Unlocked';
     } else if (isBudgetFit) {
       badge = 'Unlocked';
     } else {
@@ -306,7 +283,9 @@ export async function profileClientHardware(manualOverride?: number | null): Pro
   // Determine active engine mode
   let activeEngineMode = getStoredEngineMode();
   if (activeEngineMode === 'native_window_ai' && !hasNativeWindowAi) {
-    activeEngineMode = 'client_webgpu';
+    activeEngineMode = hasWebGpu ? 'client_webgpu' : 'host_server';
+  } else if (activeEngineMode === 'client_webgpu' && !hasWebGpu && hasNativeWindowAi) {
+    activeEngineMode = 'native_window_ai';
   }
 
   return {
@@ -322,10 +301,6 @@ export async function profileClientHardware(manualOverride?: number | null): Pro
     safeMemoryBudgetGB,
     recommendedModelId,
     activeEngineMode,
-    isMobile,
-    isIOS,
-    isAndroid,
-    webGpuGuide,
     models
   };
 }

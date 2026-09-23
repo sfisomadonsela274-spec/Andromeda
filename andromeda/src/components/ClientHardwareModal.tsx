@@ -286,18 +286,21 @@ export const ClientHardwareModal: React.FC<ClientHardwareModalProps> = ({
 
             {/* Engine Mode Tabs */}
             <div className="px-6 pt-3 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2">
                 <button
                   id="btn-engine-webgpu"
                   onClick={() => handleEngineModeToggle('client_webgpu')}
+                  disabled={!profile.hasWebGpu}
                   className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all flex items-center gap-1.5 ${
                     profile.activeEngineMode === 'client_webgpu'
                       ? 'bg-purple-600/30 border-purple-500/60 text-purple-200 shadow-[0_0_12px_rgba(168,85,247,0.3)]'
-                      : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
+                      : profile.hasWebGpu
+                      ? 'bg-white/5 border-white/10 text-zinc-400 hover:text-white'
+                      : 'bg-zinc-900 border-zinc-800 text-zinc-600 cursor-not-allowed'
                   }`}
                 >
                   <span>⚡</span>
-                  <span>{profile.hasWebGpu ? 'Client WebGPU' : 'Client Fast Scout'} (Zero Host Load)</span>
+                  <span>Client WebGPU (Zero Host Load)</span>
                 </button>
 
                 {profile.hasNativeWindowAi && (
@@ -340,20 +343,6 @@ export const ClientHardwareModal: React.FC<ClientHardwareModalProps> = ({
                 </button>
               </div>
             </div>
-
-            {/* Mobile / Non-WebGPU Hardware Guidance Banner */}
-            {profile.webGpuGuide && !profile.hasWebGpu && (
-              <div className="mx-6 mt-3 p-3 rounded-2xl bg-amber-950/40 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-2.5 animate-fadeIn">
-                <span className="text-base mt-0.5">💡</span>
-                <div>
-                  <div className="font-semibold text-amber-100 flex items-center gap-1.5">
-                    <span>{profile.isIOS ? 'iOS Safari WebGPU Tip' : (profile.isAndroid ? 'Android Chrome WebGPU Tip' : 'In-Browser AI Standalone Mode')}</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-900/60 text-amber-300">Fast Scout Active</span>
-                  </div>
-                  <p className="text-[11px] text-amber-300/90 mt-0.5 leading-relaxed">{profile.webGpuGuide}</p>
-                </div>
-              </div>
-            )}
 
             {cacheClearedMsg && (
               <div className="mx-6 mt-2 px-3 py-1.5 rounded-xl bg-purple-950/40 border border-purple-500/30 text-purple-300 text-xs animate-fadeIn">
