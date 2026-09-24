@@ -186,6 +186,20 @@ async function runHostOffSimulation() {
     await page.screenshot({ path: screenshot2Path });
     console.log(`📸 Screenshot saved: ${screenshot2Path}`);
 
+    // --- TEST 3: Offline Session Persistence on Reload ---
+    console.log('\n[Step 4]: Testing Offline Session Persistence Across Reload (Host Still Off):');
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await new Promise((r) => setTimeout(r, 1200));
+
+    const reloadedMessages = await page.evaluate(() => {
+      return document.querySelectorAll('#chat-messages > div').length;
+    });
+    console.log(`✓ Restored messages count after reload: ${reloadedMessages}`);
+    if (reloadedMessages < 2) {
+      throw new Error('FAIL: Offline chat history was not preserved across reload!');
+    }
+    console.log('✓ Quality Check: Full session persistence preserved in offline local storage!');
+
     console.log('\n=============================================================================');
     console.log('🎉 HOST-OFF SIMULATION PASSED 100%! ZERO HOST COMPUTE USED!');
     console.log('=============================================================================');

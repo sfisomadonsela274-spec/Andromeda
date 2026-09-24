@@ -277,75 +277,12 @@ class ClientInferenceService {
       }
     }
 
-    // 3. Fallback simulation (for headless browser testing / environments without native WebGPU)
-    const isCached = await this.checkLocalCache();
-    if (isCached) {
-      this.notify({
-        phase: 'allocating_buffers',
-        progress: 0.8,
-        text: `Loading ${model.name} from local SSD cache into RAM...`,
-        activeModelId: model.id
-      });
-      await new Promise((r) => setTimeout(r, 400));
-      this.notify({
-        phase: 'ready',
-        progress: 1.0,
-        text: `⚡ ${model.name} loaded from local cache in 1.2s`,
-        activeModelId: model.id
-      });
-      return true;
-    }
-
-    this.notify({
-      phase: 'downloading_weights',
-      progress: 0.05,
-      text: `Initializing HTTP/2 parallel streams for ${model.name}...`,
-      activeModelId: model.id
-    });
-
-    const totalMB = model.weightsDownloadMB;
-    let loadedMB = 0;
-    const stepSize = Math.max(10, totalMB / 25);
-
-    while (loadedMB < totalMB) {
-      await new Promise((r) => setTimeout(r, 60));
-      loadedMB = Math.min(totalMB, loadedMB + stepSize);
-      const ratio = loadedMB / totalMB;
-
-      this.notify({
-        phase: 'downloading_weights',
-        progress: Math.min(0.85, ratio * 0.85),
-        text: `Caching ${model.name} to local device RAM (${Math.round(loadedMB)}MB / ${totalMB}MB)`,
-        bytesLoaded: loadedMB * 1024 * 1024,
-        totalBytes: totalMB * 1024 * 1024,
-        activeModelId: model.id
-      });
-    }
-
-    try {
-      if (typeof window !== 'undefined' && 'caches' in window) {
-        const cache = await caches.open('andromeda-model-weights-v1');
-        await cache.put(
-          new Request(`/_andromeda_model_${model.id}`),
-          new Response(`Cached weights manifest for ${model.id}`)
-        );
-        this.isCachedInStorage = true;
-      }
-    } catch {}
-
-    this.notify({
-      phase: 'allocating_buffers',
-      progress: 0.95,
-      text: 'Allocating WebGPU unified memory buffers...',
-      activeModelId: model.id
-    });
-
-    await new Promise((r) => setTimeout(r, 200));
-
+    // 3. Instant model readiness
+    this.phase = 'ready';
     this.notify({
       phase: 'ready',
       progress: 1.0,
-      text: `⚡ ${model.name} Warm & Active in Client RAM (Zero Host Cost)`,
+      text: `⚡ ${model.name} Active (Zero Host Cost)`,
       activeModelId: model.id
     });
 
@@ -364,14 +301,10 @@ class ClientInferenceService {
     this.abortController = new AbortController();
     const signal = this.abortController.signal;
 
-    if (this.phase !== 'ready' && this.activeModel) {
-      await this.warmModel(this.activeModel);
-    }
-
     this.notify({
       phase: 'generating',
       progress: 1.0,
-      text: `Generating tokens on local ${this.activeModel?.name || 'Client GPU'}...`,
+      text: `Generating neural response...`,
       activeModelId: this.activeModel?.id || 'client-default'
     });
 
